@@ -205,9 +205,13 @@ body.battle #stage{display:block}
 .ware.r2{box-shadow:var(--bevel),inset 0 -3px 0 var(--rare)}.ware.r3{box-shadow:var(--bevel),inset 0 -3px 0 var(--epic)}
 .ware.cant .pr{color:#8a6c55}.ware.cant img{opacity:.55}
 .ware.special{border-color:#6c8fb0}
-.stb,.ware img.stb,.cell img.rcm{position:absolute;right:2px;bottom:7px;z-index:3;font:bold 11px/13px var(--f-dot);width:14px;height:14px;text-align:center;border-radius:50%;pointer-events:none;box-shadow:1px 1px 0 #000}.rcm.up{background:#2f7a3a;color:#eaffd8}.rcm.dn{background:#4a4440;color:#cfc6b8}.ware .rcm{right:4px;top:4px;bottom:auto}
+.gem{position:absolute;left:3px;bottom:6px;z-index:3;font-size:12px;line-height:12px;pointer-events:none;text-shadow:1px 1px 0 #000,-1px -1px 0 #000}.gem.g-fire{color:#ff7a4a}.gem.g-ice{color:#9fdcff}.gem.g-poison{color:#9fe070}
+.gemstrip{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:3px 8px;margin:2px 0;background:#241b15;border:1px solid #4a3a2c;font-size:12px}.gemstrip b{font-family:var(--f-dot);font-weight:400;color:#e8c45a}.gemb{font:12px var(--f-dot);color:#f0e6d6;background:#3a2c22;border:1px solid var(--gc,#6a5238);border-left:4px solid var(--gc,#6a5238);padding:2px 8px;cursor:pointer;min-height:26px}.gemb.off{--gc:#8a7a68}.gemstrip small{color:#b3a38f}.gemstrip .gh{margin-left:auto}
+.elbtn{flex:none;align-self:center;font:12px/1.2 var(--f-dot);color:#ffe0c0;background:#5a2a20;border:1px solid #c2452a;padding:4px 6px;cursor:pointer;margin-left:4px;max-width:78px}.elbtn small{display:block;font-size:10px;color:#ffc8a0}.elbtn.on{background:#c2452a;color:#fff}
+.gemopt .gemico{font-size:30px;color:var(--gc)}
+.rcm{position:absolute;right:2px;bottom:7px;z-index:3;font:bold 11px/13px var(--f-dot);width:14px;height:14px;text-align:center;border-radius:50%;pointer-events:none;box-shadow:1px 1px 0 #000}.rcm.up{background:#2f7a3a;color:#eaffd8}.rcm.dn{background:#4a4440;color:#cfc6b8}.ware .rcm{right:4px;top:4px;bottom:auto}
 .raceln i{font-style:normal;font-weight:700;margin-right:6px}.raceln .up{color:#2f7a3a}.raceln .dn{color:#7a7068}.pic{position:relative}.racetag{position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);font:11px/14px var(--f-dot);background:#3a2c22;color:#f0e6d6;padding:0 4px;border:1px solid #6a5238;white-space:nowrap}
-.stb{position:absolute;top:2px;left:2px;width:12px!important;height:12px!important;margin:0;image-rendering:pixelated;pointer-events:none;z-index:2;filter:drop-shadow(1px 1px 0 #000)}
+.stb,.ware img.stb,.cell img.stb{position:absolute;top:2px;left:2px;width:12px!important;height:12px!important;margin:0;image-rendering:pixelated;pointer-events:none;z-index:2;filter:drop-shadow(1px 1px 0 #000)}
 .ware .ctr.fam{background:#8a5a1a;color:#ffe8b0}
 .ware .ctr{position:absolute;top:1px;left:2px;font-size:9px;background:#2f6f3a;color:#e8ffe0;padding:0 3px;line-height:1.4;pointer-events:none}
 .ware .mrg{position:absolute;right:2px;bottom:18px;font-size:9px;background:#e0b04a;color:#2a1d10;padding:0 3px;line-height:1.4;font-weight:700;pointer-events:none}
@@ -416,6 +420,7 @@ body.relicpage #hand{visibility:hidden}body.relicpage #bar{margin-top:82px}#reli
   <div id="board"></div>
   <div id="relicPage" hidden></div>
   <button id="setStrip" class="setstrip" hidden></button>
+  <div id="gemStrip" class="gemstrip" hidden></div>
   <div id="shop"></div>
   <div id="bar">
     <div id="planBar" style="display:contents">
@@ -981,7 +986,7 @@ const RACE68={bone:{nm:'骨',weak:'blunt',res:'blade',ds:'骨の体。鈍器で�
 const RACE_SPR={skeleton:'bone',skeleton_b:'bone',skeleton_s:'bone',bat:'fly',eye:'fly',eye_o:'fly',slime:'soft',slime_d:'soft',mushroom:'soft',mushroom_p:'soft',goblin:'beast',goblin_r:'beast',rat:'beast',wizard3:'dark',darkwiz:'dark',demon1:'dark',demon2:'dark',fwarrior:'armor',fireworm:'bug',mimic:'box'};
 const RACE_W=1.4,RACE_R=0.8,RACE_KINDS=['dmg','once','burn','ignite','detonate','poison'];
 function raceOf(e){if(!e)return null;const k=RACE_SPR[String(e.spr||'').replace(/_(vol|dem)$/,'')];return RACE68[k]?k:null;}
-function raceMul(d,e){const r=RACE68[raceOf(e)];if(!r||!d||!RACE_KINDS.includes(d.kind))return 1;const t=tagsOf(d);return t.includes(r.weak)?RACE_W:t.includes(r.res)?RACE_R:1;}
+function raceMul(d,e,gem){const r=RACE68[raceOf(e)];if(!r||!d||!RACE_KINDS.includes(d.kind))return 1;const t=gem?[...tagsOf(d),gem]:tagsOf(d);return t.includes(r.weak)?RACE_W:t.includes(r.res)?RACE_R:1;}
 function curFoe68(){try{return S.phase==='battle'&&typeof B!=='undefined'&&B&&B.def?B.def:S.heroes?.length&&S.enc?enemy(S.round):null;}catch(e){return null;}}
 // r68 ボスの大技までの時間（ゲージに出す）。{nm,left,total} か null
 function bossClock68(){if(!B||!B.def)return null;const d=B.def,t=B.t,bt=B.bossT||0;
@@ -996,7 +1001,22 @@ function bossClock68(){if(!B||!B.def)return null;const d=B.def,t=B.t,bt=B.bossT|
   case 'hunter':return{nm:'ベルトを鈍らせる',left:6-bt,total:6};
   case 'breaker':{const n=3-((B.atkN||0)%3);return{nm:'盾くずし',left:n,total:3,count:1};}}
   return null;}
-function raceBadge(k){const m=raceMul(ITEMS[k],curFoe68());return m>1?'<span class="rcm up" title="次の敵に効きやすい">◎</span>':m<1?'<span class="rcm dn" title="次の敵に効きにくい">△</span>':'';}
+// r68 属性の宝石：はめた攻撃の装備に、炎・氷・毒の相性と小さな状態異常が付く。系統の数には入らない
+const GEM68={fire:{nm:'炎',col:'#e0603a',ds:'当たるとやけど+2。炎の相性になる'},ice:{nm:'氷',col:'#7fc8f0',ds:'当たると凍えが少したまる。氷の相性になる'},poison:{nm:'毒',col:'#8fd060',ds:'当たると毒+2。毒の相性になる'}};
+const gemOk=d=>d&&RACE_KINDS.includes(d.kind);
+function gemPouch(){const own=[...(S.gemOwn||[])];for(const l of allLocs()){const q=getP(l);if(q&&q.gem){const i=own.indexOf(q.gem);if(i>=0)own.splice(i,1);else delete q.gem;}}return own;}
+function setGem(l,g){const q=getP(l);if(!q)return;if(!gemOk(ITEMS[q.type])){toast('宝石は攻撃する装備にだけはめられる');sfx('err');return;}const was=q.gem;if(g&&!gemPouch().includes(g))return;q.gem=g||undefined;if(!q.gem)delete q.gem;sfx(g?'buy':'tick');toast(g?`${ITEMS[q.type].name}に${GEM68[g].nm}の宝石をはめた`:`${GEM68[was].nm}の宝石を外した`);recordPlay('gem',{loc:lkey(l),gem:g||null,was:was||null});render();save();}
+function renderGemStrip(){const el=$('gemStrip');if(!el)return;const own=S.gemOwn||[];if(S.phase!=='plan'||!own.length||document.body.classList.contains('battle')){el.hidden=true;return;}el.hidden=false;
+  const pouch=gemPouch(),sp=S.sel&&S.sel.a!=='bench'&&getP(S.sel);
+  el.innerHTML=`<b>宝石</b>${pouch.map((g,i)=>`<button class="gemb" data-g="${g}" style="--gc:${GEM68[g].col}">◆${GEM68[g].nm}</button>`).join('')}${pouch.length?'':'<small>全部はめている</small>'}${sp&&sp.gem?`<button class="gemb off" data-g="">外す</button>`:''}<small class="gh">${sp?(gemOk(ITEMS[sp.type])?'宝石を押すとはまる':'この装備にははめられない'):'装備を選んでから宝石を押す'}</small>`;
+  el.querySelectorAll('.gemb').forEach(b=>b.onclick=e=>{e.stopPropagation();const g=b.dataset.g;if(!S.sel||S.sel.a==='bench'||!getP(S.sel)){toast('先にバッグかベルトの装備を選ぼう');sfx('err');return;}setGem(S.sel,g||null);});}
+function showGemOffer68(){const opts=Object.keys(GEM68).sort(()=>Math.random()-.5).slice(0,2);
+  modal(`<h2>宝石を手に入れた</h2><p class="sub">精鋭を倒した。どちらか1つを選ぶ。準備のあいだ、攻撃する装備にはめたり外したりできる</p><div class="rw">${opts.map(g=>`<button class="pk gemopt" data-g="${g}" style="--gc:${GEM68[g].col}"><span class="gemico">◆</span><span class="nm">${GEM68[g].nm}の宝石</span><span class="ds">${GEM68[g].ds}</span></button>`).join('')}</div>`);
+  document.querySelectorAll('#mcard .gemopt').forEach(b=>b.onclick=()=>{S.gemOwn=[...(S.gemOwn||[]),b.dataset.g];S.gemOffer=0;recordPlay('gem_get',{gem:b.dataset.g});sfx('buy');closeModal();save();nextRound();});}
+// 精鋭：物語の章で1回だけ、ボス以外の戦いを強くできる。勝つと宝石
+function eliteOk68(){const r=S.round,e=S.enc&&S.enc[r];return S.run?.mode==='story'&&!isOperation()&&S.phase==='plan'&&e&&!e.boss&&!e.mission&&r<runLimit()&&(!S.eliteDone||S.eliteOn===r);}
+function toggleElite68(){const e=S.enc[S.round];if(!eliteOk68())return;if(S.eliteOn===S.round){delete e.elite;S.eliteOn=null;S.eliteDone=0;toast('精鋭をやめた');}else{e.elite=1;S.eliteOn=S.round;S.eliteDone=1;toast('この戦いを精鋭にした（HP+20%・攻撃+15%）。勝てば宝石');}sfx('tick');render();save();}
+function raceBadge(k,gem){const m=raceMul(ITEMS[k],curFoe68(),gem);return m>1?'<span class="rcm up" title="次の敵に効きやすい">◎</span>':m<1?'<span class="rcm dn" title="次の敵に効きにくい">△</span>':'';}
 function raceLineHTML(e){const r=RACE68[raceOf(e)];if(!r)return'';return `<span class="raceln"><i class="up">◎${CLSN[r.weak]}</i><i class="dn">△${CLSN[r.res]}</i></span>`;}
 const CLS66={sword:'blade',dagger:'blade',bow:'bow',staff:'magic fire',shield:'guard',potion:'care',axe:'blunt',gsword:'blade',bdagger:'blade',baxe:'blunt',prapier:'blade poison',istaff:'magic ice',iceshard:'ice',fhammer:'blunt ice',powder:'boom',hdagger:'blade',hbow:'bow',bandage:'care',gspear:'blade',blowpipe:'bow poison',fangspear:'poison',pscythe:'poison blade',pickaxe:'blunt',bomb:'boom',spiked:'guard',spear:'blade',orb:'magic fire',scythe:'poison blunt',wall:'guard blunt',storm:'bow',firstshield:'guard',chainmail:'guard',renewal:'care',salve:'care',emberguard:'guard fire',venomherb:'care poison',frostward:'guard ice',feather:'care',
  blood:'blade',poison:'poison',oil:'fire',ice:'ice',lantern:'boom',fuse:'boom',herb:'care',tome:'magic',mercy:'care',pring:'care',wardbell:'guard',flute:'bow',
@@ -1418,7 +1438,7 @@ function operationHelpHTML(){return `<div class="ophelp"><p>三つの拠点か�
 function snowHelpHTML(){return `<div class="ophelp"><p>吹雪で6秒ごとに、装備が1秒止まります。</p><p>上の内側 → 下の内側 → ベルトの順。</p><p>例：上のバッグの上段は止まりません。</p></div>`;}
 function basicHelpHTML(){return '<div class="ophelp" id="basicHelp"><p>店の品をタップし、空きマスで買って配置。</p><p>控えの装備はタップしてバッグへ。</p><p>同じ品・同じ★は「合体」で強化。</p></div>';}
 function relicSpaceHTML(pg=loadProg()){if(vesselOn(pg))return '<p class="sub relicspace">出撃した2人の、枠にはめた遺物が効きます。</p>';return `<p class="sub relicspace">遺物は${kingLevel(pg)}枠。途中で最大2回選べます。満杯なら入れ替えられます。</p>`;}
-function showOperationHelp(back=closeModal){modal(`<h2>遊び方</h2><h3>買う・置く・合体</h3>${basicHelpHTML()}<details><summary>敵の種族と相性・ボスの大技</summary><div class="ophelp"><p>敵には「骨」「飛ぶ」「獣」などの種族があります。次の敵の札に、効きやすい系統（◎）と効きにくい系統（△）が出ます。◎の装備は1.4倍、△の装備は0.8倍の威力です。バッグとお店の品にも、次の敵に対して◎か△の印が付きます。</p><p>${Object.values(RACE68).map(r=>`<b>${r.nm}</b> ◎${CLSN[r.weak]} △${CLSN[r.res]}`).join('　')}</p><p>ボスは大技を使います。敵の上のゲージが大技までの時間です。もうすぐになったら、号令「守りを固めよ」で受けよう。</p></div></details><details><summary>系統・重ねがけ・レシピ</summary><div class="ophelp"><p>装備には「刃」「毒」「守り」などの系統があります。2人のバッグとベルトに同じ系統が2・4・6個あると、その系統の装備が強くなります。</p><p>力（武器のダメージ+1/重ね）・熱（装備が2%速い/重ね）・再生（2秒ごとに回復）は味方に、脆弱（受けるダメージ+3%/重ね）・弱体（攻撃-3%/重ね）は敵に重なります。</p><p>決まった品を隣り合わせると、伝説の品を作れます（準備画面の「系統」の帯から）。</p></div></details><details><summary>ベルト・必殺技・号令</summary><div class="ophelp"><p>ベルトの装備は2人が同時に使います。</p><p>必殺技はゲージがたまると自動で発動。</p><p>号令は戦闘中に押すと、1戦に1回使えます。</p></div>${specialHelpHTML()}</details><details><summary>錬成</summary><div class="ophelp"><p>金床を選び、「錬成」を押します。</p><p>違う武器2つを、同じ★でそろえよう。</p><p>武器が1つになり、金床はなくなります。</p></div></details><details><summary>店と探す品</summary>${shopHelpHTML()}<p class="sub">「目印」は探す品を覚えておく機能です。品ぞろえは変わりません。</p>${S.phase==='plan'?'<div class="row2"><button class="btn" id="bShopSearch">探す品の目印を設定</button></div>':''}</details><details><summary>報酬・勇者の訓練</summary>${samePairHelpHTML()}${rewardSpaceHelpHTML()}${dropHelpHTML()}${levelHelpHTML()}${talentHelp65()}<p class="sub">ゴールドは今回の出撃の買い物に使います。報奨金は出撃後も残り、訓練に使えます。勝利と章クリアで報奨金を獲得します。残ったゴールドは報奨金にはなりません。遅れた勇者は、主力2人の低い方より3Lv下まで訓練費用が半額です。</p></details><details><summary>遺物・遺物の棚</summary>${relicShelfHelpHTML()}${relicHelp51HTML()}${relicPickHelpHTML()}${relicSwapHelpHTML()}${relicCollectionHelp63()}${relicGrowthHelp65()}<p>「組み方」は、合う装備や置き方のヒントです。代償のある遺物は、効果が下がる所も確認しましょう。金の勝利印までの記録は、使ってクリアした章ごとに残ります。</p><p>第1章クリア後に使えます。枠ははじめ1個、第4章と第8章のクリアで1個ずつ増えます。途中の選択は第1戦と中間の戦いの勝利後。満杯なら、持ち込み・途中で得た遺物のどちらとも入れ替えられます。</p></details><details><summary>第13章からの作戦・吹雪</summary>${operationHelpHTML()}${snowHelpHTML()}<p class="sub">止まる順は上のバッグの下段 → 下のバッグの上段 → ベルト。1秒前に段を囲みます。</p></details><details><summary>第14章からの構え崩し・防衛</summary>${northernHelpHTML('stance')}${northernHelpHTML('defend')}</details><details><summary>戦功・追加の挑戦</summary>${honorHelpHTML()}<p class="sub">第13章の初クリアで開放。以後、第1戦後に「通常」「少ない援助」「強い支援」から一つ選べます。拠点を決めると、その出撃では固定です。</p></details><div class="row2"><button class="btn go" id="opHelpBack">もどる</button></div>`);$m('#opHelpBack').onclick=back;if($m('#bShopSearch'))$m('#bShopSearch').onclick=()=>showShopSearch(()=>showOperationHelp(back));}
+function showOperationHelp(back=closeModal){modal(`<h2>遊び方</h2><h3>買う・置く・合体</h3>${basicHelpHTML()}<details><summary>敵の種族と相性・ボスの大技・精鋭と宝石</summary><div class="ophelp"><p>敵には「骨」「飛ぶ」「獣」などの種族があります。次の敵の札に、効きやすい系統（◎）と効きにくい系統（△）が出ます。◎の装備は1.4倍、△の装備は0.8倍の威力です。バッグとお店の品にも、次の敵に対して◎か△の印が付きます。</p><p>${Object.values(RACE68).map(r=>`<b>${r.nm}</b> ◎${CLSN[r.weak]} △${CLSN[r.res]}`).join('　')}</p><p>ボスは大技を使います。敵の上のゲージが大技までの時間です。もうすぐになったら、号令「守りを固めよ」で受けよう。</p><p><b>精鋭と宝石</b>：物語の章では1回だけ、ボス以外の戦いを「精鋭」にできます（次の敵の札のボタン）。HP+20%・攻撃+15%になりますが、勝つと宝石を1つ選べます。宝石は炎・氷・毒の3種類。準備のあいだ、攻撃する装備にはめたり外したりできて、はめた装備にその相性が付きます。宝石はその出撃のあいだだけ使えます。</p></div></details><details><summary>系統・重ねがけ・レシピ</summary><div class="ophelp"><p>装備には「刃」「毒」「守り」などの系統があります。2人のバッグとベルトに同じ系統が2・4・6個あると、その系統の装備が強くなります。</p><p>力（武器のダメージ+1/重ね）・熱（装備が2%速い/重ね）・再生（2秒ごとに回復）は味方に、脆弱（受けるダメージ+3%/重ね）・弱体（攻撃-3%/重ね）は敵に重なります。</p><p>決まった品を隣り合わせると、伝説の品を作れます（準備画面の「系統」の帯から）。</p></div></details><details><summary>ベルト・必殺技・号令</summary><div class="ophelp"><p>ベルトの装備は2人が同時に使います。</p><p>必殺技はゲージがたまると自動で発動。</p><p>号令は戦闘中に押すと、1戦に1回使えます。</p></div>${specialHelpHTML()}</details><details><summary>錬成</summary><div class="ophelp"><p>金床を選び、「錬成」を押します。</p><p>違う武器2つを、同じ★でそろえよう。</p><p>武器が1つになり、金床はなくなります。</p></div></details><details><summary>店と探す品</summary>${shopHelpHTML()}<p class="sub">「目印」は探す品を覚えておく機能です。品ぞろえは変わりません。</p>${S.phase==='plan'?'<div class="row2"><button class="btn" id="bShopSearch">探す品の目印を設定</button></div>':''}</details><details><summary>報酬・勇者の訓練</summary>${samePairHelpHTML()}${rewardSpaceHelpHTML()}${dropHelpHTML()}${levelHelpHTML()}${talentHelp65()}<p class="sub">ゴールドは今回の出撃の買い物に使います。報奨金は出撃後も残り、訓練に使えます。勝利と章クリアで報奨金を獲得します。残ったゴールドは報奨金にはなりません。遅れた勇者は、主力2人の低い方より3Lv下まで訓練費用が半額です。</p></details><details><summary>遺物・遺物の棚</summary>${relicShelfHelpHTML()}${relicHelp51HTML()}${relicPickHelpHTML()}${relicSwapHelpHTML()}${relicCollectionHelp63()}${relicGrowthHelp65()}<p>「組み方」は、合う装備や置き方のヒントです。代償のある遺物は、効果が下がる所も確認しましょう。金の勝利印までの記録は、使ってクリアした章ごとに残ります。</p><p>第1章クリア後に使えます。枠ははじめ1個、第4章と第8章のクリアで1個ずつ増えます。途中の選択は第1戦と中間の戦いの勝利後。満杯なら、持ち込み・途中で得た遺物のどちらとも入れ替えられます。</p></details><details><summary>第13章からの作戦・吹雪</summary>${operationHelpHTML()}${snowHelpHTML()}<p class="sub">止まる順は上のバッグの下段 → 下のバッグの上段 → ベルト。1秒前に段を囲みます。</p></details><details><summary>第14章からの構え崩し・防衛</summary>${northernHelpHTML('stance')}${northernHelpHTML('defend')}</details><details><summary>戦功・追加の挑戦</summary>${honorHelpHTML()}<p class="sub">第13章の初クリアで開放。以後、第1戦後に「通常」「少ない援助」「強い支援」から一つ選べます。拠点を決めると、その出撃では固定です。</p></details><div class="row2"><button class="btn go" id="opHelpBack">もどる</button></div>`);$m('#opHelpBack').onclick=back;if($m('#bShopSearch'))$m('#bShopSearch').onclick=()=>showShopSearch(()=>showOperationHelp(back));}
 function honorHelpHTML(){return `<div class="ophelp"><p>違う支援を残して勝つと、旗が増えます。</p><p>例：強い支援に挑んで勝つと勲章も獲得。</p><p>勲章は飾る記念品。能力は増えません。</p></div>`;}
 // 新章の説明は、該当する敵・任務の準備で初めて一度だけ出す。
 function northernHelpHTML(k){return k==='stance'?'<div class="ophelp"><p>構え中、別の武器二本を当てると中断。</p><p>同じ一本の連続攻撃は一回分です。</p><p>凍結で止めるか、盾で受けても大丈夫。</p></div>':'<div class="ophelp"><p>HPを残して20秒耐えれば勝利。</p><p>敵を先に倒しても勝利です。</p><p>盾と薬を使い、次の討伐にも備えよう。</p></div>';}
@@ -2073,10 +2093,10 @@ function fireOne(x){
   if(el){const r=el.getBoundingClientRect();c0=[r.left+r.width/2,r.top+r.height/2];}
   const col=TAG[x.tag].color,src=lkey(x.l);
   const who=HEROES[x.hero].name+'の'+d.name;
-  const coldCrit=hasRelic('birchCharm')&&E.frz>0&&['dmg','once','ignite','detonate','bash'].includes(d.kind);const crit=Math.random()<Math.min(.9,x.crit+rxv(x.hero,'crit')/100+(x.hero==='archer'&&E.frz>0&&tal('a10b')?.1:0)+(hasRelic('ember')&&E.burn>0?rv('ember',.12):0)+(coldCrit?rv('birchCharm',.1):0));talentFireFx65(x,crit);if(crit&&coldCrit)relicTick('birchCharm',1);if(crit&&hasRelic('ember')&&E.burn>0&&(!newRelicRule()||d.kind==='dmg'||d.kind==='once'))relicTick('ember',1);if(x.hero==='mage'&&E.burn>0&&(d.kind==='dmg'||d.kind==='once')&&tal('m30a'))p*=1.1;if(d.execute&&E.hp<=E.max*.3)p*=2;const rm68=raceMul(d,B.def);if(rm68!==1){p*=rm68;const key=rm68>1?'rcUp':'rcDn';if(!B[key]){B[key]=1;addText(rm68>1?'効いている！':'効きにくい…','enemy',rm68>1?'#7fe07a':'#b8b0a0');}}if(d.poisonX&&E.poison>=20)p*=2;if(d.every?.mult&&x.nf%d.every.n===0)p*=d.every.mult;if(crit&&(d.kind==='dmg'||d.kind==='once'))p*=2;
+  const coldCrit=hasRelic('birchCharm')&&E.frz>0&&['dmg','once','ignite','detonate','bash'].includes(d.kind);const crit=Math.random()<Math.min(.9,x.crit+rxv(x.hero,'crit')/100+(x.hero==='archer'&&E.frz>0&&tal('a10b')?.1:0)+(hasRelic('ember')&&E.burn>0?rv('ember',.12):0)+(coldCrit?rv('birchCharm',.1):0));talentFireFx65(x,crit);if(crit&&coldCrit)relicTick('birchCharm',1);if(crit&&hasRelic('ember')&&E.burn>0&&(!newRelicRule()||d.kind==='dmg'||d.kind==='once'))relicTick('ember',1);if(x.hero==='mage'&&E.burn>0&&(d.kind==='dmg'||d.kind==='once')&&tal('m30a'))p*=1.1;if(d.execute&&E.hp<=E.max*.3)p*=2;const rm68=raceMul(d,B.def,x.p&&x.p.gem);if(rm68!==1){p*=rm68;const key=rm68>1?'rcUp':'rcDn';if(!B[key]){B[key]=1;addText(rm68>1?'効いている！':'効きにくい…','enemy',rm68>1?'#7fe07a':'#b8b0a0');}}if(d.poisonX&&E.poison>=20)p*=2;if(d.every?.mult&&x.nf%d.every.n===0)p*=d.every.mult;if(crit&&(d.kind==='dmg'||d.kind==='once'))p*=2;
   if(d.kind==='dmg'||d.kind==='once'){const dm=(p+(d.kind==='dmg'?(B.power||0):0))*(fireOn(x,d)?FIRE_D:1);
     const vis=d.kind==='once'?'icon':d.name.includes('弓')?'arrow':(tagsOf(d).includes('magic')||d.type==='orb')?'orb':'slash';
-    const sh={shatter:d.shatter,x0:c0[0],y0:c0[1],t:0,col,dmg:dm*x.direct,relicBonuses:Object.fromEntries(Object.entries(x.relicDirect||{}).map(([k,v])=>[k,dm*v])),big:p>=30||x.isCombo,crit,src,ic:x.p.type,vis,spd:vis==='slash'?11:vis==='arrow'?7.5:vis==='orb'?5.5:3,pierce:d.pierce||x.pierce66,poison:x.poison*rm68,burn:(fireOn(x,d)?p*FIRE_B*kmB(x):0)+(d.kind==='dmg'&&x.burnAdd?x.burnAdd:0)+(d.burnHit?d.burnHit*STAR[x.p.star]:0),freeze:x.freeze,leech:x.leech,bleed:x.bleed,hero:x.hero};B.shots.push(sh);
+    const sh={shatter:d.shatter,x0:c0[0],y0:c0[1],t:0,col,dmg:dm*x.direct,relicBonuses:Object.fromEntries(Object.entries(x.relicDirect||{}).map(([k,v])=>[k,dm*v])),big:p>=30||x.isCombo,crit,src,ic:x.p.type,vis,spd:vis==='slash'?11:vis==='arrow'?7.5:vis==='orb'?5.5:3,pierce:d.pierce||x.pierce66,poison:x.poison*rm68+(x.p&&x.p.gem==='poison'?2*STAR[x.p.star]:0),gemFrz:x.p&&x.p.gem==='ice'?10*STAR[x.p.star]:0,gemBurn:x.p&&x.p.gem==='fire'?2*STAR[x.p.star]:0,burn:(fireOn(x,d)?p*FIRE_B*kmB(x):0)+(d.kind==='dmg'&&x.burnAdd?x.burnAdd:0)+(d.burnHit?d.burnHit*STAR[x.p.star]:0),freeze:x.freeze,leech:x.leech,bleed:x.bleed,hero:x.hero};B.shots.push(sh);
     B.log=`${who} → ${Math.round(dm)}${crit?'（会心！）':''}`;
     if(d.twice)B.shots.push({...sh,t:-0.25,dmg:sh.dmg*d.twice,poison:0,burn:0,freeze:0,bleed:0,big:false,crit:false,relicBonuses:{}});
     if(d.every?.extra&&x.nf%d.every.n===0)B.shots.push({...sh,t:-0.15,big:false});}
@@ -2133,7 +2153,7 @@ function hitEnemy(s){
   if(s.poison){E.poison+=s.poison;firstSeen('poison');burst(3,ecx,ecy+6,'#9fd35a',22,0.6,18);}
   if(s.bleed)firstSeen('bleed');if(s.freeze)firstSeen('freeze');
   if(s.bleed){E.bleed=(E.bleed||0)+s.bleed*(mech==='shell'||(B.def.boss==='guard'&&B.guardCl)?0.5:1);while(E.bleed>=100){E.bleed-=100;B.stats.bleed++;const v=Math.min(60,Math.round(E.max*0.02+8));E.hp-=v;B.rec.bleed+=v;addText(`出血！${v}`,'enemy','#ff4d5a',true);B.shake=0.3;B.stop=0.1;sfx('bleed');B.tint={col:'255,40,60',t:0.35};burst(26,ecx,ecy,['#ff4d5a','#b3122a','#ff8a8a'],110,0.7,20);if(s.src)B.contrib[s.src]=(B.contrib[s.src]||0)+v;}}
-  if(s.freeze){E.frzB=Math.min(E.frzCD>0?100:1e9,(E.frzB||0)+s.freeze);tryFreeze();}
+  if(s.gemBurn&&B.def.mech!=='fireproof')E.burn+=s.gemBurn;if(s.freeze||s.gemFrz){E.frzB=Math.min(E.frzCD>0?100:1e9,(E.frzB||0)+(s.freeze||0)+(s.gemFrz||0));tryFreeze();}
   if(s.src)B.contrib[s.src]=(B.contrib[s.src]||0)+dm+(s.burn&&mech!=='fireproof'?s.burn*1.2:0)+(s.poison||0)*4;
 }
 // 凍結：ゲージ100で敵が1.2秒止まる。凍ったあと6秒は次の凍結が起きない（明けた時に100ならすぐ凍る）
@@ -2289,7 +2309,7 @@ function enterDemonPhase(){const E=B.enemy,d=B.def;B.phase2=1;const hp2=Math.rou
   B.slowBelt=0;B.bossT=0;B.phaseT=B.t;B.enr=0;B.foe=actor('demon2');B.ghost={};B.boom={txt:'魔王が真の姿を現した',t:0};B.banner={txt:'上と下のバッグを交互に止めてくる！',t:2};B.shake=0.6;B.stop=0.4;sfx('boom');duckBgm();}
 function endBattle(win){
   if(B.done)return;
-  B.done=true;B.win=win;if(win)for(const l of boardLocs()){const q=getP(l);if(q&&q.type==='piggy'&&usable(l))q.bank=Math.min(30,(q.bank||0)+q.star);}B.bagSeal=null;B.sealed={};B.sealWarn=null;B.bagWarn=null;B.frozenRow=null;checkGoals();if(!win&&S.run&&S.run.mode==='story'&&B.def.boss&&S.lives>1)S.retry=1;B.vic={t:0,win};B.vicT0=performance.now();if(win)setTimeout(()=>coinsFromEnemy(4),250);if(win&&B.def.elite){S.gold+=5;setTimeout(()=>toast('精鋭を倒した！ +5G'),900);}S.phase='result';S.inBattle=0;const r=S.round;if(AC&&!S.muted)jingle(win);else sfx(win?'win':'lose');
+  B.done=true;B.win=win;if(win)for(const l of boardLocs()){const q=getP(l);if(q&&q.type==='piggy'&&usable(l))q.bank=Math.min(30,(q.bank||0)+q.star);}B.bagSeal=null;B.sealed={};B.sealWarn=null;B.bagWarn=null;B.frozenRow=null;checkGoals();if(!win&&S.run&&S.run.mode==='story'&&B.def.boss&&S.lives>1)S.retry=1;B.vic={t:0,win};B.vicT0=performance.now();if(win)setTimeout(()=>coinsFromEnemy(4),250);if(win&&B.def.elite){S.gold+=5;setTimeout(()=>toast('精鋭を倒した！ +5G'),900);if(S.run?.mode==='story'&&S.eliteOn===S.round)S.gemOffer=1;}S.phase='result';S.inBattle=0;const r=S.round;if(AC&&!S.muted)jingle(win);else sfx(win?'win':'lose');
   if(win&&isOperation()&&S.round>1&&S.round<4){const k=S.operation.choices[S.round-1];if(k&&!S.operation.cleared.includes(k)){S.operation.cleared.push(k);recordPlay('operation_captured',{site:k,supportCut:k,mission:B.def.mission,remaining:S.operation.sites.filter(x=>!S.operation.cleared.includes(x))});}}
   if(win)B.foe.anim='death',B.foe.t=0;else B.actors.forEach(a=>{a.anim='death';a.t=0;});
   if(win&&hasPassive('coins')){const n=boardLocs().filter(l=>getP(l)&&getP(l).type==='coins').reduce((a,l)=>a+2*STAR[getP(l).star],0);S.gold+=Math.round(n);setTimeout(()=>toast(`金貨袋で +${Math.round(n)}G`),700);}
@@ -2460,7 +2480,7 @@ function showRoute(){const r=S.round;const cs=S.routeCands&&S.routeCands.r===r?S
     Object.entries(c.enc).forEach(([x,t])=>S.enc[x]={...(storyDef(+x)||{}),t});if(c.eliteR)S.enc[c.eliteR].elite=1;
     (S.routeLog=S.routeLog||[]).push(c.type==='focus'?THEMES[c.theme].name:c.type==='forge'?'工房の道':'精鋭の道');
     S.route={type:c.type,theme:c.theme,until:segUntil(r),used:0};S.routeDone=S.routeDone||{};S.routeDone[r]=1;S.routeCands=null;recordPlay('route_choice',{route:S.route,encounters:S.enc});sfx('open');advanceRound();});}
-function nextRound(){if(maybeOfferRelic())return;if(isOperation()&&S.round<3&&!S.operation.choices[S.round]){showOperation(true);return;}if(S.lives>0&&segMap()[S.round]&&!(S.routeDone||{})[S.round]){closeModal();setTimeout(showRoute,120);return;}advanceRound();}
+function nextRound(){if(S.gemOffer){showGemOffer68();return;}if(maybeOfferRelic())return;if(isOperation()&&S.round<3&&!S.operation.choices[S.round]){showOperation(true);return;}if(S.lives>0&&segMap()[S.round]&&!(S.routeDone||{})[S.round]){closeModal();setTimeout(showRoute,120);return;}advanceRound();}
 function advanceRound(){
   S.relicPage='bag';closeModal();S.pending=null;S.pendingGold=null;S.loot=null;if(S.retry){S.retry=0;}else S.round++;const inc=roundIncome(),it=interest();S.gold+=inc;S.rerollN=0;if(S.relicUsed)delete S.relicUsed.traderTokenRound;setTimeout(()=>{const g=$('hGold').getBoundingClientRect();popText(g.left+g.width/2,g.bottom,`+${inc}G${it?`（利子${it}）`:''}`,'#ffd25a');sfx('coin');},350);S.phase='plan';B=null;document.body.classList.remove('battle');fit();
   if(S.round===3){S.belt.open[1]=1;setTimeout(()=>{flash('ベルトが開いた！');sfx('open');},250);}
@@ -2762,7 +2782,7 @@ function cellHTML(l,p){
   const dv=DELTAS[k];if(dv&&DELTAS.best===k)cls+=' best';
   if(REL&&p&&l.a!=='bench'){if(REL.has(k))cls+=' rel';else if(!(S.sel&&same(S.sel,l))&&!(S.info&&same(S.info,l)))cls+=' dim';}
   let inner='';
-  if(p){inner+=`<img class="it" src="${ICO(p.type)}" alt="${ITEMS[p.type].name}">`+stBadge(p.type)+(l.a!=='bench'?raceBadge(p.type):'');
+  if(p){inner+=`<img class="it" src="${ICO(p.type)}" alt="${ITEMS[p.type].name}">`+stBadge(p.type)+(l.a!=='bench'?raceBadge(p.type,p.gem):'')+(p.gem&&GEM68[p.gem]?`<span class="gem g-${p.gem}">◆</span>`:'');
     if(p.star>1)inner+=`<span class="star${p.star>=3?' max':''}">${'★'.repeat(p.star)}</span>`;
     if(l.a!=='bench'&&use){const us=itemUses(l);
       if(us.length){const srcs=neighbors(l).map(getP).filter(q=>q&&affects(q,ITEMS[p.type],l)).slice(0,3);if(srcs.length&&REL&&(REL.has(k)||(S.sel&&same(S.sel,l))||(S.info&&same(S.info,l))))inner+=`<span class="src">${srcs.map(q=>`<img src="${ICO(q.type)}" alt="">`).join('')}</span>`;
@@ -2805,7 +2825,7 @@ function showItemDetails(k,star=1,l=null){
 function renderTop(){
   const el=$('info');
   const l=S.info,p=l&&getP(l);
-  if(!p){const E=enemy(S.round);el.className='';el.innerHTML=`<div class="pic">${buddyHTML(E.spr,40)}${raceOf(E)?`<span class="racetag">${RACE68[raceOf(E)].nm}</span>`:''}</div><div class="who"><span class="name">次の敵 ${E.name}<small>HP ${E.hp}・攻撃${E.atk}／${E.int}秒</small></span><span class="line">${raceLineHTML(E)}${E.trait}</span></div>`;return;}
+  if(!p){const E=enemy(S.round);el.className='';el.innerHTML=`<div class="pic">${buddyHTML(E.spr,40)}${raceOf(E)?`<span class="racetag">${RACE68[raceOf(E)].nm}</span>`:''}</div><div class="who"><span class="name">次の敵 ${E.name}<small>HP ${E.hp}・攻撃${E.atk}／${E.int}秒</small></span><span class="line">${raceLineHTML(E)}${E.trait}</span></div>${eliteOk68()?`<button class="elbtn${S.eliteOn===S.round?' on':''}" id="eliteBtn">${S.eliteOn===S.round?'精鋭をやめる':'精鋭に挑む<small>勝てば宝石</small>'}</button>`:''}`;{const eb=document.getElementById('eliteBtn');if(eb)eb.onclick=e=>{e.stopPropagation();toggleElite68();};}return;}
   const d=ITEMS[p.type];let line=itemLine(p.type,p.star);
   if(p.type==='anvil'){const n=anvilPairs(l).length;line+=n?`。いま <b>${n}通り</b> 錬成できる。右の「錬成」を押そう`:'。<b>違う種類・同じ★</b>の武器を2つ持つと使える';}
   else if(d.kind==='passive'){const t=passiveTargets(l);if(d.adj)line+=l.a==='bench'?'':t.length?`。いま <b>${t.map(n=>ITEMS[getP(n).type].name).join('・')}</b> に効いている`:'。効く物の上下左右に置こう';}
@@ -2843,7 +2863,7 @@ function render(){
   const sp=S.sel&&getP(S.sel);
   $('bSell').disabled=!sp;$('bSell').innerHTML=sp?`売る<br><span class="dot">+${sellPrice(sp)}G</span>`:'売る';
   $('bReroll').disabled=S.gold<rerollCost();$('bFight').title=interest()?'':'';$('bReroll').innerHTML=`更新<br><span class="dot">${rerollCost()}G</span>`;$('bFight').classList.toggle('ready',!S.bench.some(Boolean)&&S.pick==null&&!S.sel);$('bUndo').disabled=!UNDO||!S.round||JSON.parse(UNDO).round!==S.round;
-  guide();renderPop();renderSetStrip();
+  guide();renderPop();renderSetStrip();renderGemStrip();
 }
 const sellPrice=p=>Math.max(1,Math.floor(itemPrice(p.type)/2))*[0,1,2,4][p.star]+(p.bank||0);
 
@@ -3026,7 +3046,7 @@ window.resetRun=resetRun;
 function startWith(ch,settings=null){fxClear();TALVER++;S.relicRank={};
   S.lowLevel=false;S.chapterFirstClear=false;S.relicVictory63=[];
   recordSavedDeliveryAbandon(load());
-  B=null;UNDO=null;S.shopSearch=null;S.rerollN=0;S.goldAtFight=0;S.delivery=null;S.deliveryOffer=null;S.deliveryOffered=0;S.pendingGold=null;S.operation=null;
+  B=null;UNDO=null;S.shopSearch=null;S.gemOwn=[];S.gemOffer=0;S.eliteOn=null;S.eliteDone=0;S.rerollN=0;S.goldAtFight=0;S.delivery=null;S.deliveryOffer=null;S.deliveryOffered=0;S.pendingGold=null;S.operation=null;
   S.bossTold=0;S.said=[];S.told={};S.retry=0;
   Object.assign(S,{round:1,lives:3,gold:8,belt:{open:[0,0,0,0],cells:[null,null,null,null]},bench:[null,null,null],shop:[],locked:[0,0,0,0,0],bought:0,pending:null,inBattle:0,sel:null,info:null,pick:null});
   S.runGoals=[];S.intentDone=0;S.routeLog=[];
