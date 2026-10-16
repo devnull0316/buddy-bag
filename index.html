@@ -118,6 +118,24 @@ button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 .vfilter .btn{min-height:36px;font-size:13px}.vspots{display:flex;flex-wrap:wrap;gap:4px}.vspots .btn{flex:1 1 45%;min-height:40px;font-size:13px}
 .rlxdrop{background:#2a241b;border:2px solid #e0b04a;padding:6px;margin:6px 0}.rlxcands{display:flex;gap:4px;margin:4px 0}.rlxcard{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:#1d1a16;border:3px solid;padding:4px;color:inherit;font:inherit;font-size:11px;line-height:1.3;text-align:center}
 .rlxcard img{width:32px;height:32px;image-rendering:pixelated}.rlxcard b{font-size:12px}
+
+/* 遺物の三択の見た目（色ごとにほんのり光る・大は金の縁） */
+.rlxdrop{background:linear-gradient(#2c251b,#221c15);border:2px solid #e0b04a;padding:8px;margin:8px 0;box-shadow:0 0 0 3px #1a140e}
+.rlxttl{display:block;font-size:15px;color:#ffe2a0;letter-spacing:.05em}
+.rlxcands{display:flex;gap:6px;margin:6px 0}
+.rlxcard{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border:3px solid;color:inherit;font:inherit;font-size:11px;line-height:1.3;text-align:center;position:relative;min-width:0}
+.rlxcard.rc-r{border-color:#d0563e;background:radial-gradient(circle at 50% 28%,rgba(208,86,62,.45),#1d1714 62%)}
+.rlxcard.rc-b{border-color:#4f8fd8;background:radial-gradient(circle at 50% 28%,rgba(79,143,216,.45),#15181d 62%)}
+.rlxcard.rc-y{border-color:#d7b13c;background:radial-gradient(circle at 50% 28%,rgba(215,177,60,.45),#1d1a12 62%)}
+.rlxcard.rz-3{box-shadow:0 0 0 2px #ffd77a,0 0 12px rgba(255,215,122,.55)}
+.rlxcard.rz-3::before{content:'秘宝';position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#ffd77a;color:#2a1d10;font-size:10px;padding:0 6px;font-weight:700}
+.rlxgem{width:52px;height:52px;display:flex;align-items:center;justify-content:center}
+.rlxgem img{width:48px;height:48px;image-rendering:pixelated;filter:drop-shadow(0 0 4px rgba(255,255,255,.25))}
+.rlxcard b{font-size:13px;color:#fff3d6}.rlxpips{font-size:10px;color:#e8d29a;letter-spacing:.05em}
+.rlxeffs{display:flex;flex-direction:column;gap:2px;width:100%;margin-top:2px}
+.rlxeff{background:rgba(0,0,0,.35);border-left:2px solid currentColor;padding:2px 4px;font-size:11px;text-align:left;color:#f0e4c6}
+.rc-r .rlxeff{border-left-color:#d0563e}.rc-b .rlxeff{border-left-color:#4f8fd8}.rc-y .rlxeff{border-left-color:#d7b13c}
+.vslot{box-shadow:inset 0 0 8px rgba(0,0,0,.6)}.vslot img{filter:drop-shadow(0 0 3px rgba(255,255,255,.3))}
 /* 遺物の発動表示 */
 #relicFx{position:absolute;left:6px;bottom:6px;display:flex;flex-direction:column;gap:3px;z-index:6;pointer-events:none;width:min(310px,calc(100% - 12px));max-width:calc(100% - 12px)}
 #board{position:relative}#board #relicFx{bottom:auto;top:4px}
@@ -1037,9 +1055,11 @@ function rollRlx(ch,size,rnd=Math.random){const cs=['r','b','y'],c=cs[Math.floor
  while(e.length<size&&pool.length){const k=pool.splice(Math.floor(rnd()*pool.length),1)[0],R=RX[k];let v=R.flat?R.base:R.base*tier*(0.8+rnd()*0.4);v=R.int?Math.max(1,Math.round(R.flat?v:Math.min(v,R.base*2))):Math.max(1,Math.round(v));e.push([k,v]);}
  return {c,z:size,e,ch};}
 function rlxSize(win,first,rnd=Math.random){const x=rnd();if(!win)return x<.7?1:2;if(first)return x<.2?1:x<.7?2:3;return x<.4?1:x<.85?2:3;}
-function rlxName(r){return `${RCOL[r.c].nm}の遺物（${RX_SIZE[r.z]}）`;}
+const RX_KIND=['','かけら','護符','秘宝'];
+function rlxName(r){return `${RCOL[r.c].nm}の${RX_KIND[r.z]||'遺物'}`;}
+const rlxPips=z=>'◆'.repeat(z)+'◇'.repeat(3-z);
 function rlxIcon(r){const p=`assets2/relics/g_${({r:'red',b:'blue',y:'yellow'})[r.c]}_${['','s','m','l'][r.z]}.png`;return IMG[p]?srcOf(p):ICO(({r:'fire',b:'heart',y:'drop'})[r.c]);}
-function rlxEffHTML(r){return r.e.map(([k,v])=>`<span>${RX[k]?RX[k].t(v):''}</span>`).join('');}
+function rlxEffHTML(r){return `<span class="rlxeffs">${r.e.map(([k,v])=>`<span class="rlxeff">${RX[k]?RX[k].t(v):''}</span>`).join('')}</span>`;}
 function relicLabel65(id,pg=loadProg()){if(id.startsWith('u:')){const k=id.slice(2);return {nm:RELICS[k].nm,icon:relicIcon(k),c:ucolOf(k),ds:relicDescription(k),uni:true};}const r=pg.rlx[id.slice(2)];return {nm:rlxName(r),icon:rlxIcon(r),c:r.c,ds:r.e.map(([k,v])=>RX[k]?RX[k].t(v):'').join('／'),uni:false};}
 // 出撃が終わったとき（勝ち・負け。1勝以上）に3つから1つ
 function rlxOfferMake(){const pg=loadProg();if(!vesselOn(pg)||S.run?.mode!=='story'||S.rlxOffered)return;const win=!!B?.win,wins=win?runLimit():Math.max(0,(S.round||1)-1);if(wins<1)return;
@@ -1050,7 +1070,7 @@ function rlxTake(i){const pg=loadProg(),c=rlxPendingList(pg);if(!c.length)return
 function rlxSell(id){const pg=loadProg(),r=pg.rlx?.[id];if(!r||pg.rlxGone?.[id]||rlxLocked(id,pg))return false;pg.rlxGone={...pg.rlxGone,[id]:1};saveProg(pg);const v=vesselGet();for(const h of Object.keys(v))v[h]=v[h].map(q=>q==='r:'+id?null:q);vesselSave(v);addCoins(RX_SELL[r.z]||2,'rlx_sell');recordPlay('rlx_sell',{id,coins:RX_SELL[r.z]});return true;}
 function rlxLock(id,on){const pg=loadProg(),prev=Number(pg.rlxLock?.[id])||0,t=Math.max(Date.now(),Math.floor(prev/2)+1);pg.rlxLock={...pg.rlxLock,[id]:t*2+(on?1:0)};saveProg(pg);}
 function rlxPendingHTML(){const pg=loadProg(),c=rlxPendingList(pg);if(!c.length)return '';const full=rlxAll(pg).length>=RLX_MAX;
- return `<div class="rlxdrop" id="rlxDrop"><b>遺物を1つ選ぶ</b>${full?`<p class="sub">持てる数（${RLX_MAX}）がいっぱい。遺物の画面で売ると受け取れます。</p>`:''}<div class="rlxcands">${c.map((r,i)=>`<button class="rlxcard" data-rlx="${i}" ${full?'disabled':''} style="border-color:${RCOL[r.c].css}"><img src="${rlxIcon(r)}" alt=""><b>${rlxName(r)}</b>${rlxEffHTML(r)}</button>`).join('')}</div><button class="btn" data-rlx="-1">受け取らない</button></div>`;}
+ return `<div class="rlxdrop" id="rlxDrop"><b class="rlxttl">遺物を1つ選ぶ</b><small class="sub">勇者の同じ色の枠にはめると効きます</small>${full?`<p class="sub">持てる数（${RLX_MAX}）がいっぱい。遺物の画面で売ると受け取れます。</p>`:''}<div class="rlxcands">${c.map((r,i)=>`<button class="rlxcard rc-${r.c} rz-${r.z}" data-rlx="${i}" ${full?'disabled':''}><span class="rlxgem"><img src="${rlxIcon(r)}" alt=""></span><b>${rlxName(r)}</b><small class="rlxpips">${rlxPips(r.z)}　${({r:'攻め',b:'守り',y:'技'})[r.c]}</small>${rlxEffHTML(r)}</button>`).join('')}</div><button class="btn" data-rlx="-1">受け取らない</button></div>`;}
 function bindRlxDrop(after){document.querySelectorAll('#mcard [data-rlx]').forEach(b=>b.onclick=()=>{const i=+b.dataset.rlx;if(!rlxTake(i))return;sfx(i>=0?'buy':'tick');const el=$m('#rlxDrop');if(el)el.outerHTML=i>=0?'<p class="sub rlxgot">遺物を受け取った。作戦室の「遺物」で勇者にはめよう。</p>':'';if(after)after();});}
 function relicDrop65HTML(){if(!S.vessel)return '';rlxOfferMake();setTimeout(()=>bindRlxDrop(),0);return rlxPendingHTML();}
 // 出撃中の「遺物」タブ
