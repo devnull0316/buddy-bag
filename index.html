@@ -513,10 +513,10 @@ function buddyHTML(c,h,anim='idle'){const m=META[c],n=m.anims[anim],s=h/m.body*(
   return `<span class="buddy spr" style="${HEROES[c]||c==='king'?'':`translate:${Math.round((m.w/2-m.cx)*s)}px 0;`}width:${w}px;height:${hh}px;background-image:url('${STRIP(c,anim)}');background-size:${w*n}px ${hh}px;--n:${n};--end:-${w*n}px;--dur:${(n/9).toFixed(2)}s"></span>`;}
 
 // ===================== データ =====================
-const TAG={guard:{name:'守',color:'#5a9be0',txt:'盾と薬が25%強い。攻撃のたびにバリアも少し張る'},fire:{name:'炎',color:'#ea6b3c',txt:'攻撃の一部がやけどになる（合計は少し増える）'},speed:{name:'速',color:'#69b552',txt:'武器が30%速く発動する'}};
+const TAG={guard:{name:'守',color:'#5a9be0',txt:'盾と薬が25%強い。攻撃のたびにバリアも少し張る'},fire:{name:'魔',color:'#9a6ad8',txt:'杖・魔導書・宝珠など「魔法」の系統の装備が40%強い（炎・氷・雷どれでも）'},speed:{name:'速',color:'#69b552',txt:'武器が30%速く発動する'}};
 const HEROES={
   knight:{rec:'盾を並べて城壁の大盾',spd:'全員にバリア30',name:'騎士',tag:'guard',mask:[1,1,1,1,1,1,1,1],sp:'全員にバリア',starter:['sword','shield'],desc:'バッグが広い。守りが固い'},
-  mage:{rec:'杖とオイルで炎の宝珠',spd:'敵に75＋やけど',name:'魔法使い',tag:'fire',mask:[1,1,1,0,1,1,1,0],sp:'メテオ',starter:['staff','potion'],desc:'やけどでじわじわ削る'},
+  mage:{rec:'杖とオイルで炎の宝珠',spd:'敵に75＋やけど',name:'魔法使い',tag:'fire',mask:[1,1,1,0,1,1,1,0],sp:'メテオ',starter:['staff','potion'],desc:'杖と魔導書が得意。炎・氷・雷を使い分ける'},
   archer:{rec:'短剣と毒瓶で毒の鉄球',spd:'矢を6連射',name:'弓使い',tag:'speed',mask:[1,1,1,1,1,1,0,0],sp:'一斉射撃',starter:['bow','shield'],desc:'武器を速く使う'},
 };
 // kind: dmg=攻撃 / burn=やけど付与 / shield / heal / once=開幕に1回 / ignite=やけどを燃え上がらせる / passive=隣に効く・置くだけ
@@ -581,7 +581,7 @@ const ITEMS={
   // ===== r66w 伝説の品（レシピで作る。店には出ない） =====
   herosword:{apt:'SBB',name:'勇者の剣',kind:'dmg',p:18,cd:2,rar:3,cls:'weapon',recipe:1,gain:{power:1},txt:'当たるたびに力+1'},
   windbow:{apt:'CBS',name:'風の弓',kind:'dmg',p:7,cd:1.0,rar:3,cls:'weapon',recipe:1,crit:.15,gain:{heat:1},txt:'撃つたびに熱+1'},
-  inferno:{apt:'CSC',name:'火炎の杖',kind:'burn',p:14,cd:2,rar:3,cls:'magic',recipe:1,gainIf:{burn:{vuln:1}},txt:'やけど中の敵の脆弱+1'},
+  inferno:{apt:'CSC',name:'火炎の杖',kind:'burn',p:14,cd:2,rar:3,cls:'weapon',recipe:1,gainIf:{burn:{vuln:1}},txt:'やけど中の敵の脆弱+1'},
   paladin:{apt:'SBC',name:'聖騎士の盾',kind:'shield',p:16,cd:3,rar:3,cls:'armor',recipe:1,gain:{regen:1},txt:'バリアを張るたびに再生+1'},
   venomking:{apt:'BBA',name:'毒王の剣',kind:'dmg',p:4,cd:.9,rar:3,cls:'weapon',recipe:1,poison:4,poisonX:1,txt:'敵の毒が20以上ならダメージ2倍'},
   blizzard:{apt:'CSB',name:'吹雪の杖',kind:'dmg',p:6,cd:1.6,rar:3,cls:'weapon',recipe:1,freeze:25,gain:{weak:1},txt:'当たるたびに敵の弱体+1'},
@@ -594,7 +594,7 @@ const ITEMS={
   sword:{apt:'ACC',name:'剣',kind:'dmg',p:8,cd:2.0,rar:1,cls:'weapon'},
   dagger:{apt:'CBA',name:'短剣',kind:'dmg',p:3.2,cd:0.9,rar:1,cls:'weapon',crit:.15},
   bow:{apt:'CCS',name:'弓',kind:'dmg',p:5,cd:1.6,rar:1,cls:'weapon',crit:.15},
-  staff:{apt:'CSC',name:'杖',kind:'burn',p:7,cd:2.2,rar:1,cls:'magic'},
+  staff:{apt:'CSC',name:'杖',kind:'burn',p:7,cd:2.2,rar:1,cls:'weapon'},
   shield:{apt:'SCB',name:'盾',kind:'shield',p:8,cd:3.0,rar:1,cls:'armor'},
   potion:{apt:'BAB',name:'薬',kind:'heal',p:12,cd:4.5,rar:1,cls:'magic',min:2},
   whet:{name:'砥石',kind:'passive',rar:1,cls:'tool',adj:'weapon',min:2,txt:'上下左右の<b>武器</b>の威力 +40%'},
@@ -658,9 +658,9 @@ function aptHTML(k){const d=ITEMS[k];if(!d.apt)return'';return '適性'+HORDER.m
 const RARN={1:'普通',2:'珍しい',3:'伝説'};
 const KIND_TXT={dmg:'ダメージ',burn:'やけど',shield:'バリア',heal:'回復',once:'ダメージ',ignite:'着火',detonate:'毒爆発',bash:'盾殴り'};
 const STAR=[0,1,1.8,3.2];
-// 魔法使い（炎）：攻撃のうち直接ダメージとやけどの割合。魔法使い＋弓使いの開幕バリア（最大HPに対する割合）
+// 魔法使い（魔）：以前の「攻撃の一部がやけど」は r67 でなくした（fireOn は常に false）。魔法使い＋弓使いの開幕バリア（最大HPに対する割合）
 const FIRE_D=0.9,FIRE_B=0.45,PAIR_FS_SEC=8;
-const fireOn=(u,d)=>u.tag==='fire'&&!d.freeze;
+const fireOn=(u,d)=>false;
 // 条件を満たすベルト装備が連携したときに発動。追加量は★や強化で増えない。CDと1戦の上限つき
 const PAIRFX={
   'fire+guard':{name:'炎鉄の護り',txt:'<b>騎士が盾を張る</b>と、<b>魔法使いの次の攻撃</b>のやけどが1.5倍',
@@ -1193,7 +1193,7 @@ const tokenDiscount=()=>hasRelic('traderToken')&&(S.rerollN||0)>0&&S.relicUsed?.
 function spendToken(c,base){if(!tokenDiscount())return;S.relicUsed={...S.relicUsed,traderTokenRound:S.round};recordPlay('relic_effect',{relic:'traderToken',discount:base-c,round:S.round});relicFx('traderToken',base-c,`${base-c}G安く買えた`);}
 // r63: 条件は開いたマスと、実際に置いた装備から計算する。
 const sparseBag63=l=>['A','B'].includes(l.a)&&boardLocs().filter(n=>n.a===l.a&&usable(n)&&!getP(n)&&!isParcel(n)).length===1;
-const flameNeighbor63=l=>['A','B'].includes(l.a)&&neighbors(l).some(n=>{const q=getP(n),d=ITEMS[q?.type];return n.a===l.a&&usable(n)&&d&&(d.kind==='burn'||d.burnSelf||d.cls==='weapon'&&S.heroes[AB[n.a]]==='mage'&&!d.freeze&&['dmg','once'].includes(d.kind));});
+const flameNeighbor63=l=>['A','B'].includes(l.a)&&neighbors(l).some(n=>{const q=getP(n),d=ITEMS[q?.type];return n.a===l.a&&usable(n)&&d&&(d.kind==='burn'||d.burnSelf||false);});
 function relicDirect63(l,d){const out={};if(hasRelic('hunterFang')&&d.cls==='weapon'&&loneWeapon(l))out.hunterFang=rv('hunterFang',.15);if(hasRelic('hearthEmber')&&d.cls==='weapon'&&flameNeighbor63(l))out.hearthEmber=rv('hearthEmber',.12);if(hasRelic('spareFuse')&&d.kind==='once')out.spareFuse=rv('spareFuse',.25);return out;}
 const relicCareDelta63=(l,d)=>['shield','heal','bash'].includes(d.kind)?(hasRelic('travelCloak')&&sparseBag63(l)?rv('travelCloak',.2):0)-(hasRelic('spareFuse')?.1:0):0;
 const RELIC_TIPS63={
@@ -1653,7 +1653,7 @@ function itemUses(l){
     const ap=am===null?APTV[aptOf(d,h)]:am;
     if(d.burnSelf)burnAdd=d.burnSelf*st*burnM;
     const bm=l.a==='belt'?0.7:1,relicDirect=relicDirect63(l,d),direct=1+Object.values(relicDirect).reduce((a,b)=>a+b,0),care=1+(hasRelic('sharedClasp')&&l.a==='belt'&&['shield','heal','bash'].includes(d.kind)?rv('sharedClasp',.15):0)+relicCareDelta63(l,d);
-    const tf=talentItem(h,l,d);return{u,hero:h,tag,direct,care:care*tf.care,relicDirect,apt:aptOf(d,h),pw:(p.relicPower65||1)*tf.pw*bm*(d.p||0)*(['ignite','detonate','bash'].includes(d.kind)?1:STAR[p.star])*pm*ap*(1+levelStats(runLv(h)).pow/100)*(tag==='guard'&&(d.kind==='shield'||d.kind==='heal')?1.25:1)*(d.kind==='burn'?burnM:1),bleed:tf.bleed*(bleed+(tf.bleedAdd||0))*bm*(1+levelStats(runLv(h)).pow/100),pierce66:tf.pierce||0,gainAdd,echo,cd:tf.cd*d.cd*cdm*(tag==='speed'&&d.cls==='weapon'?0.7:1),crit:Math.min(.9,crit+(tf.crit||0)),poison:tf.poison*poison*bm*(1+levelStats(runLv(h)).pow/100),burnAdd:tf.burn*burnAdd*bm*(1+levelStats(runLv(h)).pow/100),freeze:tf.frz*freeze*bm,leech,mercy,scale,fuse,bell:bell*bm,buffs:[...new Set([...buffs,...(relicDirect.hunterFang?['狩人の牙（直接+15%）']:[]),...(hasRelic('sharedClasp')&&l.a==='belt'&&['shield','heal','bash'].includes(d.kind)?['共用の留め金（盾・回復+15%）']:[]),...(relicDirect.hearthEmber?['炉床の火種（直接+12%）']:[]),...(relicDirect.spareFuse?['予備の火縄（直接+25%）']:[]),...(hasRelic('travelCloak')&&sparseBag63(l)&&['shield','heal','bash'].includes(d.kind)?['泥除けの外套（盾・回復+20%）']:[]),...(hasRelic('spareFuse')&&['shield','heal','bash'].includes(d.kind)?['予備の火縄（盾・回復-10%）']:[])])]};});
+    const tf=talentItem(h,l,d);return{u,hero:h,tag,direct,care:care*tf.care,relicDirect,apt:aptOf(d,h),pw:(p.relicPower65||1)*tf.pw*bm*(d.p||0)*(['ignite','detonate','bash'].includes(d.kind)?1:STAR[p.star])*pm*ap*(1+levelStats(runLv(h)).pow/100)*(tag==='guard'&&(d.kind==='shield'||d.kind==='heal')?1.25:1)*(tag==='fire'&&tagsOf(d).includes('magic')?1.4:1)*(d.kind==='burn'?burnM:1),bleed:tf.bleed*(bleed+(tf.bleedAdd||0))*bm*(1+levelStats(runLv(h)).pow/100),pierce66:tf.pierce||0,gainAdd,echo,cd:tf.cd*d.cd*cdm*(tag==='speed'&&d.cls==='weapon'?0.7:1),crit:Math.min(.9,crit+(tf.crit||0)),poison:tf.poison*poison*bm*(1+levelStats(runLv(h)).pow/100),burnAdd:tf.burn*burnAdd*bm*(1+levelStats(runLv(h)).pow/100),freeze:tf.frz*freeze*bm,leech,mercy,scale,fuse,bell:bell*bm,buffs:[...new Set([...buffs,...(relicDirect.hunterFang?['狩人の牙（直接+15%）']:[]),...(hasRelic('sharedClasp')&&l.a==='belt'&&['shield','heal','bash'].includes(d.kind)?['共用の留め金（盾・回復+15%）']:[]),...(relicDirect.hearthEmber?['炉床の火種（直接+12%）']:[]),...(relicDirect.spareFuse?['予備の火縄（直接+25%）']:[]),...(hasRelic('travelCloak')&&sparseBag63(l)&&['shield','heal','bash'].includes(d.kind)?['泥除けの外套（盾・回復+20%）']:[]),...(hasRelic('spareFuse')&&['shield','heal','bash'].includes(d.kind)?['予備の火縄（盾・回復-10%）']:[])])]};});
 }
 // 盤面全体の強さの目安（攻撃力/秒・守り/秒）。置き場ごとの増分表示に使う
 const previewPower=(u,d)=>u.pw*(['dmg','once','detonate'].includes(d.kind)?u.direct:['shield','heal'].includes(d.kind)?u.care:1);
@@ -2042,7 +2042,7 @@ function fireOne(x){
   const who=HEROES[x.hero].name+'の'+d.name;
   const coldCrit=hasRelic('birchCharm')&&E.frz>0&&['dmg','once','ignite','detonate','bash'].includes(d.kind);const crit=Math.random()<Math.min(.9,x.crit+rxv(x.hero,'crit')/100+(x.hero==='archer'&&E.frz>0&&tal('a10b')?.1:0)+(hasRelic('ember')&&E.burn>0?rv('ember',.12):0)+(coldCrit?rv('birchCharm',.1):0));talentFireFx65(x,crit);if(crit&&coldCrit)relicTick('birchCharm',1);if(crit&&hasRelic('ember')&&E.burn>0&&(!newRelicRule()||d.kind==='dmg'||d.kind==='once'))relicTick('ember',1);if(x.hero==='mage'&&E.burn>0&&(d.kind==='dmg'||d.kind==='once')&&tal('m30a'))p*=1.1;if(d.execute&&E.hp<=E.max*.3)p*=2;if(d.poisonX&&E.poison>=20)p*=2;if(d.every?.mult&&x.nf%d.every.n===0)p*=d.every.mult;if(crit&&(d.kind==='dmg'||d.kind==='once'))p*=2;
   if(d.kind==='dmg'||d.kind==='once'){const dm=(p+(d.kind==='dmg'?(B.power||0):0))*(fireOn(x,d)?FIRE_D:1);
-    const vis=d.kind==='once'?'icon':d.name.includes('弓')?'arrow':(x.tag==='fire'||d.type==='istaff'||d.type==='staff'||d.type==='orb')?'orb':'slash';
+    const vis=d.kind==='once'?'icon':d.name.includes('弓')?'arrow':(tagsOf(d).includes('magic')||d.type==='orb')?'orb':'slash';
     const sh={shatter:d.shatter,x0:c0[0],y0:c0[1],t:0,col,dmg:dm*x.direct,relicBonuses:Object.fromEntries(Object.entries(x.relicDirect||{}).map(([k,v])=>[k,dm*v])),big:p>=30||x.isCombo,crit,src,ic:x.p.type,vis,spd:vis==='slash'?11:vis==='arrow'?7.5:vis==='orb'?5.5:3,pierce:d.pierce||x.pierce66,poison:x.poison,burn:(fireOn(x,d)?p*FIRE_B*kmB(x):0)+(d.kind==='dmg'&&x.burnAdd?x.burnAdd:0)+(d.burnHit?d.burnHit*STAR[x.p.star]:0),freeze:x.freeze,leech:x.leech,bleed:x.bleed,hero:x.hero};B.shots.push(sh);
     B.log=`${who} → ${Math.round(dm)}${crit?'（会心！）':''}`;
     if(d.twice)B.shots.push({...sh,t:-0.25,dmg:sh.dmg*d.twice,poison:0,burn:0,freeze:0,bleed:0,big:false,crit:false,relicBonuses:{}});
