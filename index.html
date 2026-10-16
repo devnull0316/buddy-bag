@@ -289,7 +289,8 @@ body.battle #battleBar{display:flex}
 @keyframes dealin{0%{transform:translateY(40px) scale(.6) rotate(-6deg);opacity:0}70%{transform:translateY(-6px) scale(1.06);opacity:1}100%{transform:none}}
 #mcard{isolation:isolate;position:relative}
 .resultactions{flex-direction:column}.resultactions .btn{width:100%;min-height:44px}.rewardspaces .row2{flex-wrap:wrap}.rewardspaces .btn{flex:0 0 calc(50% - 4px);min-height:44px}.rewardbench .relicrow>div{min-width:0;flex:1}.rewardbench .btn{white-space:normal;min-height:44px}
-.kmapimg{display:block;width:100%;max-width:228px;margin:0 auto;height:auto;border:2px solid #5a4632;border-radius:2px;image-rendering:auto}#mcard>*:not(.rays){position:relative;z-index:1}
+.kmapimg{display:block;width:100%;max-width:228px;margin:0 auto;height:auto;border:2px solid #5a4632;border-radius:2px;image-rendering:auto;cursor:zoom-in}
+.kmapbig{position:fixed;inset:0;z-index:60;background:rgba(10,8,6,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px}.kmapbig img{width:100%;max-width:960px;height:auto;border:2px solid #70877d;image-rendering:pixelated}.kmapbig p{font:14px var(--f-dot);color:var(--parch);margin:0}#mcard>*:not(.rays){position:relative;z-index:1}
 .tabs{display:flex;gap:4px;margin:6px 0}.tabs .tab{flex:1;font-family:var(--f-dot);font-size:14px;padding:6px;background:var(--ink);color:var(--sub);border:2px solid var(--edge)}.tabs .tab.on{background:var(--wood-hi);color:var(--text);border-color:var(--brass)}
 .goals{display:flex;flex-direction:column;gap:5px}.goal{display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(0,0,0,.25);border:2px solid #3a2c22;opacity:.8}.goal.done{opacity:1;border-color:var(--brass)}
 .goal img{width:28px;height:28px;image-rendering:pixelated;flex:none}.goal span{display:flex;flex-direction:column;flex:1;line-height:1.3}.goal b{font-family:var(--f-dot);font-weight:400;font-size:15px}.goal small{font-size:11.5px;color:var(--sub)}.goal em{font-style:normal;font-size:11px;color:var(--brass)}.goal i{font-style:normal;color:var(--brass);font-size:20px}
@@ -304,6 +305,7 @@ body.battle #battleBar{display:flex}
 .cons{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;margin:4px 0}.con b i{font-style:normal;font-size:10px;color:#ff8a7a;margin-left:4px}
 .pk.route.on{border-color:var(--brass);background:#3a2c22}.pk.route .rt .fi{width:28px;height:30px;display:inline-flex;align-items:flex-end;justify-content:center;overflow:hidden;flex:none}.pk.route .rt .buddy{position:static}.pk.route .sti{width:22px;height:22px;image-rendering:pixelated}
 .scene .say,.say.rpt{display:flex;gap:8px;align-items:flex-end;margin:6px 0}.spk{flex:none;width:48px;height:56px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;background:rgba(0,0,0,.25);border:2px solid #3a2c22}.spk .buddy{position:static}.spk.icon img{width:32px;height:32px;image-rendering:pixelated;margin-bottom:10px}
+.spk.big{width:108px;height:108px;align-items:flex-end;background:linear-gradient(#3a2c22,#1d1611);border:2px solid #6a5238}.spk.big img{width:104px;height:104px;image-rendering:pixelated;display:block}.scene .say{align-items:stretch}.scene .bubble{min-height:108px;display:flex;flex-direction:column;justify-content:center}.scene .bubble p{font-size:15px}
 .bubble{flex:1;background:var(--parch);color:var(--parch-ink);padding:6px 10px;border:2px solid var(--parch-ink);position:relative;min-height:56px}.bubble b{font-family:var(--f-dot);font-weight:400;font-size:13px;color:#7a4a20}.bubble p{margin:2px 0 0;font-size:14px;line-height:1.5}
 .bubble::before{content:'';position:absolute;left:-8px;bottom:10px;border:4px solid transparent;border-right:6px solid var(--parch-ink)}
 .home h2{margin:2px 0 4px}.homehead{display:flex;align-items:flex-end;gap:10px;margin-bottom:8px}.kingp{flex:none;width:72px;height:80px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 50% 90%,rgba(217,164,65,.25),transparent 70%)}.kingp .buddy{position:static}.chs{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}.ch{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;text-align:left;background:var(--wood-hi);border:2px solid var(--brass);color:var(--text);padding:8px 10px}
@@ -449,7 +451,8 @@ const RELIC_PATHS=[...Array.from({length:30},(_,i)=>`assets2/relics/r${String(i+
 // r66：色違い（全コマ同じ大きさ）。元の大きさ・コマ数を使う
 for(const [k,b] of [['skeleton_vol','skeleton'],['goblin_vol','goblin'],['slime_vol','slime'],['fwarrior_vol','fwarrior'],['eye_vol','eye'],['skeleton_dem','skeleton_b'],['darkwiz_dem','darkwiz'],['bat_dem','bat'],['wizard3_dem','wizard3'],['demon1_dem','demon1']])if(META[b]&&!META[k])META[k]={...META[b]};
 const BG_PATHS=['volcano','demon','castle'].map(k=>`assets2/bg/${k}.png`);
-const PATHS=[...BG_PATHS,...Object.keys(META).flatMap(k=>Object.keys(META[k].anims).map(a=>`assets2/${k}_${a}.png`)),'assets2/arrow.png',...ICONS.map(k=>`assets2/icons/${k}.png`),...FX_PATHS,...RELIC_PATHS,'assets/hand.png','assets/lock.png'];
+const MAP_PATHS=['assets2/map/kingdom.png','assets2/map/kingdom_fog.png',...['minister','scout','king','knight','mage','archer'].map(k=>`assets2/portraits/${k}.png`)];
+const PATHS=[...BG_PATHS,...MAP_PATHS,...Object.keys(META).flatMap(k=>Object.keys(META[k].anims).map(a=>`assets2/${k}_${a}.png`)),'assets2/arrow.png',...ICONS.map(k=>`assets2/icons/${k}.png`),...FX_PATHS,...RELIC_PATHS,'assets/hand.png','assets/lock.png'];
 const IMG={};
 const motionQuery=matchMedia('(prefers-reduced-motion: reduce)');
 const reducedMotion=()=>motionQuery.matches;
@@ -1443,20 +1446,20 @@ function kmapPos(n){if(n>=22)return[120,18];const i=n-1,row=Math.floor(i/6),k=i%
 function kmapZone(x,y){const wy=4*Math.sin(x*.09)+2*Math.sin(x*.31),wx=116+7*Math.sin(y*.13)+3*Math.cos(y*.37);if(y<60+wy)return'demon';if(y<92+wy)return x<wx?'north':'volcano';if(y<124+wy)return x>wx?'swamp':'mine';return x<wx?'frontier':'central';}
 const KMAP_REG={frontier:1,central:4,swamp:7,mine:10,north:13,volcano:16,demon:19};
 let KMAP_CACHE={};
-function kingdomImage(pg){const st=pg.story||{},key=STORY_CHS.map(n=>st[storyKey(n)]?1:0).join('');if(KMAP_CACHE[key])return KMAP_CACHE[key];
-  const W=240,H=160,c=document.createElement('canvas');c.width=W*2;c.height=H*2;const g=c.getContext('2d');g.scale(2,2);g.imageSmoothingEnabled=false;
+function kingdomImage(pg,plain){const st=pg.story||{},MIMG=plain?null:IMG['assets2/map/kingdom.png'],FOG=plain?null:IMG['assets2/map/kingdom_fog.png'],key=STORY_CHS.map(n=>st[storyKey(n)]?1:0).join('')+(MIMG?'i':'')+(FOG?'f':'');if(KMAP_CACHE[key])return KMAP_CACHE[key];
+  const W=240,H=160,c=document.createElement('canvas');const SC=MIMG?4:2;c.width=W*SC;c.height=H*SC;const g=c.getContext('2d');g.scale(SC,SC);g.imageSmoothingEnabled=false;
   const R=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(x,y,w,h);};
   const hash=(x,y)=>{let h=x*374761393+y*668265263;h=(h^(h>>13))*1274126177;return((h^(h>>16))>>>0)/4294967296;};
   // 海
-  R(0,0,W,H,'#183447');for(let y=0;y<H;y+=3)for(let x=(y*7)%11;x<W;x+=11)if(hash(x,y)<.35)R(x,y,3,1,'#24506a');
+  if(MIMG){g.imageSmoothingEnabled=false;g.drawImage(MIMG,0,0,W,H);}else R(0,0,W,H,'#183447');if(!MIMG)for(let y=0;y<H;y+=3)for(let x=(y*7)%11;x<W;x+=11)if(hash(x,y)<.35)R(x,y,3,1,'#24506a');
   // 島（ふちは波打つ）と地面
   const open=n=>n===1||STORY_CHS.filter(m=>m<n).every(m=>st[storyKey(m)]);
   const regionOpen=z=>STORY_CHS.includes(KMAP_REG[z])&&open(KMAP_REG[z]);
   const PAL={frontier:['#4f7a3c','#3f6630','#6a9a4b'],central:['#7d8a4a','#6b7840','#a3a85a'],swamp:['#2f4d42','#253f36','#3f6a5f'],mine:['#5b5650','#4a4641','#77716a'],north:['#c9d6dc','#aebfc8','#e9f1f3'],volcano:['#5a2e26','#47231d','#7a3a2c'],demon:['#3b2c48','#2e2238','#55406a']};
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const dx=(x-120)/116,dy=(y-84)/80,edge=dx*dx+dy*dy+0.08*Math.sin(x*.21)+0.06*Math.cos(y*.27)+0.04*Math.sin((x+y)*.13);
+  if(!MIMG)for(let y=0;y<H;y++)for(let x=0;x<W;x++){const dx=(x-120)/116,dy=(y-84)/80,edge=dx*dx+dy*dy+0.08*Math.sin(x*.21)+0.06*Math.cos(y*.27)+0.04*Math.sin((x+y)*.13);
     if(y<4||edge>1)continue;const z=kmapZone(x,y),p=PAL[z],v=hash(x,y);g.fillStyle=edge>.9?'#d9c79a':v<.12?p[1]:v>.93?p[2]:p[0];g.fillRect(x,y,1,1);}
   // 地域ごとの小物
-  for(let i=0;i<260;i++){const x=Math.floor(hash(i,7)*W),y=Math.floor(hash(i,13)*H);const dx=(x-120)/116,dy=(y-84)/80;if(dx*dx+dy*dy>.82||y<8)continue;const z=kmapZone(x,y);
+  if(!MIMG)for(let i=0;i<260;i++){const x=Math.floor(hash(i,7)*W),y=Math.floor(hash(i,13)*H);const dx=(x-120)/116,dy=(y-84)/80;if(dx*dx+dy*dy>.82||y<8)continue;const z=kmapZone(x,y);
     if(z==='frontier'){R(x,y-3,1,1,'#2c4a22');R(x-1,y-2,3,2,'#2c4a22');R(x,y,1,1,'#4a3020');}
     else if(z==='central'){if(i%3===0){R(x,y,4,2,'#b8b06a');R(x,y+2,4,1,'#8f8a4f');}}
     else if(z==='swamp'){R(x,y,4,1,'#4c7a70');R(x+1,y+1,2,1,'#5f938a');}
@@ -1465,16 +1468,17 @@ function kingdomImage(pg){const st=pg.story||{},key=STORY_CHS.map(n=>st[storyKey
     else if(z==='volcano'){if(i%4===0){for(let k=0;k<5;k++)R(x-k,y+k,1+2*k,1,'#3a1d18');R(x,y,1,2,'#ff7a32');}else R(x,y,2,1,'#c2452a');}
     else if(z==='demon'){if(i%3===0){R(x,y,1,3,'#6d4f8a');R(x,y-1,1,1,'#b08ad0');}}}
   // 中央の川
-  for(let y=96;y<160;y++){const x=118+Math.round(Math.sin(y*.18)*4+7*Math.sin(y*.13));R(x,y,2,1,'#3d7aa0');}
+  if(!MIMG)for(let y=96;y<160;y++){const x=118+Math.round(Math.sin(y*.18)*4+7*Math.sin(y*.13));R(x,y,2,1,'#3d7aa0');}
   // 魔王城（いつも見える目的地）
-  const [cx,cy]=kmapPos(22);R(cx-14,cy+2,28,8,'#1c1426');R(cx-12,cy-6,4,8,'#1c1426');R(cx+8,cy-6,4,8,'#1c1426');R(cx-3,cy-12,6,14,'#1c1426');R(cx-1,cy-15,2,3,'#1c1426');
-  R(cx-2,cy-8,1,2,'#ff5a4a');R(cx+1,cy-8,1,2,'#ff5a4a');R(cx-10,cy-2,1,1,'#ff5a4a');R(cx+10,cy-2,1,1,'#ff5a4a');
+  const [cx,cy]=kmapPos(22);if(!MIMG){R(cx-14,cy+2,28,8,'#1c1426');R(cx-12,cy-6,4,8,'#1c1426');R(cx+8,cy-6,4,8,'#1c1426');R(cx-3,cy-12,6,14,'#1c1426');R(cx-1,cy-15,2,3,'#1c1426');
+  R(cx-2,cy-8,1,2,'#ff5a4a');R(cx+1,cy-8,1,2,'#ff5a4a');R(cx-10,cy-2,1,1,'#ff5a4a');R(cx+10,cy-2,1,1,'#ff5a4a');}
   // 道
   const nodes=[...STORY_CHS,19,20,21].filter((n,i,a)=>a.indexOf(n)===i).sort((a,b)=>a-b);
   const pts=[...nodes.map(kmapPos),kmapPos(22)];
   for(let i=0;i+1<pts.length;i++){const [x0,y0]=pts[i],[x1,y1]=pts[i+1],d=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(let t=0;t<=d;t+=3){const x=Math.round(x0+(x1-x0)*t/d),y=Math.round(y0+(y1-y0)*t/d);R(x,y,2,2,i+1<nodes.length&&st[storyKey(nodes[i])]?'#e2c27a':'#8c7a5a');}}
   // まだ行けない地域は雲で覆う
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const z=kmapZone(x,y);if(regionOpen(z))continue;g.fillStyle=hash(x>>2,y>>2)<.5?'rgba(22,20,30,.58)':'rgba(30,28,40,.52)';g.fillRect(x,y,1,1);}
+  if(FOG){const m=document.createElement('canvas');m.width=W;m.height=H;const mg=m.getContext('2d');for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(!regionOpen(kmapZone(x,y))){mg.fillStyle='#000';mg.fillRect(x,y,1,1);}const f=document.createElement('canvas');f.width=W*SC;f.height=H*SC;const fg=f.getContext('2d');fg.fillStyle='rgba(18,16,26,.45)';fg.fillRect(0,0,f.width,f.height);fg.drawImage(FOG,0,0,f.width,f.height);fg.globalCompositeOperation='destination-in';fg.imageSmoothingEnabled=true;fg.drawImage(m,0,0,f.width,f.height);g.drawImage(f,0,0,W,H);}
+  else for(let y=0;y<H;y++)for(let x=0;x<W;x++){const z=kmapZone(x,y);if(regionOpen(z))continue;g.fillStyle=hash(x>>2,y>>2)<.5?'rgba(22,20,30,.58)':'rgba(30,28,40,.52)';g.fillRect(x,y,1,1);}
   // 章の地点
   const nextN=STORY_CHS.find(n=>open(n)&&!st[storyKey(n)]);
   nodes.forEach(n=>{const [x,y]=kmapPos(n),ok=!!st[storyKey(n)],avail=STORY_CHS.includes(n)&&open(n);
@@ -1484,7 +1488,10 @@ function kingdomImage(pg){const st=pg.story||{},key=STORY_CHS.map(n=>st[storyKey
     if(n===nextN){g.strokeStyle='#ffe07a';g.lineWidth=1;g.strokeRect(x-8.5,y-6.5,17,13);g.strokeStyle='rgba(255,224,122,.4)';g.strokeRect(x-10.5,y-8.5,21,17);}
     g.font='bold 6px sans-serif';g.textAlign='center';g.fillStyle='#000';g.fillText(String(n),x+.5,y+11.5);g.fillStyle=ok?'#ffe9a8':avail?'#f0e6d6':'#8a8494';g.fillText(String(n),x,y+11);});
   g.font='bold 6px sans-serif';g.fillStyle='#ffb0a0';g.textAlign='center';g.fillText('魔王城',cx,cy+18);
-  return KMAP_CACHE[key]=c.toDataURL();}
+  // file:// で開いたときは画像を描いたキャンバスを書き出せないので、今までの描き方に戻す
+  let url;try{url=c.toDataURL();}catch(e){if(!plain)return kingdomImage(pg,true);throw e;}return KMAP_CACHE[key]=url;}
+// 地図を押すと大きく開く（どこを押しても閉じる）
+document.addEventListener('click',e=>{const t=e.target;if(!t.classList||!t.classList.contains('kmapimg'))return;sfx('tick');const o=document.createElement('div');o.className='kmapbig';o.innerHTML=`<img src="${t.src}" alt="王国の地図"><p>押すと閉じる</p>`;o.onclick=()=>o.remove();document.body.appendChild(o);});
 function kingdomHTML(pg){const st=pg.story||{},done=STORY_CHS.filter(n=>st[storyKey(n)]).length;let img='';try{img=kingdomImage(pg);}catch(e){}
  const display=pg.honors?.[pg.honorDisplay]&&!pg.honorDisplay.startsWith('lv1:')?`<p class="honorbadge">◆ 展示：${medalName(pg.honorDisplay)}</p>`:'';
  return `<details class="kingmap" ${innerHeight/(typeof UIZ!=="undefined"?UIZ:1)>=700?"open":""}><summary>王国の地図 ／ 取り戻した地 ${done}/${STORY_CHS.length}</summary>${img?`<img class="kmapimg" src="${img}" alt="王国の地図。旗の立つ町は取り戻した場所、光る枠が次の目的地、いちばん上が魔王城">`:''}${display}</details>`;}
@@ -3043,10 +3050,12 @@ function modeTabs(){const m=S.modeSel||'normal';return `<div class="tabs mtabs">
 function bindTabs(redraw){document.querySelectorAll('#mcard .mtab').forEach(b=>b.onclick=()=>{S.modeSel=b.dataset.m;sfx('tick');redraw();});}
 // 話し手：宰相は巻物の印、勇者はキャラの絵
 function speakerHTML(who){if(HEROES[who])return `<span class="spk">${buddyHTML(who,40)}</span>`;return `<span class="spk icon"><img src="${ICO('mercy')}" alt=""></span>`;}
+// r67：会話の場面だけ大きな顔（assets2/portraits）。なければ今までの小さな絵
+function portraitHTML(who){const k=`assets2/portraits/${who}.png`;return IMG[k]?`<span class="spk big"><img src="${srcOf(k)}" alt=""></span>`:speakerHTML(who);}
 const SPNAME=w=>HEROES[w]?HEROES[w].name:w==='minister'?'宰相':w==='scout'?'偵察兵':w;
 // lines: [[話し手, 台詞], ...]。タップで次へ。最後に after()
 function showScene(lines,after,title){let i=0;const draw=()=>{const [w,t]=lines[i];
-  modal(`<div class="scene">${title?`<p class="sub" style="text-align:center;margin:0 0 6px">${title}</p>`:''}<div class="say">${speakerHTML(w)}<div class="bubble"><b>${SPNAME(w)}</b><p>${t}</p></div></div>
+  modal(`<div class="scene">${title?`<p class="sub" style="text-align:center;margin:0 0 6px">${title}</p>`:''}<div class="say">${portraitHTML(w)}<div class="bubble"><b>${SPNAME(w)}</b><p>${t}</p></div></div>
     <div class="row2"><button class="btn" id="scSkip">飛ばす</button><button class="btn go" id="scNext">${i<lines.length-1?'次へ':'わかった'}</button></div><p class="sub" style="text-align:right;margin:2px 0 0">${i+1}／${lines.length}</p></div>`);
   $m('#scNext').onclick=()=>{sfx('tick');i++;if(i<lines.length)draw();else{closeModal();after&&after();}};
   $m('#scSkip').onclick=()=>{sfx('tick');closeModal();after&&after();};};draw();}
