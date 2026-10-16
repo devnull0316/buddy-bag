@@ -209,6 +209,11 @@ body.battle #stage{display:block}
 .gemstrip{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:3px 8px;margin:2px 0;background:#241b15;border:1px solid #4a3a2c;font-size:12px}.gemstrip b{font-family:var(--f-dot);font-weight:400;color:#e8c45a}.gemb{font:12px var(--f-dot);color:#f0e6d6;background:#3a2c22;border:1px solid var(--gc,#6a5238);border-left:4px solid var(--gc,#6a5238);padding:2px 8px;cursor:pointer;min-height:26px}.gemb.off{--gc:#8a7a68}.gemstrip small{color:#b3a38f}.gemstrip .gh{margin-left:auto}
 .elbtn{flex:none;align-self:center;font:12px/1.2 var(--f-dot);color:#ffe0c0;background:#5a2a20;border:1px solid #c2452a;padding:4px 6px;cursor:pointer;margin-left:4px;max-width:78px}.elbtn small{display:block;font-size:10px;color:#ffc8a0}.elbtn.on{background:#c2452a;color:#fff}
 .gemopt .gemico{font-size:30px;color:var(--gc)}
+body.land #app{max-width:940px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto auto auto 1fr;column-gap:16px;row-gap:6px;align-content:start}
+body.land #app>*{grid-column:1;min-width:0}
+body.land #hud{grid-row:1}body.land #top{grid-row:2}body.land #stage{grid-row:3}body.land #shop{grid-row:4}body.land #bar{grid-row:5}
+body.land #board,body.land #relicPage{grid-column:2;grid-row:1 / 7}
+body.land #setStrip{grid-column:2;grid-row:7}body.land #gemStrip{grid-column:2;grid-row:8}
 .homenext{width:100%;min-height:54px;font-size:17px;margin:4px 0 6px;display:flex;flex-direction:column;align-items:center;justify-content:center}.homenext small{font-size:11px;opacity:.85}
 .rlxrow{display:flex;align-items:center;gap:10px;background:#2a2017;border:2px solid #b08a3a;padding:8px 10px;margin:8px 0}.rlxrow span{flex:1;display:flex;flex-direction:column}.rlxrow b{font-family:var(--f-dot);font-weight:400;color:#ffe9a8;font-size:15px}.rlxrow small{font-size:11px;color:#c9b99f}.rlxrow .btn{flex:none;min-width:84px}
 .rcm{position:absolute;right:2px;bottom:7px;z-index:3;font:bold 11px/13px var(--f-dot);width:14px;height:14px;text-align:center;border-radius:50%;pointer-events:none;box-shadow:1px 1px 0 #000}.rcm.up{background:#2f7a3a;color:#eaffd8}.rcm.dn{background:#4a4440;color:#cfc6b8}.ware .rcm{right:4px;top:4px;bottom:auto}
@@ -2775,9 +2780,12 @@ const $=id=>document.getElementById(id);const $m=s=>document.querySelector('#mca
 function cellEl(l){return document.querySelector(`[data-loc="${lkey(l)}"]`);}
 // 大きい画面（タブレット等）では、ゲームの画面全体を拡大して空白を減らす
 let UIZ=1;
-function uiZoom(){const k=innerWidth>=600?Math.max(1,Math.min(2,innerWidth/470,innerHeight/800)):1;document.documentElement.style.setProperty('--zvh',(innerHeight/k)+'px');if(Math.abs(k-UIZ)>0.001||!document.body.dataset.z){UIZ=k;document.body.dataset.z=1;$('app').style.zoom=k===1?'':String(k);$('modal').style.zoom=k===1?'':String(k);}return UIZ;}
+// r68：横向きの大きい画面（iPadの横など）は2列。左に戦闘・お知らせ・お店、右にバッグ
+const isLand68=()=>innerWidth>=900&&innerWidth/innerHeight>=1.25;
+function uiZoom(){const land=isLand68();document.body.classList.toggle('land',land);const k=land?Math.max(1,Math.min(2,innerWidth/940,innerHeight/780)):innerWidth>=600?Math.max(1,Math.min(2,innerWidth/470,innerHeight/800)):1;document.documentElement.style.setProperty('--zvh',(innerHeight/k)+'px');if(Math.abs(k-UIZ)>0.001||!document.body.dataset.z){UIZ=k;document.body.dataset.z=1;$('app').style.zoom=k===1?'':String(k);$('modal').style.zoom=k===1?'':String(k);}return UIZ;}
 function fit(){
-  const Z=uiZoom(),H=innerHeight/Z,Wd=Math.min(innerWidth/Z,440)-32,bt=S.phase==='battle';
+  const Z=uiZoom(),H=innerHeight/Z,bt=S.phase==='battle';if(isLand68()){const Wd=Math.min((innerWidth/Z-48)/2,460);const topH=bt?Math.max(220,Math.min(440,Math.round(H*0.62))):0;let c=Math.floor((H-14-6-40-24*2-4*2-18-4-10)/5);c=Math.max(36,Math.min(90,c,Math.floor((Wd-20-12-38)/4)));document.documentElement.style.setProperty('--cell',c+'px');if(bt)$('stage').style.height=topH+'px';sizeFx();if(B){sizeStage();bgCache=null;}return;}
+  const Wd=Math.min(innerWidth/Z,440)-32;
   const opH=(isOperation()?$('opStrip').offsetHeight:0)+($('relicStrip').hidden?0:$('relicStrip').offsetHeight);
   const topH=bt?Math.max(150,Math.min(340,Math.round(H*0.47))-opH):(64+6+32);
   const fixed=14+30+6+topH+opH+6+(bt?0:84+6)+52+6+10;
