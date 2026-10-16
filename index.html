@@ -896,13 +896,13 @@ function genEnc(){const bossFirst=Math.random()<.5;const e=[null];
     else e.push({t:pickFrom(r<5?POOL_EARLY:POOL_LATE,e[r-1]&&e[r-1].t)});}
   S.enc=e;}
 // r66w：新しい装備・系統・遺物の枠で強くなった分、章ごとに敵を強くする（測定 review/r59-w66-run.txt）
-const EN66={2:1.1,3:1.05,5:1.12,6:1.18,7:1.2,8:1.22,9:1.15,10:1.08,11:1.15,12:1.2,13:1.28,14:1.26,15:1.2,16:2,17:2,18:1.5,19:1.3,20:1.75,21:1.05,22:1.3,23:1.2,24:1.4,25:1.0,26:0.85,27:0.95,28:1.05,29:0.82,30:0.9,31:0.88};
+const EN66={2:1.1,3:1.05,5:1.12,6:1.08,7:1.2,8:1.22,9:1.15,10:1.08,11:1.15,12:1.1,13:1.28,14:1.26,15:1.2,16:2,17:1.6,18:1.5,19:1.3,20:1.75,21:1.05,22:1.3,23:1.2,24:1.4,25:1.0,26:0.85,27:0.95,28:1.05,29:0.82,30:0.9,31:0.88};
 const SIDE_EN66={112:1.05};
 const en66=()=>S.run&&S.run.mode==='story'?(EN66[baseCh(S.run.ch)]||1)*(SIDE_EN66[S.run.ch]||1):1;
 function enemy(r){const base=ENEMIES[tierOf(r)];if(!base)return base;const en=S.enc&&S.enc[r];const tp=en?ENEMIES[en.t]:base;const m=dmul(),el=en&&en.elite;
   // HPはその戦数の基準。攻撃は「基準の1秒あたり攻撃力 × この敵の攻撃間隔」で、速い敵ほど一撃が軽い
   const ca=S.run&&S.run.mode==='story'&&en?CHAPTERS[S.run.ch]:null;const hp=(en&&en.hp||base.hp*(en&&en.hm||1))*(el?1.2:1)*(hasMod('hp')?1.25:1)*(ca&&ca.hmAll||1)*en66(),atk=base.atk/base.int*tp.int*(el?1.15:1)*(en&&en.dps||1)*(en&&en.dm||1)*(ca&&ca.dmAll||1)*(1+(en66()-1)*.6);
-  return{...tp,type:en?.t||tierOf(r),relicBonus:relicWeight()*RELIC_RATE,spr:en&&en.spr||tp.spr,boss:en&&en.boss!==undefined?en.boss:tp.boss,mid:en&&en.mid,body:tp.body*(en&&en.big?1.2:1),name:(el?'精鋭・':'')+(en&&en.name||tp.name),hp:Math.round(hp*m),atk:Math.round((hasMod('atk')?1.2:1)*(en?.atk!=null?en.atk*(ca&&baseCh(S.run.ch)>=16?1+(en66()-1)*.6:1):atk)*m),int:en?.int||tp.int,support:isOperation()&&r===runLimit()?remainingSupport():null,mission:en?.mission==='defend'?'20秒防衛':'討伐',elite:!!el,trait:(en&&en.trait||tp.trait)+(el?'（精鋭：HP+20%・攻撃+15%、勝てば+5G）':'')};}
+  return{...tp,type:en?.t||tierOf(r),relicBonus:relicWeight()*RELIC_RATE,spr:en&&en.spr||tp.spr,boss:en&&en.boss!==undefined?en.boss:tp.boss,mid:en&&en.mid,body:tp.body*(en&&en.big?1.2:1),name:(el?'精鋭・':'')+(en&&en.name||tp.name),hp:Math.round(hp*m),atk:Math.round((hasMod('atk')?1.2:1)*(en?.atk!=null?en.atk*(ca&&baseCh(S.run.ch)>=16?1+(en66()-1)*.6:1):atk)*m),int:en?.int||tp.int,support:isOperation()&&r===runLimit()?remainingSupport():null,mission:en?.mission==='defend'?'20秒防衛':'討伐',elite:!!el,beh68:beh68(en,tp),trait:((en&&en.trait)||(beh68(en,tp)?(tp.mech?tp.trait.split('。')[0]+'。':'')+RACE68[beh68(en,tp)].beh:tp.trait))+(el?'（精鋭：HP+20%・攻撃+15%、勝てば+5G）':'')};}
 
 // 遺物は装備と別の3枠。途中は取り外しだけで、開幕品や報酬を取り直せない。
 const RELIC_RATE=0.75;
@@ -1010,7 +1010,7 @@ function talentTick(){if(!B||B.done)return;const P=B.party;if(tal('k40a')&&!B.ta
 // ===== r66w 系統（Brotato型）：2人のバッグとベルトの数で段階ボーナス =====
 const CLSN={blade:'刃',blunt:'鈍器',bow:'弓',magic:'魔法',poison:'毒',ice:'氷',fire:'炎',boom:'爆発',guard:'守り',care:'癒し'};
 // r68 種族と相性。敵の見た目（spr）から種族、装備の系統（tags）で威力が変わる
-const RACE68={bone:{nm:'骨',weak:'blunt',res:'blade',ds:'骨の体。鈍器で砕ける'},fly:{nm:'飛ぶ',weak:'bow',res:'blunt',ds:'宙に浮く。弓で落とせる'},soft:{nm:'やわらかい',weak:'fire',res:'blunt',ds:'ぷよぷよの体。炎に弱く、たたいても効きにくい'},beast:{nm:'獣',weak:'poison',res:'bow',ds:'すばやく矢をよける。毒が回りやすい'},dark:{nm:'魔の者',weak:'blade',res:'magic',ds:'魔法に強い。刃で斬ろう'},armor:{nm:'鎧',weak:'magic',res:'bow',ds:'鎧が矢をはじく。魔法は通る'},bug:{nm:'虫',weak:'ice',res:'fire',ds:'熱に強い。冷やすと弱る'},box:{nm:'宝箱',weak:'boom',res:'poison',ds:'木の箱。爆発で壊れる'}};
+const RACE68={bone:{nm:'骨',weak:'blunt',res:'blade',ds:'骨の体。鈍器で砕ける',beh:'くずれても一度だけ、HP20%で起き上がる'},fly:{nm:'飛ぶ',weak:'bow',res:'blunt',ds:'宙に浮く。弓で落とせる',beh:'刃・鈍器の攻撃を4回に1回よける。弓と魔法は当たる'},soft:{nm:'やわらかい',weak:'fire',res:'blunt',ds:'ぷよぷよの体。炎に弱く、たたいても効きにくい',beh:'25以上の大きな一撃を2割減らす。連打ややけどが有利'},beast:{nm:'獣',weak:'poison',res:'bow',ds:'すばやく矢をよける。毒が回りやすい',beh:'HPが半分を切ると、攻撃が1.5倍速くなる'},dark:{nm:'魔の者',weak:'blade',res:'magic',ds:'魔法に強い。刃で斬ろう',beh:'6秒ごとに魔法の盾（最大HPの4%）を張る'},armor:{nm:'鎧',weak:'magic',res:'bow',ds:'鎧が矢をはじく。魔法は通る',beh:'1発ごとに3ダメージ減らす（貫通する攻撃には効かない）'},bug:{nm:'虫',weak:'ice',res:'fire',ds:'熱に強い。冷やすと弱る'},box:{nm:'宝箱',weak:'boom',res:'poison',ds:'木の箱。爆発で壊れる'}};
 const RACE_SPR={skeleton:'bone',skeleton_b:'bone',skeleton_s:'bone',bat:'fly',eye:'fly',eye_o:'fly',slime:'soft',slime_d:'soft',mushroom:'soft',mushroom_p:'soft',goblin:'beast',goblin_r:'beast',rat:'beast',wizard3:'dark',darkwiz:'dark',demon1:'dark',demon2:'dark',fwarrior:'armor',fireworm:'bug',mimic:'box'};
 const RACE_W=1.4,RACE_R=0.8,RACE_KINDS=['dmg','once','burn','ignite','detonate','poison'];
 function raceOf(e){if(!e)return null;const k=RACE_SPR[String(e.spr||'').replace(/_(vol|dem|cas)$/,'')];return RACE68[k]?k:null;}
@@ -1044,6 +1044,8 @@ function showGemOffer68(){const opts=Object.keys(GEM68).sort(()=>Math.random()-.
 // 精鋭：物語の章で1回だけ、ボス以外の戦いを強くできる。勝つと宝石
 function eliteOk68(){const r=S.round,e=S.enc&&S.enc[r];return S.run?.mode==='story'&&!hasMod('elite')&&!isOperation()&&S.phase==='plan'&&e&&!e.boss&&!e.mission&&r<runLimit()&&(!S.eliteDone||S.eliteOn===r);}
 function toggleElite68(){const e=S.enc[S.round];if(!eliteOk68())return;if(S.eliteOn===S.round){delete e.elite;S.eliteOn=null;S.eliteDone=0;toast('精鋭をやめた');}else{e.elite=1;S.eliteOn=S.round;S.eliteDone=1;toast('この戦いを精鋭にした（HP+20%・攻撃+15%）。勝てば宝石');}sfx('tick');render();save();}
+// r68：ボス以外の敵に種族の行動。第1〜3章は付けない（覚えることを増やさない）
+function beh68(en,tp){if(window.__noBeh68||(en&&(en.trait||en.boss))||tp.boss)return null;if(S.run?.mode==='story'&&baseCh(S.run.ch)<4)return null;const k=raceOf({spr:en&&en.spr||tp.spr});return RACE68[k]?.beh?k:null;}
 function raceBadge(k,gem){const m=raceMul(ITEMS[k],curFoe68(),gem);return m>1?'<span class="rcm up" title="次の敵に効きやすい">◎</span>':m<1?'<span class="rcm dn" title="次の敵に効きにくい">△</span>':'';}
 function raceLineHTML(e){const r=RACE68[raceOf(e)];if(!r)return'';return `<span class="raceln"><i class="up">◎${CLSN[r.weak]}</i><i class="dn">△${CLSN[r.res]}</i></span>`;}
 const CLS66={chainbolt:'magic',gearshield:'guard',sword:'blade',dagger:'blade',bow:'bow',staff:'magic fire',shield:'guard',potion:'care',axe:'blunt',gsword:'blade',bdagger:'blade',baxe:'blunt',prapier:'blade poison',istaff:'magic ice',iceshard:'ice',fhammer:'blunt ice',powder:'boom',hdagger:'blade',hbow:'bow',bandage:'care',gspear:'blade',blowpipe:'bow poison',fangspear:'poison',pscythe:'poison blade',pickaxe:'blunt',bomb:'boom',spiked:'guard',spear:'blade',orb:'magic fire',scythe:'poison blunt',wall:'guard blunt',storm:'bow',firstshield:'guard',chainmail:'guard',renewal:'care',salve:'care',emberguard:'guard fire',venomherb:'care poison',frostward:'guard ice',feather:'care',
@@ -1307,7 +1309,7 @@ function relicRankEffect65(k,r){const m=relicRankMult(r),v=n=>fmt65(n*m),pct=n=>
  tastingSpoon:`毒5以上で回復+${pct(.15)}%`,copperStopper:`最初の毒爆発で毒が${fmt65((.5+.15*m)*100)}%残る`,travelCloak:`空き1マスのバッグの盾・回復+${pct(.2)}%`,
  minerPlugs:`初めて爆弾発動でバリア+${v(8)}`,spareFuse:`爆弾の直接+${pct(.25)}%／盾・回復-10%`,hearthEmber:`炎の隣の武器の直接+${pct(.12)}%`,birchCharm:`凍結中の会心+${pct(.1)}ポイント`})[k]||'';}
 function relicRankHTML(k,pg=loadProg()){const r=relicRank(k,pg);return `<small class="rrank">${relicBadge63(k,pg)}：${relicRankEffect65(k,r)}${r<3?`<br>次の${RELIC_RANK_NAME[r+1]}：${relicRankEffect65(k,r+1)}`:'（最大）'}</small>`;}
-function relicGrowthHelp65(){return '<div class="ophelp"><p>遺物が働くと、端に名前と効果が出ます。</p><p>違う1・3・5章で勝つと、固有の遺物が育ちます。</p><p>今と次の効果は、遺物の説明で確認できます。</p></div>';}
+function relicGrowthHelp65(){return '<details class="ophelp"><summary>遺物の育て方</summary><p>遺物が働くと、端に名前と効果が出ます。違う1・3・5章で勝つと、固有の遺物が育ちます。今と次の効果は、遺物の説明で確認できます。</p></details>';}
 function relicGrowthOnce65(){const pg=loadProg();if(pg.help?.growth65)return '';pg.help={...pg.help,growth65:1};saveProg(pg);return relicGrowthHelp65();}
 function relicBadge63(k,pg=loadProg()){const n=relicWinChapters63(k,pg).length;return n>=5?'金の勝利印':n>=3?'銀の勝利印':n>=1?'銅の勝利印':'勝利印なし';}
 function relicProgress63(k,pg=loadProg()){const cs=relicWinChapters63(k,pg),n=cs.length,r=relicRank(k,pg),g=relicGrows(k);return relicBadge63(k,pg)+(g?'（効果'+relicRankMult(r)+'倍）':'')+'・'+n+'章'+(n<5?'／次は異なる'+(n<1?1:n<3?3:5)+'章でクリア'+(g?'→'+relicRankMult(r+1)+'倍':''):'／金の印を達成')+(n?'（第'+cs.join('・')+'章）':'');}
@@ -1337,7 +1339,7 @@ const levelPerk=(h,lv)=>{const m=levelStats(lv).m;return h==='knight'?`開幕バ
 const runLv=h=>Math.max(1,Math.min(HLV_MAX,S.hlvRun?.[h]||heroLv(h)));
 const REC_LEVELS=[1,3,5,6,8,10,11,13,15,16,18,20,21,23,25,26,28,29,31,32,34,35,36,38,39,41,42,44,45,47,48];
 const recLv=n=>isSide(n)?Math.min(HLV_MAX,(REC_LEVELS[baseCh(n)-1]||HLV_MAX)+1):REC_LEVELS[n-1]||HLV_MAX;
-function recommendationHTML(n,heroes=[],pg=loadProg()){const rec=recLv(n),levels=heroes.map(h=>heroLv(h,pg)),ready=levels.length?levels.every(l=>l>=rec):HORDER.filter(h=>heroLv(h,pg)>=rec).length>=2;return `<span class="lvguide ${ready?'lvready':'lvshort'}">推奨Lv${rec}${levels.length?` ／ ${levels.length===2?'選んだ2人':'選んだ勇者'} ${levels.join('・')}`:''}・${ready?'到達':'レベル不足'}</span>${levels.length?'<small class="sub">推奨Lvでも負けることがあります。<br>苦戦したら訓練で強化しましょう。</small>':''}`;}
+function recommendationHTML(n,heroes=[],pg=loadProg()){const rec=recLv(n),levels=heroes.map(h=>heroLv(h,pg)),ready=levels.length?levels.every(l=>l>=rec):HORDER.filter(h=>heroLv(h,pg)>=rec).length>=2;return `<span class="lvguide ${ready?'lvready':'lvshort'}">推奨Lv${rec}${levels.length?` ／ ${levels.length===2?'選んだ2人':'選んだ勇者'} ${levels.join('・')}`:''}・${ready?'到達':'レベル不足'}</span>${levels.length&&!ready?'<small class="sub">苦戦したら、作戦室の訓練で強くできる。</small>':''}`;}
 function addCoins(n,why){if(!(n>0))return;const pg=loadProg();pg.coinE=coinE(pg)+n;saveProg(pg);S.coinGain=(S.coinGain||0)+n;recordPlay('coins',{n,why,total:rewardCoins(pg)});}
 // 遺物の枠：第4章・第8章のクリアで1つずつ増える
 const kingLevel=(pg=loadProg())=>1+(pg.story?.c4?1:0)+(pg.story?.c8?1:0);
@@ -2183,6 +2185,8 @@ function hitEnemy(s){
   if(s.big&&B.pend){const kd=B.pend.startsWith('毒')?'poisonb':B.pend.startsWith('大炎上')?'burnb':'boom';B.boom={txt:B.pend,t:0};B.pend=null;B.shake=0.4;B.stop=0.14;sfx(kd);if(kd!=='boom')sfx('boom');duckBgm();}
   const flameArrow=s.hero==='archer'&&E.burn>0&&pairKey()==='fire+speed';
   if(flameArrow){E.burn+=1.5;}
+  {const bh=B.def.beh68;if(dm&&bh==='fly'&&!s.dot&&s.ic&&ITEMS[s.ic]){const t=tagsOf(ITEMS[s.ic]);if(t.includes('blade')||t.includes('blunt')){B.dodgeN=(B.dodgeN||0)+1;if(B.dodgeN%4===0){dm=0;B.rec.dodge=(B.rec.dodge||0)+1;addText('ひらり','enemy','#c9e4ff');}}}
+   if(dm>=25&&bh==='soft'&&!s.dot){dm*=0.8;}if(dm&&bh==='armor'&&!s.pierce&&!s.dot){dm=Math.max(1,dm-3);}}
   if(dm){const red=B.def.boss==='guard'?(B.guardCl?18:0):mech==='shell'?6:0;if(red&&!s.pierce&&!s.dot&&!flameArrow){const d0=dm;dm=Math.max(1,dm-red);B.rec.shell+=d0-dm;if(d0-dm>=3&&fxRandom()<0.3)addText('殻で弾かれた','enemy','#c9c2b4');}
     if(E.shield>0){const mult=flameArrow?2:1,a=Math.min(E.shield,dm*mult);E.shield-=a;dm-=a/mult;B.rec.ebar+=a;if(a>0&&fxRandom()<0.4)addText(flameArrow?'バリアに効いた！':'バリア','enemy','#9cc8f5');}
     dm*=(1+0.03*Math.min(20,E.vuln||0))*(E.frz>0&&setVal('ice','frozen')?1+setVal('ice','frozen'):1);E.hp-=dm;B.rec.hit+=dm;E.flash=0.1;if(s.stat&&B.stats){if(s.stat==='ring')B.stats.ring+=dm;else B.stats[s.stat]=Math.max(B.stats[s.stat],dm);}addText(`${Math.round(dm)}${s.crit?'!':''}`,'enemy',s.crit?'#ffd25a':s.col,s.big||s.crit);
@@ -2302,6 +2306,7 @@ function step(dt){
   if(B.fuses&&B.fuses.length){B.fuses.filter(f=>f.at<=B.t).forEach(f=>{addText('追爆！','enemy','#ffb02e',true);B.stats.refire++;fire(f.x);});B.fuses=B.fuses.filter(f=>f.at>B.t);}
   E.frz=Math.max(0,E.frz-dt);if(E.frzCD>0){E.frzCD=Math.max(0,E.frzCD-dt);if(!E.frzCD)tryFreeze();}
   P.shield=Math.max(0,P.shield-P.shield*0.04*dt);
+  if(def.beh68==='dark'){B.darkT=(B.darkT||0)+dt;if(B.darkT>=6){B.darkT=0;E.shield=(E.shield||0)+E.max*0.04;addText('魔法の盾','enemy','#c8a8ff');}}
   if(def.boss==='queen'){B.bossT+=dt;if(B.frozenT>0){B.frozenT-=dt;if(B.frozenT<=0)B.frozenRow=null;}
     if(B.bossT>=7){B.bossT=0;const rows=[...new Set(B.inst.filter(x=>!x.done).map(x=>rowOf(x.l)))];B.frozenRow=rows.length?rows[Math.floor(Math.random()*rows.length)]:Math.floor(Math.random()*5);B.frozenT=3;B.banner={txt:'1段が凍った！',t:0.9};play(B.foe,'attack');}}
   for(const k in B.sealed){B.sealed[k]-=dt;if(B.sealed[k]<=0)delete B.sealed[k];}
@@ -2333,9 +2338,10 @@ function step(dt){
   talentTick();tick66();for(const s of B.shots){s.t+=dt*(s.spd||3.0);if(s.t>=1&&!s.hit){s.hit=1;hitEnemy(s);}}
   B.shots=B.shots.filter(s=>!s.hit);
   if(def.mission==='20秒防衛'&&P.hp<=0){endBattle(false);return;}
+  if(E.hp<=0&&def.beh68==='bone'&&!B.boneUp){B.boneUp=1;E.hp=Math.round(E.max*0.2);B.banner={txt:'骨が立ち上がった！',t:1};sfx('boom');}
   if(E.hp<=0&&!(def.mission==='20秒防衛'&&B.t+1e-7>=20)){if(def.boss==='demon'&&!B.phase2)enterDemonPhase();else{endBattle(true);return;}}
   const tt=B.t-(B.phaseT||0),enr=tt>25?1+0.5*Math.floor((tt-25)/8+1):1;
-  E.timer+=dt;if(E.timer>=def.int){E.timer-=def.int;clapper68();play(B.foe,'attack');sfx('foe');if(def.boss==='breaker'||def.support==='breaker'){B.atkN=(B.atkN||0)+1;if(B.atkN%3===0&&P.shield>0){P.shield*=1-0.4*(def.support==='breaker'?supportScale():1);addText('盾くずし！','party','#ff8a7a',true);B.shake=.25;}}partyHit(def.atk*enr*(1+0.1*(B.curseN||0)));if(enr>1&&!B.enr){B.enr=1;B.banner={txt:'敵が怒った！',t:1};}}
+  E.timer+=dt*(def.beh68==='beast'&&E.hp<E.max/2?1.5:1);if(E.timer>=def.int){E.timer-=def.int;clapper68();play(B.foe,'attack');sfx('foe');if(def.boss==='breaker'||def.support==='breaker'){B.atkN=(B.atkN||0)+1;if(B.atkN%3===0&&P.shield>0){P.shield*=1-0.4*(def.support==='breaker'?supportScale():1);addText('盾くずし！','party','#ff8a7a',true);B.shake=.25;}}partyHit(def.atk*enr*(1+0.1*(B.curseN||0)));if(enr>1&&!B.enr){B.enr=1;B.banner={txt:'敵が怒った！',t:1};}}
   if(P.hp<=0&&P.revive){P.hp=P.max*P.revive;P.revive=0;B.banner={txt:'不死鳥の羽で復活！',t:1.2};sfx('open');}
   E.flash=Math.max(0,E.flash-dt);P.flash=Math.max(0,P.flash-dt);B.shake=Math.max(0,B.shake-dt);
   B.texts.forEach(t=>t.t+=dt);B.texts=B.texts.filter(t=>t.t<0.9);
