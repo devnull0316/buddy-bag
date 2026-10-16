@@ -97,6 +97,17 @@ button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 #guide b{color:#a33a10;font-weight:400}
 #stage{display:none;position:relative;background:#1c1612;border:2px solid var(--edge);overflow:hidden}
 #stage canvas{display:block;width:100%;height:100%}
+
+#mcard .relicrow.talentrow{display:block;padding:6px 8px}#mcard .talentrow>p{margin:0 0 4px}#mcard .talentrow .row2{gap:6px;margin:0}#mcard .btn.talentpick{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;text-align:left;height:auto;min-height:58px;padding:6px 8px}
+#mcard .talentpick b{font-size:13px}#mcard .talentpick small{font-size:11px;line-height:1.35;opacity:.9;white-space:normal}
+.newdot{color:#e06a4a;font-size:10px;margin-left:3px;vertical-align:top}
+/* 遺物の発動表示 */
+#relicFx{position:absolute;left:6px;bottom:6px;display:flex;flex-direction:column;gap:3px;z-index:6;pointer-events:none;max-width:70%}
+#board{position:relative}#board #relicFx{bottom:auto;top:4px}
+.rfx{display:flex;align-items:center;gap:4px;background:rgba(20,14,10,.88);border:1px solid #e0b04a;padding:2px 6px 2px 2px;font-size:11px;line-height:1.2;color:#f3e3c0;animation:rfxIn .2s steps(3,end)}
+.rfx img{width:20px;height:20px;image-rendering:pixelated}.rfx b{font-weight:700;color:#e0b04a;white-space:nowrap}.rfx span{white-space:nowrap}
+@keyframes rfxIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+
 body.battle #info,body.battle #guide{display:none}
 body.battle #stage{display:block}
 
@@ -761,18 +772,70 @@ function showRelics(inRun=false,back=showHome){if(!inRun)return showShelf51(back
  document.querySelectorAll('[data-relic]').forEach(b=>b.onclick=()=>{const k=b.dataset.relic;if(inRun){if(!hasRelic(k))return;S.relics=activeRelics().filter(x=>x!==k);UNDO=null;recordPlay('relic_remove',{relic:k,relics:activeRelics(),enemyBonus:relicWeight()*RELIC_RATE});render();save();}else{const now=relicSetup();saveRelicSetup(ids.includes(k)?ids.filter(x=>x!==k):[...ids,k],now.display);recordPlay('relic_select',{relics:relicSetup().ids});}showRelics(inRun,back);$m(`[data-relic="${k}"]`)?.scrollIntoView({block:'nearest'});});
  document.querySelectorAll('[data-rdisplay]').forEach(b=>b.onclick=()=>{saveRelicSetup(ids,setup.display===b.dataset.rdisplay?'':b.dataset.rdisplay);recordPlay('relic_display',{relic:relicSetup().display||null});showRelics(false,back);});$m('#relicBack').onclick=()=>{if(inRun){closeModal();render();fit();}else back();};}
 function legacyRenderRelicStrip(){const el=$('relicStrip'),ids=activeRelics();el.hidden=!S.heroes.length||(!ids.length&&!S.relicStart?.length);if(el.hidden)return;el.innerHTML=`<span>遺物 ${ids.length}/3・重さ${relicWeight()}<br><b>敵の強さ +${relicWeight()*RELIC_RATE}%</b>（HP・攻撃）</span><button class="btn" id="relicOpen">遺物</button>`;$('relicOpen').onclick=()=>showRelics(true);}
-function relicTick(k,v){if(!B)return;B.rec.relic=B.rec.relic||{};B.rec.relic[k]=(B.rec.relic[k]||0)+v;}
+
+// ===== 特技（r65a）：Lv10・20・30・40・50 で勇者ごとに2択。いつでも無料で付け替え（Hades の鏡・FF14の特性）=====
+// 保存は「時刻×2＋選択(0/1)」の数字。クラウドの合わせ込み（大きい方が勝つ）で、新しい選択が残る。
+const TAL_TIERS=[10,20,30,40,50];
+const TALENTS={
+ knight:{10:[['k10a','守りの構え','開幕バリア+15'],['k10b','反撃','バリアで攻撃を受けるたびに敵へ4ダメージ（1秒に1回）']],
+  20:[['k20a','鉄壁の必殺','必殺のバリア 30→45'],['k20b','勇気の一撃','必殺で敵にも40ダメージ']],
+  30:[['k30a','みんなの盾','ベルトの盾・回復の効果+15%'],['k30b','剣の心得','騎士のバッグの武器のダメージ+12%']],
+  40:[['k40a','不屈','HPが3割を切ったとき一度だけバリア+40'],['k40b','号令の名手','「守りを固めよ」が1秒長い']],
+  50:[['k50a','城壁の守護','開幕に最大HPの10%のバリア'],['k50b','英雄の気迫','必殺ゲージが半分たまった状態で始まる']]},
+ mage:{10:[['m10a','炎の研究','魔法使いのバッグのやけど装備+15%'],['m10b','毒の研究','魔法使いのバッグの毒+15%']],
+  20:[['m20a','大火球','必殺のダメージ+30%'],['m20b','炎の守り','必殺でバリア+20']],
+  30:[['m30a','追い打ち','やけど中の敵に、魔法使いの武器のダメージ+10%'],['m30b','凍てつく火','必殺で凍結+30']],
+  40:[['m40a','早口の詠唱','魔法使いの必殺ゲージが早くたまる（発動ごと+2）'],['m40b','癒やしの術','魔法使いのバッグの回復+15%']],
+  50:[['m50a','業火','必殺のやけど+50%'],['m50b','二重詠唱','必殺がもう一度、半分の威力で出る']]},
+ archer:{10:[['a10a','早撃ち','ベルトの武器が10%速く動く'],['a10b','狙い撃ち','凍結中の敵に、弓使いの攻撃の会心+10ポイント']],
+  20:[['a20a','矢の雨','必殺の矢 6本→8本'],['a20b','毒矢','必殺の矢1本ごとに毒+2']],
+  30:[['a30a','身軽','弓使いのバッグの武器が8%速く動く'],['a30b','鋭い矢じり','弓使いの出血+15%']],
+  40:[['a40a','集中','弓使いの必殺ゲージが早くたまる（発動ごと+2）'],['a40b','先手','戦闘の最初の3秒、武器が30%速く動く']],
+  50:[['a50a','千本の矢','必殺の矢のダメージ 8→12'],['a50b','援護射撃','相方の必殺に合わせて矢を2本撃つ']]}};
+const TALENT_BY_ID=Object.fromEntries(Object.entries(TALENTS).flatMap(([h,t])=>Object.entries(t).flatMap(([tier,pr])=>pr.map(([id,nm,ds])=>[id,{h,tier:+tier,nm,ds}]))));
+function talentPick(h,tier,pg=loadProg()){const v=Number(pg.talents65?.[h]?.[tier])||0;return v>0?(v%2?1:0):-1;}
+function setTalent(h,tier,i){const pg=loadProg(),prev=Number(pg.talents65?.[h]?.[tier])||0,t=Math.max(Date.now(),Math.floor(prev/2)+1);pg.talents65={...pg.talents65,[h]:{...pg.talents65?.[h],[tier]:t*2+(i?1:0)}};saveProg(pg);TALVER++;recordPlay('talent_pick',{hero:h,tier,talent:TALENTS[h][tier][i][0]});}
+function talentsOpen(h,pg=loadProg()){const lv=heroLv(h,pg);return TAL_TIERS.filter(t=>lv>=t);}
+function talentsUnset(h,pg=loadProg()){return talentsOpen(h,pg).filter(t=>talentPick(h,t,pg)<0).length;}
+let TALVER=0;const TALC={key:'',ids:[]};
+// 出撃した2人の、出撃時のLvで開いている特技だけが効く
+function activeTalents(){const key=(S.heroes||[]).join()+'|'+JSON.stringify(S.hlvRun||{})+'|'+TALVER;if(TALC.key===key)return TALC.ids;let pg;try{pg=loadProg();}catch(e){pg={};}
+ const ids=[];for(const h of S.heroes||[]){if(!TALENTS[h])continue;const lv=runLv(h);for(const t of TAL_TIERS){if(lv<t)continue;const i=talentPick(h,t,pg);if(i>=0)ids.push(TALENTS[h][t][i][0]);}}
+ TALC.key=key;TALC.ids=ids;return ids;}
+const tal=id=>activeTalents().includes(id);
+function talentItem(h,l,d){const f={pw:1,cd:1,poison:1,bleed:1,burn:1,care:1};const bag=l.a!=='belt',care=['shield','heal','bash'].includes(d.kind),fire=d.kind==='burn'||d.kind==='ignite';
+ if(tal('k30a')&&!bag&&care)f.care*=1.15;
+ if(h==='knight'&&bag&&d.cls==='weapon'&&tal('k30b'))f.pw*=1.12;
+ if(h==='mage'&&bag){if(tal('m10a')){f.burn*=1.15;if(fire)f.pw*=1.15;}if(tal('m10b'))f.poison*=1.15;if(tal('m40b')&&d.kind==='heal')f.pw*=1.15;}
+ if(!bag&&d.cls==='weapon'&&tal('a10a'))f.cd*=0.9;
+ if(h==='archer'&&bag&&d.cls==='weapon'&&tal('a30a'))f.cd*=0.92;
+ if(h==='archer'&&tal('a30b'))f.bleed*=1.15;
+ return f;}
+const ICO_HERO=h=>({knight:ICO('shield'),mage:ICO('staff'),archer:ICO('bow')})[h]||ICO('sword');
+function talentFx(id,text){const t=TALENT_BY_ID[id];if(!t)return;fxPop('tal:'+id,ICO_HERO(t.h),t.nm,text);}
+function talentTick(){if(!B||B.done)return;const P=B.party;if(tal('k40a')&&!B.talOnce?.k40a&&P.hp>0&&P.hp<=P.max*.3){B.talOnce={...B.talOnce,k40a:1};P.shield+=40;addText('不屈！ バリア+40','party','#9cc8f5',true);talentFx('k40a','バリア+40');}}
+function relicTick(k,v){if(!B)return;B.rec.relic=B.rec.relic||{};B.rec.relic[k]=(B.rec.relic[k]||0)+v;relicFx(k,v);}
+// 遺物が効いたことを画面の端に短く出す（Slay the Spire・Balatro の発動表示）。結果へ飛ばしたときは出さない。
+// 同じ遺物は1.2秒以内ならまとめて数字を足す。同時に出すのは3つまで。
+const RFX={};
+function relicFxText(k,v){if(k==='spareFuseCost')return null;const t=relicEffectText(k,v);return t==='発動なし'?null:t;}
+function relicFx(k,v,text){const key=k==='spareFuseCost'?null:k;if(!key||!RELICS[key])return;fxPop(key,relicIcon(key),RELICS[key].nm,text,v);}
+function fxPop(key,icon,name,text,v=0){try{if(typeof SILENT!=='undefined'&&SILENT)return;const host=document.getElementById(S.phase==='plan'?'board':'stage');if(!host||host.offsetParent===null)return;
+  const now=performance.now(),cur=RFX[key];let box=document.getElementById('relicFx');if(!box||box.parentElement!==host){box?.remove();box=document.createElement('div');box.id='relicFx';host.appendChild(box);}
+  if(cur&&now-cur.t<1200&&cur.el.isConnected){cur.v+=v;cur.t=now;cur.el.querySelector('span').textContent=text||(RELICS[key]?relicFxText(key,cur.v):'')||'';clearTimeout(cur.to);cur.to=setTimeout(()=>cur.el.remove(),1600);return;}
+  const tx=text||(RELICS[key]?relicFxText(key,v):'');if(!tx)return;const el=document.createElement('div');el.className='rfx';el.innerHTML=`<img src="${icon}" alt=""><b></b><span></span>`;el.querySelector('b').textContent=name;el.querySelector('span').textContent=tx;box.appendChild(el);
+  while(box.children.length>3)box.firstChild.remove();RFX[key]={t:now,v,el,to:setTimeout(()=>el.remove(),1600)};}catch(e){}}
 const wrapBarrier=()=>Math.max(0,Math.min(12,Number(S.relicUsed?.oldWrap)||0));
 function relicMerge(){
- if(hasRelic('oldWrap')){const before=wrapBarrier(),after=Math.min(12,before+6);S.relicUsed={...S.relicUsed,oldWrap:after};recordPlay('relic_effect',{relic:'oldWrap',barrier:after-before,stored:after});}
- if(hasRelic('smith')&&(S.relicUsed?.smith||0)<2){S.relicUsed={...S.relicUsed,smith:(S.relicUsed?.smith||0)+1};S.gold++;recordPlay('relic_effect',{relic:'smith',income:1,used:S.relicUsed.smith});}}
+ if(hasRelic('oldWrap')){const before=wrapBarrier(),after=Math.min(Math.round(relicRankMult(relicRank('oldWrap'))*12),before+Math.round(relicRankMult(relicRank('oldWrap'))*6));S.relicUsed={...S.relicUsed,oldWrap:after};recordPlay('relic_effect',{relic:'oldWrap',barrier:after-before,stored:after});if(after>before)relicFx('oldWrap',after-before,`次戦の開幕バリア+${after}`);}
+ if(hasRelic('smith')&&(S.relicUsed?.smith||0)<2){S.relicUsed={...S.relicUsed,smith:(S.relicUsed?.smith||0)+1};S.gold++;recordPlay('relic_effect',{relic:'smith',income:1,used:S.relicUsed.smith});relicFx('smith',1,`+1G（あと${2-S.relicUsed.smith}回）`);}}
 const tokenDiscount=()=>hasRelic('traderToken')&&(S.rerollN||0)>0&&S.relicUsed?.traderTokenRound!==S.round;
-function spendToken(c,base){if(!tokenDiscount())return;S.relicUsed={...S.relicUsed,traderTokenRound:S.round};recordPlay('relic_effect',{relic:'traderToken',discount:base-c,round:S.round});}
+function spendToken(c,base){if(!tokenDiscount())return;S.relicUsed={...S.relicUsed,traderTokenRound:S.round};recordPlay('relic_effect',{relic:'traderToken',discount:base-c,round:S.round});relicFx('traderToken',base-c,`${base-c}G安く買えた`);}
 // r63: 条件は開いたマスと、実際に置いた装備から計算する。
 const sparseBag63=l=>['A','B'].includes(l.a)&&boardLocs().filter(n=>n.a===l.a&&usable(n)&&!getP(n)&&!isParcel(n)).length===1;
 const flameNeighbor63=l=>['A','B'].includes(l.a)&&neighbors(l).some(n=>{const q=getP(n),d=ITEMS[q?.type];return n.a===l.a&&usable(n)&&d&&(d.kind==='burn'||d.burnSelf||d.cls==='weapon'&&S.heroes[AB[n.a]]==='mage'&&!d.freeze&&['dmg','once'].includes(d.kind));});
-function relicDirect63(l,d){const out={};if(hasRelic('hunterFang')&&d.cls==='weapon'&&loneWeapon(l))out.hunterFang=.15;if(hasRelic('hearthEmber')&&d.cls==='weapon'&&flameNeighbor63(l))out.hearthEmber=.12;if(hasRelic('spareFuse')&&d.kind==='once')out.spareFuse=.25;return out;}
-const relicCareDelta63=(l,d)=>['shield','heal','bash'].includes(d.kind)?(hasRelic('travelCloak')&&sparseBag63(l)?.2:0)-(hasRelic('spareFuse')?.1:0):0;
+function relicDirect63(l,d){const out={};if(hasRelic('hunterFang')&&d.cls==='weapon'&&loneWeapon(l))out.hunterFang=rv('hunterFang',.15);if(hasRelic('hearthEmber')&&d.cls==='weapon'&&flameNeighbor63(l))out.hearthEmber=rv('hearthEmber',.12);if(hasRelic('spareFuse')&&d.kind==='once')out.spareFuse=rv('spareFuse',.25);return out;}
+const relicCareDelta63=(l,d)=>['shield','heal','bash'].includes(d.kind)?(hasRelic('travelCloak')&&sparseBag63(l)?rv('travelCloak',.2):0)-(hasRelic('spareFuse')?.1:0):0;
 const RELIC_TIPS63={
  bombkit:'先に爆弾を置き、控えを空けよう。導火線で再爆発も狙えます。',courier:'荷物に1マス使います。配達のある出撃で選ぼう。',smith:'同じ品を買って合体。旅商の割符・古い包み布とも合います。',
  ember:'魔法使いや炎の武器と組もう。赤い宝石で会心を増やせます。',venom:'毒の武器や毒見の匙・緑銅の栓と組もう。',frost:'氷の武器・雪山の鈴・白樺の護符と組もう。',
@@ -784,8 +847,18 @@ const RELIC_TIPS63={
  minerPlugs:'爆弾・火薬玉を早めに発動。予備の火縄とも合います。',spareFuse:'爆弾・火薬玉を買おう。守りが減るので盾や薬も確認。',hearthEmber:'炎を付ける武器の隣に、攻撃用の武器を置こう。魔法使いの武器も使えます。',birchCharm:'氷の武器で凍結させ、剣や弓で会心を狙おう。'};
 const relicTip63=k=>RELIC_TIPS63[k]||'装備に合う遺物を選ぼう。';
 const relicWinChapters63=(k,pg=loadProg())=>STORY_CHS.filter(ch=>pg.relicWins63?.[k]?.[storyKey(ch)]===1);
+// 勝利印で固有の遺物が育つ（Hades のお守り型）。なし→銅→銀→金で 1.0→1.1→1.25→1.4 倍。お金の遺物は変わらない
+const RELIC_RANK_MULT=[1,1.1,1.25,1.4],RELIC_RANK_NAME=['','銅','銀','金'];
+const relicRankMult=r=>RELIC_RANK_MULT[Math.max(0,Math.min(3,r|0))];
+function relicRank(k,pg=loadProg()){const n=relicWinChapters63(k,pg).length;return n>=5?3:n>=3?2:n>=1?1:0;}
+const RELIC_NO_RANK=new Set(['bombkit','courier','smith','map','purse','traderToken']);
+const relicGrows=k=>!RELIC_NO_RANK.has(k);
+// 出撃中は戦闘の開始時の段階で固定（戦闘ごとに loadProg しない）
+function rv(k,base){if(!relicGrows(k))return base;S.relicRank=S.relicRank||{};let r=S.relicRank[k];if(r===undefined){try{r=relicRank(k);}catch(e){r=0;}S.relicRank[k]=r;}return base*relicRankMult(r);}
+function fixRelicRanks(){const pg=loadProg();S.relicRank=Object.fromEntries(activeRelics().map(k=>[k,relicGrows(k)?relicRank(k,pg):0]));}
+function relicRankHTML(k,pg=loadProg()){if(!relicGrows(k))return '<small class="rrank">勝利印で効果は変わりません</small>';const r=relicRank(k,pg),n=relicWinChapters63(k,pg).length,next=[1,3,5][r];return `<small class="rrank">${r?`${RELIC_RANK_NAME[r]}の印：効果${relicRankMult(r)}倍`:'印なし：効果1倍'}${r<3?`／あと${next-n}章で${RELIC_RANK_NAME[r+1]}（${relicRankMult(r+1)}倍）`:'（最大）'}</small>`;}
 function relicBadge63(k,pg=loadProg()){const n=relicWinChapters63(k,pg).length;return n>=5?'金の勝利印':n>=3?'銀の勝利印':n>=1?'銅の勝利印':'勝利印なし';}
-function relicProgress63(k,pg=loadProg()){const cs=relicWinChapters63(k,pg),n=cs.length;return relicBadge63(k,pg)+'・'+n+'章'+(n<5?'／次は異なる'+(n<1?1:n<3?3:5)+'章でクリア':'／金の印を達成')+(n?'（第'+cs.join('・')+'章）':'');}
+function relicProgress63(k,pg=loadProg()){const cs=relicWinChapters63(k,pg),n=cs.length,r=relicRank(k,pg),g=relicGrows(k);return relicBadge63(k,pg)+(g?'（効果'+relicRankMult(r)+'倍）':'')+'・'+n+'章'+(n<5?'／次は異なる'+(n<1?1:n<3?3:5)+'章でクリア'+(g?'→'+relicRankMult(r+1)+'倍':''):'／金の印を達成')+(n?'（第'+cs.join('・')+'章）':'');}
 function stampRelics63(){if(S.run?.mode!=='story')return;const pg=loadProg(),ch=storyKey(S.run.ch),fresh=[];for(const k of activeRelics()){if(pg.relicWins63?.[k]?.[ch]===1)continue;pg.relicWins63={...pg.relicWins63,[k]:{...pg.relicWins63?.[k],[ch]:1}};fresh.push(k);}if(fresh.length){saveProg(pg);recordPlay('relic_victory',{chapter:S.run.ch,relics:fresh});}S.relicVictory63=fresh;}
 function relicVictoryHTML63(){const pg=loadProg();return (S.relicVictory63||[]).length?'<div class="facts"><b>遺物の勝利印を記録</b>'+S.relicVictory63.map(k=>'<p>'+RELICS[k].nm+'：'+relicProgress63(k,pg)+'</p>').join('')+'</div>':'';}
 function relicCollectionHelp63(){return '<div class="ophelp" id="relicCollectionHelp63"><p>使った遺物に、章クリアで勝利印。</p><p>異なる1・3・5章で、銅・銀・金。</p><p>印と称号で、強さは変わりません。</p></div>';}
@@ -1190,8 +1263,8 @@ function itemUses(l){
   return users(l).map(u=>{const h=S.heroes[u],tag=HEROES[h].tag;
     const ap=am===null?APTV[aptOf(d,h)]:am;
     if(d.burnSelf)burnAdd=d.burnSelf*st*burnM;
-    const bm=l.a==='belt'?0.7:1,relicDirect=relicDirect63(l,d),direct=1+Object.values(relicDirect).reduce((a,b)=>a+b,0),care=1+(hasRelic('sharedClasp')&&l.a==='belt'&&['shield','heal','bash'].includes(d.kind)?.15:0)+relicCareDelta63(l,d);
-    return{u,hero:h,tag,direct,care,relicDirect,apt:aptOf(d,h),pw:bm*(d.p||0)*(['ignite','detonate','bash'].includes(d.kind)?1:STAR[p.star])*pm*ap*(1+levelStats(runLv(h)).pow/100)*(tag==='guard'&&(d.kind==='shield'||d.kind==='heal')?1.25:1)*(d.kind==='burn'?burnM:1),bleed:bleed*bm*(1+levelStats(runLv(h)).pow/100),cd:d.cd*cdm*(tag==='speed'&&d.cls==='weapon'?0.7:1),crit:Math.min(.9,crit),poison:poison*bm*(1+levelStats(runLv(h)).pow/100),burnAdd:burnAdd*bm*(1+levelStats(runLv(h)).pow/100),freeze:freeze*bm,leech,mercy,scale,fuse,bell:bell*bm,buffs:[...new Set([...buffs,...(relicDirect.hunterFang?['狩人の牙（直接+15%）']:[]),...(hasRelic('sharedClasp')&&l.a==='belt'&&['shield','heal','bash'].includes(d.kind)?['共用の留め金（盾・回復+15%）']:[]),...(relicDirect.hearthEmber?['炉床の火種（直接+12%）']:[]),...(relicDirect.spareFuse?['予備の火縄（直接+25%）']:[]),...(hasRelic('travelCloak')&&sparseBag63(l)&&['shield','heal','bash'].includes(d.kind)?['泥除けの外套（盾・回復+20%）']:[]),...(hasRelic('spareFuse')&&['shield','heal','bash'].includes(d.kind)?['予備の火縄（盾・回復-10%）']:[])])]};});
+    const bm=l.a==='belt'?0.7:1,relicDirect=relicDirect63(l,d),direct=1+Object.values(relicDirect).reduce((a,b)=>a+b,0),care=1+(hasRelic('sharedClasp')&&l.a==='belt'&&['shield','heal','bash'].includes(d.kind)?rv('sharedClasp',.15):0)+relicCareDelta63(l,d);
+    const tf=talentItem(h,l,d);return{u,hero:h,tag,direct,care:care*tf.care,relicDirect,apt:aptOf(d,h),pw:tf.pw*bm*(d.p||0)*(['ignite','detonate','bash'].includes(d.kind)?1:STAR[p.star])*pm*ap*(1+levelStats(runLv(h)).pow/100)*(tag==='guard'&&(d.kind==='shield'||d.kind==='heal')?1.25:1)*(d.kind==='burn'?burnM:1),bleed:tf.bleed*bleed*bm*(1+levelStats(runLv(h)).pow/100),cd:tf.cd*d.cd*cdm*(tag==='speed'&&d.cls==='weapon'?0.7:1),crit:Math.min(.9,crit),poison:tf.poison*poison*bm*(1+levelStats(runLv(h)).pow/100),burnAdd:tf.burn*burnAdd*bm*(1+levelStats(runLv(h)).pow/100),freeze:freeze*bm,leech,mercy,scale,fuse,bell:bell*bm,buffs:[...new Set([...buffs,...(relicDirect.hunterFang?['狩人の牙（直接+15%）']:[]),...(hasRelic('sharedClasp')&&l.a==='belt'&&['shield','heal','bash'].includes(d.kind)?['共用の留め金（盾・回復+15%）']:[]),...(relicDirect.hearthEmber?['炉床の火種（直接+12%）']:[]),...(relicDirect.spareFuse?['予備の火縄（直接+25%）']:[]),...(hasRelic('travelCloak')&&sparseBag63(l)&&['shield','heal','bash'].includes(d.kind)?['泥除けの外套（盾・回復+20%）']:[]),...(hasRelic('spareFuse')&&['shield','heal','bash'].includes(d.kind)?['予備の火縄（盾・回復-10%）']:[])])]};});
 }
 // 盤面全体の強さの目安（攻撃力/秒・守り/秒）。置き場ごとの増分表示に使う
 const previewPower=(u,d)=>u.pw*(['dmg','once','detonate'].includes(d.kind)?u.direct:['shield','heal'].includes(d.kind)?u.care:1);
@@ -1534,10 +1607,10 @@ function startBattle(){
   S.goldAtFight=S.gold;
   noteCatalog();
   const slowBurn=pairKey()==='fire+speed';
-  const openingWrap=hasRelic('oldWrap')?wrapBarrier():0;if(S.relicUsed)S.relicUsed.oldWrap=0;
+  S.relicRank={};const openingWrap=hasRelic('oldWrap')?wrapBarrier():0;if(S.relicUsed)S.relicUsed.oldWrap=0;
   const def=enemy(S.round);setMusic(def.boss?'boss':'battle');S.inBattle=1;save();
-  B={t:0,def,enemy:{hp:def.hp,max:def.hp,timer:0,burn:0,poison:0,frz:0,flash:0},party:{hp:maxHp(),max:maxHp(),shield:openingWrap+(S.heroes.includes('knight')?10*levelStats(runLv('knight')).m:0)+(S.camp||0)+(S.startShield||0)+(pairKey()==='fire+speed'?Math.round(def.atk/def.int*PAIR_FS_SEC):0),flash:0,revive:(()=>{const f=boardLocs().map(getP).filter(q=>q&&q.type==='feather');return f.length?[0,.4,.5,.6][Math.max(...f.map(q=>q.star))]:0;})()},
-     inst:[],gauge:[0,0],specialSeen:{},specialFx:[],frozenRow:null,frozenT:0,bossT:0,sealed:{},texts:[],shots:[],beams:[],combos:[],shake:0,stop:0,done:false,burnAcc:0,poisonAcc:0,banner:null,contrib:{},log:'',
+  B={t:0,def,enemy:{hp:def.hp,max:def.hp,timer:0,burn:0,poison:0,frz:0,flash:0},party:{hp:maxHp(),max:maxHp(),shield:openingWrap+(S.heroes.includes('knight')?10*levelStats(runLv('knight')).m:0)+(tal('k10a')?15:0)+(tal('k50a')?Math.round(maxHp()*.1):0)+(S.camp||0)+(S.startShield||0)+(pairKey()==='fire+speed'?Math.round(def.atk/def.int*PAIR_FS_SEC):0),flash:0,revive:(()=>{const f=boardLocs().map(getP).filter(q=>q&&q.type==='feather');return f.length?[0,.4,.5,.6][Math.max(...f.map(q=>q.star))]:0;})()},
+     inst:[],gauge:(S.heroes||[]).map(h=>h==='knight'&&tal('k50b')?50:0),specialSeen:{},specialFx:[],frozenRow:null,frozenT:0,bossT:0,sealed:{},texts:[],shots:[],beams:[],combos:[],shake:0,stop:0,done:false,burnAcc:0,poisonAcc:0,banner:null,contrib:{},log:'',
      actors:S.heroes.map(actor),foe:actor(def.spr),slowBurn,stats:{ign:0,det:0,bleed:0,frz:0,ring:0,refire:0}};
   boardLocs().forEach(l=>{const us=itemUses(l);if(!us.length)return;const p=getP(l),d=ITEMS[p.type];
     if(l.a==='belt'&&us.length===2)B.inst.push({l,p,d,dark:darkOf(l,d),combo:us,u:-1,tag:'combo',pairOn:pairOn(l),pw:us[0].pw+us[1].pw,cd:(us[0].cd+us[1].cd)/2,cd0:(us[0].cd+us[1].cd)/2,timer:d.opening?(us[0].cd+us[1].cd)/2:d.kind==='once'?0:Math.random()*0.5});
@@ -1561,33 +1634,33 @@ function fire(x){
 }
 // 騎士が盾を張った直後の、魔法使いの攻撃はやけど1.5倍（1回）
 function kmB(x){if(x.hero==='mage'&&B.kmBoost){B.kmBoost=0;addText('炎鉄！','enemy','#ff9a3c');return 1.5;}return 1;}
-function careRelicMultiplier(x){return 1+(hasRelic('sharedClasp')&&x.l.a==='belt'&&['shield','heal','bash'].includes(x.d.kind)?.15:0)+(hasRelic('tastingSpoon')&&x.d.kind==='heal'&&B.enemy.poison>=5?.15:0)+relicCareDelta63(x.l,x.d);}
+function careRelicMultiplier(x){return 1+(hasRelic('sharedClasp')&&x.l.a==='belt'&&['shield','heal','bash'].includes(x.d.kind)?rv('sharedClasp',.15):0)+(hasRelic('tastingSpoon')&&x.d.kind==='heal'&&B.enemy.poison>=5?rv('tastingSpoon',.15):0)+relicCareDelta63(x.l,x.d);}
 function itemPower(x){const d=x.d,E=B.enemy,P=B.party;
   return x.pw*(d.kind==='bash'?1:careRelicMultiplier(x))*(d.growHeal?1+Math.min(4,x.growth||0)*.25:1)*(d.lowHeal&&P.hp<=P.max/2?2:1)*(d.poisonHeal&&E.poison>0?1.6:1)*(d.burnShield&&E.burn>0?1.5:1)*(d.frozenShield&&E.frz>0?2:1);}
 function fireOne(x){
   if(B.assaultT>0&&['shield','heal','bash'].includes(x.d.kind))return;
   const keepLog=x.isCombo?B.log:null;
-  const P=B.party,E=B.enemy,d=x.d;armCampPot();let p=itemPower(x);if(d.kind==='once'&&hasRelic('minerPlugs')&&!B.relicOnce?.minerPlugs){B.relicOnce={...B.relicOnce,minerPlugs:1};P.shield+=8;relicTick('minerPlugs',8);}
-  if(d.kind==='heal'||d.kind==='shield'){const base=p/careRelicMultiplier(x);if(hasRelic('sharedClasp')&&x.l.a==='belt')relicTick('sharedClasp',base*.15);if(hasRelic('tastingSpoon')&&d.kind==='heal'&&E.poison>=5)relicTick('tastingSpoon',base*.15);if(hasRelic('travelCloak')&&sparseBag63(x.l))relicTick('travelCloak',base*.2);if(hasRelic('spareFuse'))relicTick('spareFuseCost',base*.1);}
-  if(d.kind==='heal'&&B.campPotReady&&!B.relicOnce?.campPot){B.relicOnce={...B.relicOnce,campPot:1};p+=8;relicTick('campPot',8);}
+  const P=B.party,E=B.enemy,d=x.d;armCampPot();let p=itemPower(x);if(d.kind==='once'&&hasRelic('minerPlugs')&&!B.relicOnce?.minerPlugs){B.relicOnce={...B.relicOnce,minerPlugs:1};{const v=rv('minerPlugs',8);P.shield+=v;relicTick('minerPlugs',v);}}
+  if(d.kind==='heal'||d.kind==='shield'){const base=p/careRelicMultiplier(x);if(hasRelic('sharedClasp')&&x.l.a==='belt')relicTick('sharedClasp',base*rv('sharedClasp',.15));if(hasRelic('tastingSpoon')&&d.kind==='heal'&&E.poison>=5)relicTick('tastingSpoon',base*rv('tastingSpoon',.15));if(hasRelic('travelCloak')&&sparseBag63(x.l))relicTick('travelCloak',base*rv('travelCloak',.2));if(hasRelic('spareFuse'))relicTick('spareFuseCost',base*.1);}
+  if(d.kind==='heal'&&B.campPotReady&&!B.relicOnce?.campPot){B.relicOnce={...B.relicOnce,campPot:1};{const v=rv('campPot',8);p+=v;relicTick('campPot',v);}}
   if(d.growHeal)x.growth=(x.growth||0)+1;const el=cellEl(x.l);let c0=[innerWidth/2,innerHeight/2];
   if(el){const r=el.getBoundingClientRect();c0=[r.left+r.width/2,r.top+r.height/2];}
   const col=TAG[x.tag].color,src=lkey(x.l);
   const who=HEROES[x.hero].name+'の'+d.name;
-  const coldCrit=hasRelic('birchCharm')&&E.frz>0&&['dmg','once','ignite','detonate','bash'].includes(d.kind);const crit=Math.random()<Math.min(.9,x.crit+(hasRelic('ember')&&E.burn>0?.12:0)+(coldCrit?.1:0));if(crit&&coldCrit)relicTick('birchCharm',1);if(crit&&hasRelic('ember')&&E.burn>0&&(!newRelicRule()||d.kind==='dmg'||d.kind==='once'))relicTick('ember',1);if(crit&&(d.kind==='dmg'||d.kind==='once'))p*=2;
+  const coldCrit=hasRelic('birchCharm')&&E.frz>0&&['dmg','once','ignite','detonate','bash'].includes(d.kind);const crit=Math.random()<Math.min(.9,x.crit+(x.hero==='archer'&&E.frz>0&&tal('a10b')?.1:0)+(hasRelic('ember')&&E.burn>0?rv('ember',.12):0)+(coldCrit?rv('birchCharm',.1):0));if(crit&&coldCrit)relicTick('birchCharm',1);if(crit&&hasRelic('ember')&&E.burn>0&&(!newRelicRule()||d.kind==='dmg'||d.kind==='once'))relicTick('ember',1);if(x.hero==='mage'&&E.burn>0&&(d.kind==='dmg'||d.kind==='once')&&tal('m30a'))p*=1.1;if(crit&&(d.kind==='dmg'||d.kind==='once'))p*=2;
   if(d.kind==='dmg'||d.kind==='once'){const dm=p*(fireOn(x,d)?FIRE_D:1);
     const vis=d.kind==='once'?'icon':d.name.includes('弓')?'arrow':(x.tag==='fire'||d.type==='istaff'||d.type==='staff'||d.type==='orb')?'orb':'slash';
     const sh={shatter:d.shatter,x0:c0[0],y0:c0[1],t:0,col,dmg:dm*x.direct,relicBonuses:Object.fromEntries(Object.entries(x.relicDirect||{}).map(([k,v])=>[k,dm*v])),big:p>=30||x.isCombo,crit,src,ic:x.p.type,vis,spd:vis==='slash'?11:vis==='arrow'?7.5:vis==='orb'?5.5:3,pierce:d.pierce,poison:x.poison,burn:(fireOn(x,d)?p*FIRE_B*kmB(x):0)+(d.kind==='dmg'&&x.burnAdd?x.burnAdd:0),freeze:x.freeze,leech:x.leech,bleed:x.bleed,hero:x.hero};B.shots.push(sh);
     B.log=`${who} → ${Math.round(dm)}${crit?'（会心！）':''}`;}
   if(d.kind==='burn'){B.shots.push({x0:c0[0],y0:c0[1],t:0,col:'#ea6b3c',burn:p*kmB(x),freeze:x.freeze,src,ic:'fire'});B.log=`${who} → やけど${Math.round(p)}`;}
-  if(d.kind==='detonate'){E.poison+=x.poison;const v=E.poison*x.pw*(crit?2:1)*x.direct;if(v>=1){B.shots.push({x0:c0[0],y0:c0[1],t:0,col:'#9fd35a',dmg:v,relicBonuses:Object.fromEntries(Object.entries(x.relicDirect||{}).map(([k,b])=>[k,v/x.direct*b])),big:true,src,ic:'poison',leech:x.leech,stat:'det',hero:x.hero});if(hasRelic('copperStopper')&&!B.relicOnce?.copperStopper){B.relicOnce={...B.relicOnce,copperStopper:1};relicTick('copperStopper',E.poison*.15);E.poison*=.65;}else E.poison*=.5;B.log=`${who} → 毒爆発 ${Math.round(v)}`;if(v>=40)B.pend=`毒爆発！ ${Math.round(v)}`;}else B.log=`${who}：毒が無いので空振り`;}
-  if(d.kind==='bash'){const base=8*STAR[x.p.star],sv=base*careRelicMultiplier(x);P.shield+=sv;if(hasRelic('sharedClasp')&&x.l.a==='belt')relicTick('sharedClasp',base*.15);if(hasRelic('travelCloak')&&sparseBag63(x.l))relicTick('travelCloak',base*.2);if(hasRelic('spareFuse'))relicTick('spareFuseCost',base*.1);const v=P.shield*x.pw*(crit?2:1);if(v>=1){B.shots.push({x0:c0[0],y0:c0[1],t:0,col:'#9cc8f5',dmg:v,big:v>=25,src,ic:'wall',freeze:x.freeze,hero:x.hero});B.log=`${who} → 盾で殴って ${Math.round(v)}`;if(v>=25)B.pend=`城壁の一撃！ ${Math.round(v)}`;}else B.log=`${who}：バリアが無いので空振り`;}
+  if(d.kind==='detonate'){E.poison+=x.poison;const v=E.poison*x.pw*(crit?2:1)*x.direct;if(v>=1){B.shots.push({x0:c0[0],y0:c0[1],t:0,col:'#9fd35a',dmg:v,relicBonuses:Object.fromEntries(Object.entries(x.relicDirect||{}).map(([k,b])=>[k,v/x.direct*b])),big:true,src,ic:'poison',leech:x.leech,stat:'det',hero:x.hero});if(hasRelic('copperStopper')&&!B.relicOnce?.copperStopper){B.relicOnce={...B.relicOnce,copperStopper:1};{const keep=Math.min(.9,.5+rv('copperStopper',.15));relicTick('copperStopper',E.poison*(keep-.5));E.poison*=keep;}}else E.poison*=.5;B.log=`${who} → 毒爆発 ${Math.round(v)}`;if(v>=40)B.pend=`毒爆発！ ${Math.round(v)}`;}else B.log=`${who}：毒が無いので空振り`;}
+  if(d.kind==='bash'){const base=8*STAR[x.p.star],sv=base*careRelicMultiplier(x);P.shield+=sv;if(hasRelic('sharedClasp')&&x.l.a==='belt')relicTick('sharedClasp',base*rv('sharedClasp',.15));if(hasRelic('travelCloak')&&sparseBag63(x.l))relicTick('travelCloak',base*rv('travelCloak',.2));if(hasRelic('spareFuse'))relicTick('spareFuseCost',base*.1);const v=P.shield*x.pw*(crit?2:1);if(v>=1){B.shots.push({x0:c0[0],y0:c0[1],t:0,col:'#9cc8f5',dmg:v,big:v>=25,src,ic:'wall',freeze:x.freeze,hero:x.hero});B.log=`${who} → 盾で殴って ${Math.round(v)}`;if(v>=25)B.pend=`城壁の一撃！ ${Math.round(v)}`;}else B.log=`${who}：バリアが無いので空振り`;}
   if(d.ramp&&x.cd0){x.cd=Math.max(x.cd0/(x.d.rampMax||2.5),x.cd*0.92);if(x.cd<=x.cd0/(x.d.rampMax||2.5)+1e-6&&!x.maxed){x.maxed=1;B.boom={txt:'嵐の連射！',t:0};B.shake=0.25;}}
   if(d.kind==='ignite'){const dk=envOf()==='damp'?0.7:1;if(x.burnAdd&&B.def.mech!=='fireproof')E.burn+=x.burnAdd*dk;else if(x.burnAdd)E.burn+=x.burnAdd*0.4*dk;const v=E.burn*x.pw*(crit?2:1);if(v>=1){B.shots.push({x0:c0[0],y0:c0[1],t:0,col:'#ffb02e',dmg:v,big:v>=30,src,ic:'fire',stat:'ign',hero:x.hero});if(v>=40)B.pend=`大炎上！ ${Math.round(v)}`;B.log=`${who} → やけどを燃やして${Math.round(v)}`;}else B.log=`${who}：やけどが無いので空振り`;}
   if(d.kind==='shield'&&x.hero==='knight'&&pairKey()==='fire+guard'&&!B.kmBoost){B.kmBoost=1;}
   if(d.kind==='shield'){P.shield+=p;addText(`盾+${Math.round(p)}`,'party','#9cc8f5');sfx('shield');B.log=`${who} → バリア${Math.round(p)}`;}
   if(d.kind==='heal'){const h=Math.min(p,P.max-P.hp);P.hp+=h;B.rec.healed+=h;B.contrib[src]=(B.contrib[src]||0)+h;sfx('heal');addText(`+${Math.round(h)}`,'party','#9be38a');
-    if(hasRelic('mercy')&&!B.relicOnce?.mercy){B.relicOnce={...B.relicOnce,mercy:1};const v=Math.min(6,Math.max(0,p-h));P.shield+=v;relicTick('mercy',v);}
+    if(hasRelic('mercy')&&!B.relicOnce?.mercy){B.relicOnce={...B.relicOnce,mercy:1};const v=Math.min(rv('mercy',6),Math.max(0,p-h));P.shield+=v;relicTick('mercy',v);}
     if(x.mercy&&p-h>0.5){const sv=Math.min((p-h)*x.mercy.r,x.mercy.cap);P.shield+=sv;addText(`盾+${Math.round(sv)}`,'party','#9cc8f5');B.contrib[src]=(B.contrib[src]||0)+sv;}
     if(x.scale&&h>=1){B.scaleCD=B.scaleCD||{};const ck=src+'-'+x.u;if(!(B.scaleCD[ck]>B.t)){B.scaleCD[ck]=B.t+1;const v=Math.min(h*x.scale.r,x.scale.cap);B.shots.push({x0:c0[0],y0:c0[1],t:0,col:'#ffe08a',dmg:v,src,vis:'orb',spd:6,big:v>=25,stat:'ring'});addText(`祈り→${Math.round(v)}`,'party','#ffe08a');}}B.log=`${who} → 回復${Math.round(h)}`;}
   if(x.bell&&(d.kind==='shield'||d.kind==='bash')){const h=Math.min(x.bell,Math.max(0,P.max-P.hp));P.hp+=h;B.rec.healed+=h;B.contrib[src]=(B.contrib[src]||0)+h;if(h){addText(`鈴 +${Math.round(h)}`,'party','#9be38a');sfx('heal');}}
@@ -1598,7 +1671,7 @@ function fireOne(x){
   if(!x.isCombo){const sw=swingSfx(d);if(sw)sfx(sw);}
   if(keepLog)B.log=keepLog;
   play(B.actors[x.u],'attack');
-  B.gauge[x.u]+=10+(x.hero==='archer'?levelStats(runLv('archer')).m:0);if(B.gauge[x.u]>=100){B.gauge[x.u]=0;special(x.u);}
+  B.gauge[x.u]+=10+(x.hero==='archer'?levelStats(runLv('archer')).m:0)+(x.hero==='mage'&&tal('m40a')?2:0)+(x.hero==='archer'&&tal('a40a')?2:0);if(B.gauge[x.u]>=100){B.gauge[x.u]=0;special(x.u);}
 }
 function addText(txt,where,color,big){const same=B.texts.find(t=>t.txt===txt&&t.t<0.8&&!/^\d/.test(txt));if(same)return;if(where==='enemy'){const en=B.texts.filter(t=>t.where==='enemy');if(en.length>=4)en.sort((a,b)=>b.t-a.t)[0].t=0.9;}B.lane=((B.lane||0)+1)%4;B.texts.push({txt,where,color,t:0,big,dx:(fxRandom()-.5)*36,dy:B.lane*15});}
 function drawVictory(W,H){const t=reducedMotion()?1:(performance.now()-B.vicT0)/1000,w=B.vic.win;const txt=w?'勝利！':'敗北…';
@@ -1612,7 +1685,7 @@ function coinsFromEnemy(n){const c=$('stageCv').getBoundingClientRect(),a=$('hGo
     an.onfinish=()=>{el.remove();sfx('coin');const g=$('hGold');if(g.animate)g.animate([{transform:'scale(1.3)'},{transform:'scale(1)'}],{duration:120});};}}
 function enemyStage(){return[ENEMY_X,GROUND()-ENEMY_BODY()*0.55];}
 function hitEnemy(s){
-  if(s.dmg||s.burn||s.poison){if(hasRelic('venom')&&!B.relicOnce?.venom){B.relicOnce={...B.relicOnce,venom:1};s.poison=(s.poison||0)+3;relicTick('venom',3);}if(hasRelic('frost')&&!B.relicOnce?.frost){B.relicOnce={...B.relicOnce,frost:1};s.freeze=(s.freeze||0)+25;relicTick('frost',25);}}
+  if(s.dmg||s.burn||s.poison){if(hasRelic('venom')&&!B.relicOnce?.venom){B.relicOnce={...B.relicOnce,venom:1};{const v=Math.ceil(rv('venom',3)-1e-9);s.poison=(s.poison||0)+v;relicTick('venom',v);}}if(hasRelic('frost')&&!B.relicOnce?.frost){B.relicOnce={...B.relicOnce,frost:1};{const v=Math.ceil(rv('frost',25)-1e-9);s.freeze=(s.freeze||0)+v;relicTick('frost',v);}}}
   const E=B.enemy,mech=B.def.mech;let dm=s.dmg||0;if(s.hunterBonus>0)relicTick('hunterFang',s.hunterBonus);for(const [k,v]of Object.entries(s.relicBonuses||{}))if(v>0)relicTick(k,v);
   if(B.stance&&s.src&&!s.dot&&(s.dmg||s.burn||s.poison)){const q=getP(parseLoc(s.src));if(q&&['dmg','burn','ignite','detonate','bash','once'].includes(ITEMS[q.type].kind)&&!B.stance.hits.includes(s.src)){B.stance.hits.push(s.src);renderOperationStrip();if(B.stance.hits.length>=2)breakStance('pair');}}
   if(s.shatter&&E.frz>0&&dm){dm*=2.5;s.pierce=1;addText('砕いた！','enemy','#d8f0ff',true);B.shake=0.25;sfx('freeze');}
@@ -1635,12 +1708,14 @@ function hitEnemy(s){
   if(s.src)B.contrib[s.src]=(B.contrib[s.src]||0)+dm+(s.burn&&mech!=='fireproof'?s.burn*1.2:0)+(s.poison||0)*4;
 }
 // 凍結：ゲージ100で敵が1.2秒止まる。凍ったあと6秒は次の凍結が起きない（明けた時に100ならすぐ凍る）
-function tryFreeze(){const E=B.enemy,[ecx,ecy]=enemyStage();if(E.frzB>=100&&!(E.frzCD>0)){E.frzB-=100;E.frzCD=6.0;B.stats.frz++;if(hasRelic('snowbell')&&B.stats.frz===1){B.party.shield+=8;relicTick('snowbell',8);}E.timer-=0.8;E.frz=1.2;if(B.stance)breakStance('freeze');addText('凍結！','enemy','#9fd8ff',true);sfx('freeze');duckBgm();B.tint={col:'150,210,255',t:0.3};burst(18,ecx,ecy,['#ffffff','#9fd8ff','#5aa8e0'],80,0.6,0);}}
+function tryFreeze(){const E=B.enemy,[ecx,ecy]=enemyStage();if(E.frzB>=100&&!(E.frzCD>0)){E.frzB-=100;E.frzCD=6.0;B.stats.frz++;if(hasRelic('snowbell')&&B.stats.frz===1){const v=rv('snowbell',8);B.party.shield+=v;relicTick('snowbell',v);}E.timer-=0.8;E.frz=1.2;if(B.stance)breakStance('freeze');addText('凍結！','enemy','#9fd8ff',true);sfx('freeze');duckBgm();B.tint={col:'150,210,255',t:0.3};burst(18,ecx,ecy,['#ffffff','#9fd8ff','#5aa8e0'],80,0.6,0);}}
 function special(u){
   const h=S.heroes[u],P=B.party;play(B.actors[u],'attack');
-  if(h==='knight'){if(!(B.assaultT>0)){P.shield+=30;addText('バリア+30','party','#9cc8f5',true);}}
-  if(h==='mage'){hitEnemy({dmg:75*(1+.2*levelStats(runLv('mage')).m),col:'#ea6b3c',big:true});B.enemy.burn+=20*(1+.2*levelStats(runLv('mage')).m)*(B.def.mech==='fireproof'?0.4:1);}
-  if(h==='archer'){const r=scv.getBoundingClientRect();for(let k=0;k<6;k++)B.shots.push({x0:r.left+60,y0:r.top+GROUND()-40,t:-k*0.25,col:'#69b552',dmg:8,hero:'archer',specialFx:true});}
+  if(h==='knight'){if(!(B.assaultT>0)){const v=tal('k20a')?45:30;P.shield+=v;addText('バリア+'+v,'party','#9cc8f5',true);}if(tal('k20b')){hitEnemy({dmg:40,col:'#9cc8f5',big:true});talentFx('k20b','40ダメージ');}}
+  if(h==='mage'){const lvM=1+.2*levelStats(runLv('mage')).m,dm=75*lvM*(tal('m20a')?1.3:1);hitEnemy({dmg:dm,col:'#ea6b3c',big:true});B.enemy.burn+=20*lvM*(tal('m50a')?1.5:1)*(B.def.mech==='fireproof'?0.4:1);
+   if(tal('m20b')){P.shield+=20;talentFx('m20b','バリア+20');}if(tal('m30b')){hitEnemy({freeze:30});talentFx('m30b','凍結+30');}if(tal('m50b')){hitEnemy({dmg:dm*.5,col:'#ea6b3c'});talentFx('m50b','もう一度');}}
+  if(h==='archer'){const r=scv.getBoundingClientRect(),n=tal('a20a')?8:6,dm=tal('a50a')?12:8;for(let k=0;k<n;k++)B.shots.push({x0:r.left+60,y0:r.top+GROUND()-40,t:-k*0.25,col:'#69b552',dmg:dm,poison:tal('a20b')?2:0,hero:'archer',specialFx:true});}
+  else if(S.heroes.includes('archer')&&tal('a50b')){const r=scv.getBoundingClientRect();for(let k=0;k<2;k++)B.shots.push({x0:r.left+60,y0:r.top+GROUND()-40,t:-k*0.25,col:'#69b552',dmg:8,hero:'archer'});talentFx('a50b','矢を2本');}
   showSpecialFx(u);sfx('special');duckBgm();
 }
 // 必殺の時計は実時間。倍速・描画頻度・OS設定によって戦闘の step は変えない。
@@ -1709,9 +1784,9 @@ function drawSpecialFx(W,H){if(!B.specialFx?.length)return;const now=performance
 }
 function partyHit(dmg){const P=B.party;let d=dmg*(B.rallyT>0?0.4:1);B.rec.rally+=dmg-d;if(B.rallyT>0)(B.ripples=B.ripples||[]).push({t0:performance.now(),a:-0.3+fxRandom()*0.6});
   if(d>0&&P.shield>0&&!(B.assaultT>0)){const mail=boardLocs().map(getP).filter(q=>q?.type==='chainmail').reduce((v,q)=>Math.max(v,[0,2,3,4][q.star]),0),v=Math.min(d,mail);d-=v;B.rec.blocked+=v;}
-  const thornBlock=d>0&&P.shield>0;if(!newRelicRule()&&d>0&&P.shield>0&&hasRelic('thorn')&&!B.relicOnce?.thorn&&!(B.assaultT>0)){B.relicOnce={...B.relicOnce,thorn:1};const h=Math.min(6,P.max-P.hp);P.hp+=h;B.rec.healed+=h;relicTick('thorn',h);}
-  if(P.shield>0){const a=Math.min(P.shield,d);P.shield-=a;d-=a;B.rec.blocked+=a;if(a>0&&pairKey()==='guard+speed'&&S.heroes.includes('knight')){if(!(B.haste>0))addText('迅盾！','party','#7ad07a');B.haste=1;}if(B.thorns){B.enemy.hp-=B.thorns;B.rec.thorns+=B.thorns;B.contrib[B.thornSrc]=(B.contrib[B.thornSrc]||0)+B.thorns;addText(`反撃${Math.round(B.thorns)}`,'enemy','#c9c2b4');}}
-  P.hp-=d;armCampPot();if(newRelicRule()&&thornBlock&&P.hp>0&&P.hp<P.max&&hasRelic('thorn')&&!B.relicOnce?.thorn&&!(B.assaultT>0)){const h=Math.min(6,P.max-P.hp);if(h>0){P.hp+=h;B.rec.healed+=h;B.relicOnce={...B.relicOnce,thorn:1};relicTick('thorn',h);}}B.rec.taken+=Math.max(0,d);P.flash=0.18;addText(d>0?`-${Math.round(d)}`:'防いだ','party','#ff8a7a');if(d>25)B.shake=Math.max(B.shake,0.08);
+  const thornBlock=d>0&&P.shield>0;if(!newRelicRule()&&d>0&&P.shield>0&&hasRelic('thorn')&&!B.relicOnce?.thorn&&!(B.assaultT>0)){B.relicOnce={...B.relicOnce,thorn:1};const h=Math.min(rv('thorn',6),P.max-P.hp);P.hp+=h;B.rec.healed+=h;relicTick('thorn',h);}
+  if(P.shield>0){const a=Math.min(P.shield,d);P.shield-=a;d-=a;B.rec.blocked+=a;if(a>0&&tal('k10b')&&B.t-(B.counterT??-9)>=1){B.counterT=B.t;B.enemy.hp-=4;B.rec.hit+=4;addText('反撃 4','enemy','#9cc8f5');talentFx('k10b','反撃 4');}if(a>0&&pairKey()==='guard+speed'&&S.heroes.includes('knight')){if(!(B.haste>0))addText('迅盾！','party','#7ad07a');B.haste=1;}if(B.thorns){B.enemy.hp-=B.thorns;B.rec.thorns+=B.thorns;B.contrib[B.thornSrc]=(B.contrib[B.thornSrc]||0)+B.thorns;addText(`反撃${Math.round(B.thorns)}`,'enemy','#c9c2b4');}}
+  P.hp-=d;armCampPot();if(newRelicRule()&&thornBlock&&P.hp>0&&P.hp<P.max&&hasRelic('thorn')&&!B.relicOnce?.thorn&&!(B.assaultT>0)){const h=Math.min(rv('thorn',6),P.max-P.hp);if(h>0){P.hp+=h;B.rec.healed+=h;B.relicOnce={...B.relicOnce,thorn:1};relicTick('thorn',h);}}B.rec.taken+=Math.max(0,d);P.flash=0.18;addText(d>0?`-${Math.round(d)}`:'防いだ','party','#ff8a7a');if(d>25)B.shake=Math.max(B.shake,0.08);
   if(d>0){play(B.actors[Math.floor(fxRandom()*B.actors.length)],'hit');sfx('hurt');}else{sfx('block');B.guardT=performance.now();}
   if(B.def.mech==='leech'&&d>0){const h=Math.min(d*0.6,B.enemy.max-B.enemy.hp);B.enemy.hp+=h;B.rec.eheal+=h;if(h>=1)addText(`吸血+${Math.round(h)}`,'enemy','#9be38a');}}
 function rowOf(l){if(l.a==='belt')return 2;const r=Math.floor(l.i/4);return l.a==='A'?r:3+r;}
@@ -1763,8 +1838,8 @@ function step(dt){
     if(B.bossT>=6){B.bossT=0;const c=B.inst.some(x=>x.l.a==='belt'&&!x.done);
       if(c){B.slowBelt=4;B.banner={txt:'ベルトが鈍った！',t:0.9};play(B.foe,'attack');}}}
   if(B.slowBelt>0)B.slowBelt-=dt;
-  for(const x of B.inst){if(B.rallyT>0&&!['shield','heal'].includes(x.d.kind))continue;if(B.assaultT>0&&['shield','heal','bash'].includes(x.d.kind))continue;if(x.done||(x.dark&&B.t<2)||B.frozenRow===rowOf(x.l)||B.sealed[lkey(x.l)]||(B.bagSeal&&B.bagSeal.t>0&&B.bagSeal.a===x.l.a))continue;x.timer+=dt*(hasRelic('hourglass')&&B.t<=hourglassDuration()?hourglassSpeed():1)*(B.slowBelt>0&&x.l.a==='belt'?0.25:1)*(x.l.a==='belt'&&envOf()==='fog'?0.83:1)*(B.haste>0&&x.hero==='archer'?1.5:1)*(B.assaultT>0&&x.d.cls==='weapon'?2:1);if(x.timer>=x.cd){x.timer-=x.cd;fire(x);}}
-  for(const s of B.shots){s.t+=dt*(s.spd||3.0);if(s.t>=1&&!s.hit){s.hit=1;hitEnemy(s);}}
+  for(const x of B.inst){if(B.rallyT>0&&!['shield','heal'].includes(x.d.kind))continue;if(B.assaultT>0&&['shield','heal','bash'].includes(x.d.kind))continue;if(x.done||(x.dark&&B.t<2)||B.frozenRow===rowOf(x.l)||B.sealed[lkey(x.l)]||(B.bagSeal&&B.bagSeal.t>0&&B.bagSeal.a===x.l.a))continue;x.timer+=dt*(hasRelic('hourglass')&&B.t<=hourglassDuration()?hourglassSpeed():1)*(B.slowBelt>0&&x.l.a==='belt'?0.25:1)*(x.l.a==='belt'&&envOf()==='fog'?0.83:1)*(B.haste>0&&x.hero==='archer'?1.5:1)*(B.assaultT>0&&x.d.cls==='weapon'?2:1)*(B.t<3&&x.d.cls==='weapon'&&tal('a40b')?1.3:1);if(x.timer>=x.cd){x.timer-=x.cd;fire(x);}}
+  talentTick();for(const s of B.shots){s.t+=dt*(s.spd||3.0);if(s.t>=1&&!s.hit){s.hit=1;hitEnemy(s);}}
   B.shots=B.shots.filter(s=>!s.hit);
   if(def.mission==='20秒防衛'&&P.hp<=0){endBattle(false);return;}
   if(E.hp<=0&&!(def.mission==='20秒防衛'&&B.t+1e-7>=20)){if(def.boss==='demon'&&!B.phase2)enterDemonPhase();else{endBattle(true);return;}}
@@ -2440,9 +2515,9 @@ function updateRallyButtons(){
 function useRally(type){
   if(!B||B.done||!B.rallyLeft||S.phase!=='battle'||!['guard','assault'].includes(type)||type==='assault'&&!assaultUnlocked())return false;
   B.rallyLeft=0;B.rallyKind=type;
-  if(type==='guard'&&hasRelic('rally')){hitEnemy({bleed:35});relicTick('rally',35);}
+  if(type==='guard'&&hasRelic('rally')){{const v=Math.ceil(rv('rally',35)-1e-9);hitEnemy({bleed:v});relicTick('rally',v);}}
   recordPlay('battle_rally',{kind:type,battleSeconds:playSeconds(B.t),partyHP:playSeconds(B.party.hp),partyMaxHP:B.party.max,partyShield:playSeconds(B.party.shield),enemy:B.def.name,enemyHP:playSeconds(B.enemy.hp),enemyMaxHP:B.enemy.max,enemyShield:playSeconds(B.enemy.shield||0),enemyBurn:playSeconds(B.enemy.burn),enemyAttackIn:playSeconds(Math.max(0,B.def.int-B.enemy.timer)),bossWarning:B.banner?.txt||null,frozenRow:B.frozenRow,sealed:{...B.sealed},equipment:logInventory()});
-  if(type==='guard'){B.rallyT=3;B.rallyT0=performance.now();B.ripples=[];sfx('shield');}else{B.assaultT=4;B.banner={txt:'攻めきれ！ 4秒間、武器2倍速',sub:'盾と回復は止まる',t:2};}
+  if(type==='guard'){B.rallyT=3+(tal('k40b')?1:0);B.rallyT0=performance.now();B.ripples=[];sfx('shield');}else{B.assaultT=4;B.banner={txt:'攻めきれ！ 4秒間、武器2倍速',sub:'盾と回復は止まる',t:2};}
   sfx('special');duckBgm();updateRallyButtons();return true;
 }
 $('bRally').onclick=()=>useRally('guard');$('bAssault').onclick=()=>useRally('assault');
@@ -2485,7 +2560,7 @@ function resetRun(){finishPreparation('home');abandonDelivery('home');recordPlay
 window.resetRun=resetRun;
 
 // ===================== はじめ =====================
-function startWith(ch,settings=null){
+function startWith(ch,settings=null){S.relicRank={};
   S.lowLevel=false;S.chapterFirstClear=false;S.relicVictory63=[];
   recordSavedDeliveryAbandon(load());
   B=null;UNDO=null;S.shopSearch=null;S.rerollN=0;S.goldAtFight=0;S.delivery=null;S.deliveryOffer=null;S.deliveryOffered=0;S.pendingGold=null;S.operation=null;
@@ -2666,13 +2741,24 @@ function showMore(){const pg=loadProg(),hasHonor=Object.keys(pg.honors||{}).leng
   $m('#hXfer').onclick=()=>{sfx('tick');showTransfer();};$m('#mBack').onclick=()=>showHome();
   $m('#mReset').onclick=()=>{modal(`<h2>最初からやり直す</h2><p>章のクリア、勇者のレベル、報奨金、遺物、勲章がすべて消えます。元には戻せません。</p><p class="sub">消す前に「データの引き継ぎ」でコードを残しておくと安心です。</p><div class="row2"><button class="btn go" id="rsNo">やめる</button><button class="btn" id="rsYes">消して最初から</button></div>`);
     $m('#rsNo').onclick=()=>showMore();$m('#rsYes').onclick=()=>{const old=loadProg(),pg={unlocked:0,best:{},epoch:(Number(old.epoch)||0)+1};try{localStorage.setItem(PROG_KEY,JSON.stringify(pg));localStorage.removeItem(SAVE_KEY);localStorage.removeItem(PLAYLOG_KEY);}catch(e){}cloudPut('progress',JSON.stringify(pg));cloudPut('run',null);recordPlay('reset_all',{epoch:pg.epoch});reloadAfterSave();};};}
+
+function talentButtonHTML(h,pg=loadProg()){const open=talentsOpen(h,pg).length,unset=talentsUnset(h,pg);
+ if(!open)return `<button class="btn trainbulk" data-talent="${h}">特技（Lv10で選べる）</button>`;
+ return `<button class="btn trainbulk${unset?' go':''}" data-talent="${h}">特技 ${open-unset}/${open}${unset?`（選べる特技が${unset}つ）`:''}</button>`;}
+function showTalents(h,back){const pg=loadProg(),lv=heroLv(h,pg),first=!pg.help?.talent65;if(first){pg.help={...pg.help,talent65:1};saveProg(pg);}
+ modal(`<h2>${HEROES[h].name}の特技</h2>${first?'<div class="ophelp"><p>Lv10・20・30・40・50で、特技を2つから1つ選べます。</p><p>いつでも無料で付け替えられます。</p><p>出撃したときのLvで開いている特技だけが効きます。</p></div>':''}<p class="sub">いま Lv${lv}</p>
+ <div class="relicchoices">${TAL_TIERS.map(t=>{const pick=talentPick(h,t,pg),locked=lv<t;return `<div class="relicrow talentrow"><p><b>Lv${t}</b>${locked?`<small>　Lv${t}で開く</small>`:''}</p><div class="row2">${TALENTS[h][t].map(([id,nm,ds],i)=>`<button class="btn talentpick${pick===i?' go':''}" data-tier="${t}" data-i="${i}" ${locked?'disabled':''} aria-pressed="${pick===i}"><b>${pick===i?'✓ ':''}${nm}</b><small>${ds}</small></button>`).join('')}</div></div>`;}).join('')}</div>
+ <div class="row2"><button class="btn go" id="talBack">もどる</button></div>`);
+ $m('#talBack').onclick=back;
+ document.querySelectorAll('#mcard .talentpick').forEach(b=>b.onclick=()=>{const t=+b.dataset.tier,i=+b.dataset.i;if(heroLv(h)<t)return;setTalent(h,t,i);sfx('buy');showTalents(h,back);$m(`.talentpick[data-tier="${t}"][data-i="${i}"]`)?.scrollIntoView({block:'nearest'});});}
 function showTraining(back=showHome,result=null){const pg=loadProg(),c=rewardCoins(pg),first=!pg.help?.level62;
  if(first){pg.help={...pg.help,level62:1};saveProg(pg);}
  const change=result?(()=>{const a=levelStats(result.from),b=levelStats(result.to);return `<div class="trainresult" role="status"><b>${HEROES[result.hero].name} Lv${result.from} → Lv${result.to}</b><p>HP +${a.hp} → +${b.hp}<br>装備効力 +${a.pow}% → +${b.pow}%</p>${b.m>a.m?`<b>◆ 特別な力が強化：${levelPerk(result.hero,result.to)}</b>`:''}</div>`;})():'';
  modal(`<h2>勇者の訓練</h2>${first?levelHelpHTML():''}${change}<p><b>報奨金 ${c}</b>${trainingRefund(pg)?'<br><small>以前の訓練費用の差額も使えます。</small>':''}</p><p class="sub">出撃していない勇者も訓練できます。${catchUpLevel(pg)>1?`<br>遅れた勇者はLv${catchUpLevel(pg)}まで費用半額。`:''}</p>
- <div class="relicchoices">${Object.entries(HEROES).map(([k,h])=>{const lv=heroLv(k,pg),cost=trainingCost(k,lv,pg),max=lv>=HLV_MAX,s=levelStats(lv),next=levelStats(lv+1),milestone=Math.min(HLV_MAX,5*(Math.floor(lv/5)+1)),q=trainingQuote(k,pg,milestone);return `<div class="relicrow trainingrow" data-training="${k}"><div class="trainhero">${buddyHTML(k,40)}<b>${h.name} Lv${lv} / ${HLV_MAX}</b></div><p>いま：HP+${s.hp}・装備+${s.pow}%<br>${s.m?'◆ ':''}${levelPerk(k,lv)}</p>${max?'<p>最大レベルです。</p>':`<p class="sub">次：HP+${next.hp-s.hp}・装備${s.pow}%→${next.pow}%<br>次の節目 Lv${milestone}まであと${milestone-lv}<br>${levelPerk(k,milestone)}</p>`}<button class="btn${!max&&c>=cost?' go':''}" data-train="${k}" data-from="${lv}" data-to="${lv+1}" ${max||c<cost?'disabled':''}>${max?`Lv${HLV_MAX} 最大`:`Lv${lv+1}へ（報奨金 ${cost}）`}</button>${!max&&milestone>lv+1?`<button class="btn trainbulk" data-train-bulk="${k}" data-from="${lv}" data-to="${q.to}" ${q.to<=lv+1?'disabled':''}>${q.to>lv+1?`まとめてLv${q.to}へ（報奨金 ${q.cost}）`:'まとめて訓練（報奨金不足）'}</button>`:''}</div>`;}).join('')}</div>
+ <div class="relicchoices">${Object.entries(HEROES).map(([k,h])=>{const lv=heroLv(k,pg),cost=trainingCost(k,lv,pg),max=lv>=HLV_MAX,s=levelStats(lv),next=levelStats(lv+1),milestone=Math.min(HLV_MAX,5*(Math.floor(lv/5)+1)),q=trainingQuote(k,pg,milestone);return `<div class="relicrow trainingrow" data-training="${k}"><div class="trainhero">${buddyHTML(k,40)}<b>${h.name} Lv${lv} / ${HLV_MAX}</b></div><p>いま：HP+${s.hp}・装備+${s.pow}%<br>${s.m?'◆ ':''}${levelPerk(k,lv)}</p>${max?'<p>最大レベルです。</p>':`<p class="sub">次：HP+${next.hp-s.hp}・装備${s.pow}%→${next.pow}%<br>次の節目 Lv${milestone}まであと${milestone-lv}<br>${levelPerk(k,milestone)}</p>`}<button class="btn${!max&&c>=cost?' go':''}" data-train="${k}" data-from="${lv}" data-to="${lv+1}" ${max||c<cost?'disabled':''}>${max?`Lv${HLV_MAX} 最大`:`Lv${lv+1}へ（報奨金 ${cost}）`}</button>${!max&&milestone>lv+1?`<button class="btn trainbulk" data-train-bulk="${k}" data-from="${lv}" data-to="${q.to}" ${q.to<=lv+1?'disabled':''}>${q.to>lv+1?`まとめてLv${q.to}へ（報奨金 ${q.cost}）`:'まとめて訓練（報奨金不足）'}</button>`:''}${talentButtonHTML(k,pg)}</div>`;}).join('')}</div>
  <p class="sub">選ぶ2人を推奨Lvまで育てよう。<br>苦戦したら、クリア済みの章で報奨金を集めよう。</p><div class="row2"><button class="btn go" id="trainBack">もどる</button></div>`);
  $m('#trainBack').onclick=back;
+ document.querySelectorAll('#mcard [data-talent]').forEach(b=>b.onclick=()=>{sfx('tick');showTalents(b.dataset.talent,()=>showTraining(back));});
  document.querySelectorAll('#mcard [data-train],#mcard [data-train-bulk]').forEach(b=>b.onclick=()=>{const k=b.dataset.train||b.dataset.trainBulk,r=trainHero(k,+b.dataset.from,+b.dataset.to);if(!r)return;showTraining(back,r);$m('.trainresult').scrollIntoView({block:'nearest'});});
 }
 function xferFileName(){const d=new Date();return 'buddybag-save-'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.txt';}
@@ -2715,7 +2801,7 @@ function showHome(){S.run=null;const pg=storyProg(),st=pg.story,c1=st.ch1||0;
       return `<button class="ch${open?'':' lock'}${open&&!done?' now':''}" data-c="${n}" ${open?'':'disabled'}><span class="cn">第${n}章</span><b>${c.nm}</b><small>${!open?`第${n-1}章のあとに開く`:done?`クリア ✓（${done}回）`:`${c.ds}・${c.limit}戦`}</small>${open?recommendationHTML(n,[],pg):''}</button>`;}).join('')+'</div>').join('')+`<div class="rgpage"><p class="rgn">この先<small>${N}/${N}</small></p><button class="ch lock" disabled><span class="cn">第16章〜</span><b>火山・魔王領</b><small>準備中</small></button></div>`;})()}</div></div>
     ${(()=>{// はじめは最小限。使えるようになった物から出す
       const b=(id,t,go)=>`<button class="btn${go?' go':''}" id="${id}">${t}</button>`,hasHonor=Object.keys(pg.honors||{}).length||Object.keys(pg.warFlags||{}).length||st[storyKey(12)];
-      const nRel=Object.keys(pg.relics||{}).filter(k=>RELICS[k]).length;const list=c1?[b('hTrain',`勇者の訓練<br><small style="font-size:11px">報奨金 ${rewardCoins(pg)}</small>`,1),b('hRelics',`遺物 ${nRel}/${Object.keys(RELICS).length}`),b('hFree','フリー出撃'),b('hMore','その他')]:[b('hOpHelp','遊び方'),b('hMore','その他'),...(nRel?[b('hRelics',`遺物 ${nRel}/${Object.keys(RELICS).length}`)]:[])];
+      const nRel=Object.keys(pg.relics||{}).filter(k=>RELICS[k]).length;const list=c1?[b('hTrain',`勇者の訓練${Object.keys(HEROES).some(h=>talentsUnset(h,pg))?'<span class="newdot" title="選べる特技があります" aria-label="選べる特技があります">●</span>':''}<br><small style="font-size:11px">報奨金 ${rewardCoins(pg)}</small>`,1),b('hRelics',`遺物 ${nRel}/${Object.keys(RELICS).length}`),b('hFree','フリー出撃'),b('hMore','その他')]:[b('hOpHelp','遊び方'),b('hMore','その他'),...(nRel?[b('hRelics',`遺物 ${nRel}/${Object.keys(RELICS).length}`)]:[])];
       let h='';for(let i=0;i<list.length;i+=2)h+=`<div class="row2">${list[i]}${list[i+1]||''}</div>`;return h;})()}${CREDIT}</div>`);
   if($m('#hXfer'))$m('#hXfer').onclick=()=>{sfx('tick');showTransfer();};if($m('#hTrain'))$m('#hTrain').onclick=()=>{sfx('tick');showTraining();};
   if($m('#hRelics'))$m('#hRelics').onclick=()=>showRelics();if($m('#hHonor'))$m('#hHonor').onclick=()=>showHonors();if($m('#hMore'))$m('#hMore').onclick=()=>{sfx('tick');showMore();};if($m('#hOpHelp'))$m('#hOpHelp').onclick=()=>showOperationHelp(showHome);
