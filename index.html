@@ -214,6 +214,9 @@ body.land #app>*{grid-column:1;min-width:0}
 body.land #hud{grid-row:1}body.land #top{grid-row:2}body.land #stage{grid-row:3}body.land #shop{grid-row:4}body.land #bar{grid-row:5}
 body.land #board,body.land #relicPage{grid-column:2;grid-row:1 / 7}
 body.land #setStrip{grid-column:2;grid-row:7}body.land #gemStrip{grid-column:2;grid-row:8}
+body.short #relicStrip{padding:1px 4px}body.short .gemstrip{padding:1px 6px;margin:0}body.short .gemb{min-height:22px;padding:1px 6px}body.short.late #guide{display:none}body.short .setstrip{padding-block:1px}
+.recipenear{color:#ffd98a;font-weight:400}.ctr.rcp{background:#6a3fa0}
+.enmore{font-size:10px!important;color:#7a6040!important;margin-left:6px}.enst{font-weight:700;margin-right:4px}.eninfo{display:flex;gap:12px;align-items:center}.enpic{width:72px;height:72px;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.25);flex:none}
 .pactchips{display:flex;flex-wrap:wrap;gap:4px}.pactchips .con{flex:1 1 30%;min-height:34px;font:12px var(--f-dot);padding:4px}.pactchips .con i{font-style:normal;color:#ff8a70;margin-left:3px;font-size:11px}.pactds{font-size:11px!important;margin:4px 0 0!important}
 .tr68 .trhead{display:flex;align-items:center;gap:10px}.tr68 .trname{display:flex;flex-direction:column}.tr68 .trname>b{font-family:var(--f-dot);font-weight:400;font-size:16px}.tr68 .trlv{font-family:var(--f-dot);font-size:13px;color:var(--sub)}.tr68 .trlv b{display:inline;font:26px var(--f-dot);color:#ffe9a8;margin-left:2px}.tr68 .trlv small{display:inline;font-size:12px}.trstat{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}.trstat div{background:rgba(0,0,0,.25);padding:4px 8px;display:flex;flex-direction:column}.tr68 .trstat small{font-size:11px;color:var(--sub)}.tr68 .trstat b{font:20px var(--f-dot);color:#f0e6d6}.trstat i{font-style:normal;color:#9be38f;font-size:13px}.trms{font-size:12.5px;margin:2px 0 6px;color:#ffd98a}.trnow{margin:0 0 6px}
 .steps68{display:grid;gap:6px}.st68{display:flex;gap:10px;align-items:center}.st68 img{width:32px;height:32px;image-rendering:pixelated;flex:none}.st68 span{display:flex;flex-direction:column}.st68 b{font-family:var(--f-dot);font-weight:400;font-size:15px}.st68 small{font-size:12px;color:var(--sub);line-height:1.4}
@@ -1048,6 +1051,11 @@ function eliteOk68(){const r=S.round,e=S.enc&&S.enc[r];return S.run?.mode==='sto
 function toggleElite68(){const e=S.enc[S.round];if(!eliteOk68())return;if(S.eliteOn===S.round){delete e.elite;S.eliteOn=null;S.eliteDone=0;toast('精鋭をやめた');}else{e.elite=1;S.eliteOn=S.round;S.eliteDone=1;toast('この戦いを精鋭にした（HP+20%・攻撃+15%）。勝てば宝石');}sfx('tick');render();save();}
 // r68：ボス以外の敵に種族の行動。第1〜3章は付けない（覚えることを増やさない）
 function beh68(en,tp){if(window.__noBeh68||(en&&(en.trait||en.boss))||tp.boss)return null;if(S.run?.mode==='story'&&baseCh(S.run.ch)<4)return null;const k=raceOf({spr:en&&en.spr||tp.spr});return RACE68[k]?.beh?k:null;}
+// r69：次の敵の札を押すと、全部の情報を開く
+function showEnemyInfo68(E){const k=raceOf(E),r=RACE68[k],c=S.run?.mode==='story'?CHAPTERS[S.run.ch]:null,dps=(E.atk/E.int).toFixed(1);
+  modal(`<h2>次の敵 ${E.name}</h2><div class="eninfo"><div class="enpic">${buddyHTML(E.spr,64)}</div><div><p><b>HP ${E.hp}</b>・攻撃 ${E.atk}（${E.int}秒ごと、1秒あたり約${dps}）</p>${E.elite?'<p class="sub">精鋭：HP+20%・攻撃+15%</p>':''}</div></div>
+   ${r?`<h3>種族：${r.nm}</h3><p>${r.ds}</p><p><span class="raceln"><i class="up">◎${CLSN[r.weak]}は1.4倍</i><i class="dn">△${CLSN[r.res]}は0.8倍</i></span></p>`:''}
+   <h3>特徴</h3><p>${E.trait}</p>${c&&c.envTxt?`<h3>この地域のルール</h3><p>${c.envTxt}</p>`:''}<div class="row2"><button class="btn go" id="enBack">準備にもどる</button></div>`);$m('#enBack').onclick=()=>{sfx('tick');closeModal();};}
 function raceBadge(k,gem){const m=raceMul(ITEMS[k],curFoe68(),gem);return m>1?'<span class="rcm up" title="次の敵に効きやすい">◎</span>':m<1?'<span class="rcm dn" title="次の敵に効きにくい">△</span>':'';}
 function raceLineHTML(e){const r=RACE68[raceOf(e)];if(!r)return'';return `<span class="raceln"><i class="up">◎${CLSN[r.weak]}</i><i class="dn">△${CLSN[r.res]}</i></span>`;}
 const CLS66={chainbolt:'magic',gearshield:'guard',sword:'blade',dagger:'blade',bow:'bow',staff:'magic fire',shield:'guard',potion:'care',axe:'blunt',gsword:'blade',bdagger:'blade',baxe:'blunt',prapier:'blade poison',istaff:'magic ice',iceshard:'ice',fhammer:'blunt ice',powder:'boom',hdagger:'blade',hbow:'bow',bandage:'care',gspear:'blade',blowpipe:'bow poison',fangspear:'poison',pscythe:'poison blade',pickaxe:'blunt',bomb:'boom',spiked:'guard',spear:'blade',orb:'magic fire',scythe:'poison blunt',wall:'guard blunt',storm:'bow',firstshield:'guard',chainmail:'guard',renewal:'care',salve:'care',emberguard:'guard fire',venomherb:'care poison',frostward:'guard ice',feather:'care',
@@ -1122,9 +1130,12 @@ function showRecipes66(){const fs=findRecipes(),pg=loadProg(),first=!pg.help?.re
  $m('#recBack').onclick=()=>{closeModal();render();};document.querySelectorAll('#mcard [data-craft]').forEach(b=>b.onclick=()=>{if(craft66(+b.dataset.craft)){closeModal();}});}
 function setSummaryHTML(full=false){const n=setCounts(),ks=Object.keys(n).filter(k=>n[k]>0).sort((a,b)=>n[b]-n[a]);if(!ks.length)return 'なし';
  return ks.map(k=>{const r=setTier(k),next=[2,4,6].find(x=>x>n[k]);return full?`<span class="setc${r?' on':''}">${CLSN[k]}${n[k]}${r?`：${SETTXT[k][r-1]}`:''}${next?`（あと${next-n[k]}で次）`:''}</span>`:`<span class="setc${r?' on':''}">${CLSN[k]}${n[k]}</span>`;}).join(full?'<br>':' ');}
+// r69：持っている品で、あと1品だけ足りないレシピ（隣かどうかは問わない）
+function nearRecipes68(){if(!S.heroes?.length)return[];const own=allLocs().map(getP).filter(Boolean).map(q=>q.type),out=[];
+  for(const r of RECIPES66){const left=[...own],miss=[];for(const t of r.ins){const i=left.indexOf(t);if(i>=0)left.splice(i,1);else miss.push(t);}if(miss.length===1&&r.ins.length>1)out.push({r,miss:miss[0]});}return out;}
 function renderSetStrip(){const el=$('setStrip');if(!el)return;const on=S.phase==='plan'&&!S.inBattle&&S.heroes?.length&&!(S.relicPage==='relic');if(!on){el.hidden=true;return;}
  const fs=findRecipes(),n=setCounts(),tot=Object.values(n).reduce((a,b)=>a+b,0);if(!fs.length&&tot<2){el.hidden=true;return;}el.hidden=false;
- el.innerHTML=fs.length?`<b class="recipeon">レシピ：${ITEMS[fs[0].r.out].name}が作れます ▶</b>`:`系統 ${setSummaryHTML()}<small>　▶ 詳しく</small>`;el.onclick=()=>{sfx('tick');showRecipes66();};}
+ const nr=fs.length?[]:nearRecipes68();el.innerHTML=fs.length?`<b class="recipeon">レシピ：${ITEMS[fs[0].r.out].name}が作れます ▶</b>`:nr.length?`<b class="recipenear">あと1品：${ITEMS[nr[0].miss].name}で${ITEMS[nr[0].r.out].name}</b><small>　系統 ${setSummaryHTML()} ▶</small>`:`系統 ${setSummaryHTML()}<small>　▶ レシピ・詳しく</small>`;el.onclick=()=>{sfx('tick');showRecipes66();};}
 
 // ===== 遺物の枠（r65b）：ナイトレイン型。勇者ごとに色付きの枠、出撃のたびにランダム効果の遺物 =====
 // 色：r＝攻め（赤） b＝守り・回復（青） y＝技・状態異常（黄） w＝どの色でもはまる（白）
@@ -2036,13 +2047,19 @@ function showBagUp(s){
 }
 
 // ===================== 配置 =====================
+// r69：合体で何が変わったか（1マス空く・攻撃の合計・系統の数）。最初の3回と、攻撃が下がったときに出す
+function totalAtk68(){let t=0;for(const l of boardLocs()){if(!usable(l)||l.a==='bench')continue;const q=getP(l);if(!q)continue;const d=ITEMS[q.type];if(!['dmg','once','burn','ignite','detonate'].includes(d.kind))continue;for(const u of itemUses(l))t+=u.pw/Math.max(.1,u.cd);}return t;}
+function mergeSnap68(type){const t=tagsOf(ITEMS[type])[0];return{atk:totalAtk68(),tag:t,n:t?setCounts()[t]||0:0};}
+function mergeNote68(k0,type,fromBoard){if(!fromBoard)return'';const a1=totalAtk68(),n1=k0.tag?setCounts()[k0.tag]||0:0,pg=loadProg(),seen=pg.help?.merge69||0,drop=a1<k0.atk*0.97;
+  if(seen>=3&&!drop)return'';pg.help={...pg.help,merge69:seen+1};saveProg(pg);
+  return `　1マス空いた・攻撃の合計 ${k0.atk.toFixed(1)}→${a1.toFixed(1)}/秒${k0.tag&&n1!==k0.n?`・${CLSN[k0.tag]}${k0.n}→${n1}`:''}${drop?'。空いたマスに次の品を入れよう':''}`;}
 function movePiece(from,to){
   if(newRelicRule()&&S.phase!=='plan')return false;
   if(!from||!to||same(from,to)){S.sel=null;S.info=null;render();return false;}S.info=null;S.pick=null;
   if(!usable(to)){toast(to.a==='belt'?'このベルトの枠はまだ閉じている':'ここは使えないマス');sfx('err');S.sel=null;render();return false;}
   const a=getP(from),b=getP(to);if(!a){S.sel=null;render();return false;}
   snap();
-  if(b&&b.type===a.type&&b.star===a.star&&a.star<3){const inputs=[logItem(a),logItem(b)];setP(from,null);b.star++;relicMerge();recordPlay('merge',{from:lkey(from),to:lkey(to),inputs,result:logItem(b)});toast(`合体！ ${ITEMS[b.type].name}★${b.star}`);sfx('merge');S.sel=null;render();bump(to,'merge');save();return true;}
+  if(b&&b.type===a.type&&b.star===a.star&&a.star<3){const inputs=[logItem(a),logItem(b)],k0=mergeSnap68(b.type);setP(from,null);b.star++;relicMerge();recordPlay('merge',{from:lkey(from),to:lkey(to),inputs,result:logItem(b)});{const nt=mergeNote68(k0,b.type,from.a!=='bench');toast(`合体！ ${ITEMS[b.type].name}★${b.star}`+nt,nt?4000:1800);}sfx('merge');S.sel=null;render();bump(to,'merge');save();return true;}
   setP(to,a);setP(from,b);S.sel=null;sfx(placeSfx(a.type));
   recordPlay('place',{from:lkey(from),to:lkey(to),item:logItem(a),swapped:logItem(b)});
   if(to.a==='belt'&&ITEMS[a.type].kind!=='passive'){const key=S.heroes.map(h=>HEROES[h].tag).sort().join('+');flash(`${ITEMS[a.type].name}を2人で使う`);
@@ -2139,7 +2156,7 @@ function fireOne(x){
   if(el){const r=el.getBoundingClientRect();c0=[r.left+r.width/2,r.top+r.height/2];}
   const col=TAG[x.tag].color,src=lkey(x.l);
   const who=HEROES[x.hero].name+'の'+d.name;
-  const coldCrit=hasRelic('birchCharm')&&E.frz>0&&['dmg','once','ignite','detonate','bash'].includes(d.kind);const crit=Math.random()<Math.min(.9,x.crit+rxv(x.hero,'crit')/100+(x.hero==='archer'&&E.frz>0&&tal('a10b')?.1:0)+(hasRelic('ember')&&E.burn>0?rv('ember',.12):0)+(coldCrit?rv('birchCharm',.1):0));talentFireFx65(x,crit);if(crit&&coldCrit)relicTick('birchCharm',1);if(crit&&hasRelic('ember')&&E.burn>0&&(!newRelicRule()||d.kind==='dmg'||d.kind==='once'))relicTick('ember',1);if(x.hero==='mage'&&E.burn>0&&(d.kind==='dmg'||d.kind==='once')&&tal('m30a'))p*=1.1;if(d.execute&&E.hp<=E.max*.3)p*=2;const rm68=raceMul(d,B.def,x.p&&x.p.gem);if(rm68!==1){p*=rm68;const key=rm68>1?'rcUp':'rcDn';if(!B[key]){B[key]=1;addText(rm68>1?'効いている！':'効きにくい…','enemy',rm68>1?'#7fe07a':'#b8b0a0');}}if(d.poisonX&&E.poison>=20)p*=2;if(d.every?.mult&&x.nf%d.every.n===0)p*=d.every.mult;if(crit&&(d.kind==='dmg'||d.kind==='once'))p*=2;
+  const coldCrit=hasRelic('birchCharm')&&E.frz>0&&['dmg','once','ignite','detonate','bash'].includes(d.kind);const crit=Math.random()<Math.min(.9,x.crit+rxv(x.hero,'crit')/100+(x.hero==='archer'&&E.frz>0&&tal('a10b')?.1:0)+(hasRelic('ember')&&E.burn>0?rv('ember',.12):0)+(coldCrit?rv('birchCharm',.1):0));talentFireFx65(x,crit);if(crit&&coldCrit)relicTick('birchCharm',1);if(crit&&hasRelic('ember')&&E.burn>0&&(!newRelicRule()||d.kind==='dmg'||d.kind==='once'))relicTick('ember',1);if(x.hero==='mage'&&E.burn>0&&(d.kind==='dmg'||d.kind==='once')&&tal('m30a'))p*=1.1;if(d.execute&&E.hp<=E.max*.3)p*=2;const rm68=raceMul(d,B.def,x.p&&x.p.gem);if(rm68!==1){p*=rm68;B.rec[rm68>1?'rcUpN':'rcDnN']=(B.rec[rm68>1?'rcUpN':'rcDnN']||0)+1;const key=rm68>1?'rcUp':'rcDn';if(!B[key]){B[key]=1;addText(rm68>1?'効いている！':'効きにくい…','enemy',rm68>1?'#7fe07a':'#b8b0a0');}}if(d.poisonX&&E.poison>=20)p*=2;if(d.every?.mult&&x.nf%d.every.n===0)p*=d.every.mult;if(crit&&(d.kind==='dmg'||d.kind==='once'))p*=2;
   if(d.kind==='dmg'||d.kind==='once'){const dm=(p+(d.kind==='dmg'?(B.power||0):0))*(fireOn(x,d)?FIRE_D:1);
     const vis=d.kind==='once'?'icon':d.name.includes('弓')?'arrow':(tagsOf(d).includes('magic')||d.type==='orb')?'orb':'slash';
     const sh={shatter:d.shatter,x0:c0[0],y0:c0[1],t:0,col,dmg:dm*x.direct,relicBonuses:Object.fromEntries(Object.entries(x.relicDirect||{}).map(([k,v])=>[k,dm*v])),big:p>=30||x.isCombo,crit,src,ic:x.p.type,vis,spd:vis==='slash'?11:vis==='arrow'?7.5:vis==='orb'?5.5:3,pierce:d.pierce||x.pierce66,poison:x.poison*rm68+(x.p&&x.p.gem==='poison'?2*STAR[x.p.star]:0),gemFrz:x.p&&x.p.gem==='ice'?10*STAR[x.p.star]:0,gemBurn:x.p&&x.p.gem==='fire'?2*STAR[x.p.star]:0,burn:(fireOn(x,d)?p*FIRE_B*kmB(x):0)+(d.kind==='dmg'&&x.burnAdd?x.burnAdd:0)+(d.burnHit?d.burnHit*STAR[x.p.star]:0),freeze:x.freeze,leech:x.leech,bleed:x.bleed,hero:x.hero};B.shots.push(sh);
@@ -2188,7 +2205,7 @@ function hitEnemy(s){
   const flameArrow=s.hero==='archer'&&E.burn>0&&pairKey()==='fire+speed';
   if(flameArrow){E.burn+=1.5;}
   {const bh=B.def.beh68;if(dm&&bh==='fly'&&!s.dot&&s.ic&&ITEMS[s.ic]){const t=tagsOf(ITEMS[s.ic]);if(t.includes('blade')||t.includes('blunt')){B.dodgeN=(B.dodgeN||0)+1;if(B.dodgeN%4===0){dm=0;B.rec.dodge=(B.rec.dodge||0)+1;addText('ひらり','enemy','#c9e4ff');}}}
-   if(dm>=25&&bh==='soft'&&!s.dot){dm*=0.8;}if(dm&&bh==='armor'&&!s.pierce&&!s.dot){dm=Math.max(1,dm-3);}}
+   if(dm>=25&&bh==='soft'&&!s.dot){B.rec.softCut=(B.rec.softCut||0)+dm*0.2;dm*=0.8;}if(dm&&bh==='armor'&&!s.pierce&&!s.dot){B.rec.armorCut=(B.rec.armorCut||0)+Math.min(3,dm-1);dm=Math.max(1,dm-3);}}
   if(dm){const red=B.def.boss==='guard'?(B.guardCl?18:0):mech==='shell'?6:0;if(red&&!s.pierce&&!s.dot&&!flameArrow){const d0=dm;dm=Math.max(1,dm-red);B.rec.shell+=d0-dm;if(d0-dm>=3&&fxRandom()<0.3)addText('殻で弾かれた','enemy','#c9c2b4');}
     if(E.shield>0){const mult=flameArrow?2:1,a=Math.min(E.shield,dm*mult);E.shield-=a;dm-=a/mult;B.rec.ebar+=a;if(a>0&&fxRandom()<0.4)addText(flameArrow?'バリアに効いた！':'バリア','enemy','#9cc8f5');}
     dm*=(1+0.03*Math.min(20,E.vuln||0))*(E.frz>0&&setVal('ice','frozen')?1+setVal('ice','frozen'):1);E.hp-=dm;B.rec.hit+=dm;E.flash=0.1;if(s.stat&&B.stats){if(s.stat==='ring')B.stats.ring+=dm;else B.stats[s.stat]=Math.max(B.stats[s.stat],dm);}addText(`${Math.round(dm)}${s.crit?'!':''}`,'enemy',s.crit?'#ffd25a':s.col,s.big||s.crit);
@@ -2308,7 +2325,7 @@ function step(dt){
   if(B.fuses&&B.fuses.length){B.fuses.filter(f=>f.at<=B.t).forEach(f=>{addText('追爆！','enemy','#ffb02e',true);B.stats.refire++;fire(f.x);});B.fuses=B.fuses.filter(f=>f.at>B.t);}
   E.frz=Math.max(0,E.frz-dt);if(E.frzCD>0){E.frzCD=Math.max(0,E.frzCD-dt);if(!E.frzCD)tryFreeze();}
   P.shield=Math.max(0,P.shield-P.shield*0.04*dt);
-  if(def.beh68==='dark'){B.darkT=(B.darkT||0)+dt;if(B.darkT>=6){B.darkT=0;E.shield=(E.shield||0)+E.max*0.04;addText('魔法の盾','enemy','#c8a8ff');}}
+  if(def.beh68==='dark'){B.darkT=(B.darkT||0)+dt;if(B.darkT>=6){B.darkT=0;E.shield=(E.shield||0)+E.max*0.04;B.rec.darkSh=(B.rec.darkSh||0)+E.max*0.04;addText('魔法の盾','enemy','#c8a8ff');}}
   if(def.boss==='queen'){B.bossT+=dt;if(B.frozenT>0){B.frozenT-=dt;if(B.frozenT<=0)B.frozenRow=null;}
     if(B.bossT>=7){B.bossT=0;const rows=[...new Set(B.inst.filter(x=>!x.done).map(x=>rowOf(x.l)))];B.frozenRow=rows.length?rows[Math.floor(Math.random()*rows.length)]:Math.floor(Math.random()*5);B.frozenT=3;B.banner={txt:'1段が凍った！',t:0.9};play(B.foe,'attack');}}
   for(const k in B.sealed){B.sealed[k]-=dt;if(B.sealed[k]<=0)delete B.sealed[k];}
@@ -2340,7 +2357,7 @@ function step(dt){
   talentTick();tick66();for(const s of B.shots){s.t+=dt*(s.spd||3.0);if(s.t>=1&&!s.hit){s.hit=1;hitEnemy(s);}}
   B.shots=B.shots.filter(s=>!s.hit);
   if(def.mission==='20秒防衛'&&P.hp<=0){endBattle(false);return;}
-  if(E.hp<=0&&def.beh68==='bone'&&!B.boneUp){B.boneUp=1;E.hp=Math.round(E.max*0.2);B.banner={txt:'骨が立ち上がった！',t:1};sfx('boom');}
+  if(E.hp<=0&&def.beh68==='bone'&&!B.boneUp){B.boneUp=1;B.rec.boneUp=1;E.hp=Math.round(E.max*0.2);B.banner={txt:'骨が立ち上がった！',t:1};sfx('boom');}
   if(E.hp<=0&&!(def.mission==='20秒防衛'&&B.t+1e-7>=20)){if(def.boss==='demon'&&!B.phase2)enterDemonPhase();else{endBattle(true);return;}}
   const tt=B.t-(B.phaseT||0),enr=tt>25?1+0.5*Math.floor((tt-25)/8+1):1;
   E.timer+=dt*(def.beh68==='beast'&&E.hp<E.max/2?1.5:1);if(E.timer>=def.int){E.timer-=def.int;clapper68();play(B.foe,'attack');sfx('foe');if(def.boss==='breaker'||def.support==='breaker'){B.atkN=(B.atkN||0)+1;if(B.atkN%3===0&&P.shield>0){P.shield*=1-0.4*(def.support==='breaker'?supportScale():1);addText('盾くずし！','party','#ff8a7a',true);B.shake=.25;}}partyHit(def.atk*enr*(1+0.1*(B.curseN||0)));if(enr>1&&!B.enr){B.enr=1;B.banner={txt:'敵が怒った！',t:1};}}
@@ -2385,6 +2402,7 @@ function endBattle(win){
 const N0=v=>Math.round(v);
 function battleFacts(){if(!B||!B.rec)return[];const r=B.rec,d=B.def,out=[];if(d.support)out.push(`残った支援：${SUPPORTS[d.support].nm}。${d.support==='wall'?`バリアで ${N0(r.ebar)} 防がれた`:d.support==='supply'?`回復を${r.healFail}回止め、${r.healOK}回許した`:d.support==='breaker'?'通常攻撃の3回目にバリアを崩す':`追加射撃${r.supportShots||0}回`}`);
   if(d.mission==='20秒防衛')out.push(B.win?(B.enemy.hp>0?'20秒守り切った':'敵を倒して防衛成功'):'防衛中に共有HPが尽きた');
+  {const bf=[];if(r.dodge)bf.push(`<b>${r.dodge}回</b>よけられた（刃・鈍器。弓や魔法は当たる）`);if(r.boneUp)bf.push('骨が一度起き上がった（HP20%）');if(r.darkSh>=1)bf.push(`魔法の盾で <b>${N0(r.darkSh)}</b> 防がれた`);if(r.softCut>=1)bf.push(`やわらかい体で大きな一撃が <b>${N0(r.softCut)}</b> 減った`);if(r.armorCut>=1)bf.push(`鎧で <b>${N0(r.armorCut)}</b> 減らされた`);if(r.rcUpN||r.rcDnN){const rr=RACE68[raceOf(d)];if(rr)bf.push(`相性：◎${CLSN[rr.weak]}の攻撃 ${r.rcUpN||0}回・△${CLSN[rr.res]}の攻撃 ${r.rcDnN||0}回`);}out.push(...bf.slice(0,2));}
   if(r.charge||r.haste)out.push(`連鎖：充填 ${(r.charge||0).toFixed(1)}秒・加速 ${(r.haste||0).toFixed(1)}秒`);
   if(d.boss==='stance')out.push(`構えを二本で${r.stancePairs||0}回、凍結で${r.stanceFreezes||0}回止めた。重い一撃は${r.stanceHits||0}回`);
   const dmg=[['武器',r.hit],['毒',r.poison],['やけど',r.burn],['出血',r.bleed],['反撃',r.thorns]].filter(x=>x[1]>=1).sort((a,b)=>b[1]-a[1]);
@@ -2396,7 +2414,8 @@ function battleFacts(){if(!B||!B.rec)return[];const r=B.rec,d=B.def,out=[];if(d.
   const df=[r.blocked>=1?`盾で <b>${N0(r.blocked)}</b> 防いだ`:'',r.healed>=1?`<b>${N0(r.healed)}</b> 回復した`:'',r.rally>=1?`号令で <b>${N0(r.rally)}</b> 減らした`:''].filter(Boolean);
   out.push((df.length?df.join('・')+'。':'')+`受けたダメージ <b>${N0(r.taken)}</b>`);
   return out.filter(Boolean).slice(0,4);}
-function factsHTML(){const f=battleFacts();if(newRelicRule())Object.entries(B?.rec?.relic||{}).filter(([k,v])=>v>0).sort((a,b)=>(['thorn','mercy','snowbell'].includes(b[0])?1:0)-(['thorn','mercy','snowbell'].includes(a[0])?1:0)).slice(0,2).forEach(([k,v])=>f.push((k==='spareFuseCost'?'予備の火縄（代償）':RELICS[k]?.nm||'遺物')+'：'+relicEffectText(k,v)));return f.length?`<div class="facts"><span class="sub">この戦いの記録</span>${f.map(x=>`<p>${x}</p>`).join('')}</div>`:'';}
+let FACT_SKIP=0;
+function factsHTML(){const f=battleFacts().slice(FACT_SKIP);if(newRelicRule())Object.entries(B?.rec?.relic||{}).filter(([k,v])=>v>0).sort((a,b)=>(['thorn','mercy','snowbell'].includes(b[0])?1:0)-(['thorn','mercy','snowbell'].includes(a[0])?1:0)).slice(0,2).forEach(([k,v])=>f.push((k==='spareFuseCost'?'予備の火縄（代償）':RELICS[k]?.nm||'遺物')+'：'+relicEffectText(k,v)));return f.length?`<div class="facts"><span class="sub">この戦いの記録</span>${f.map(x=>`<p>${x}</p>`).join('')}</div>`:'';}
 function mvpHTML(){const loot=lootSummaryHTML();if(!B||!B.contrib)return loot;const top=Object.entries(B.contrib).filter(e=>e[1]>=1).sort((a,b)=>b[1]-a[1]).slice(0,3);if(!top.length)return loot+factsHTML();
   return loot+factsHTML()+`<div class="mvp"><span class="sub">活躍した装備</span>${top.map(([k,v])=>{const l=parseLoc(k),p=getP(l);if(!p)return'';const us=itemUses(l);const note=l.a==='belt'?'ベルト・2人で使用':us[0]&&us[0].buffs.length?us[0].buffs.join('・')+'で強化':'';
     return `<div class="mv"><img src="${ICO(p.type)}" alt=""><span>${ITEMS[p.type].name}${p.star>1?'★'+p.star:''}</span><span class="dot">${Math.round(v)}<small style="font-size:10px;margin-left:2px">${{shield:'守り',bash:'ダメージ',heal:'回復'}[ITEMS[p.type].kind]||'ダメージ'}</small></span><small>${note}</small></div>`;}).join('')}</div>`;}
@@ -2410,7 +2429,7 @@ function loseHint(){return'';if(!B)return'';const E=B.enemy,left=Math.max(0,E.hp
   else if(B.t<12)t='すぐに倒された。<b>盾や薬</b>を増やそう';else if(B.enr&&left>0.2)t='長引いて敵が怒った。<b>攻撃の装備</b>を増やそう';else if(left>0.5)t='火力が足りない。<b>武器を★アップ</b>するか、強い武器を足そう';else t='あと少し。<b>砥石</b>などで主力を強めれば勝てる';
   const tip={leech:'吸血の敵には盾が効く',shell:'硬い殻には斧・大きな武器・毒が効く',poison:'毒の敵には薬・薬草袋',fireproof:'炎に強い敵には、やけど以外の武器を'}[d.mech];
   return `<p class="hint2">負けた理由：${t}${tip?`<br><small>${tip}</small>`:''}</p>`;}
-function rewardReportHTML(){return `<details class="rewardreport"><summary>戦闘の記録・勇者の報告</summary>${reportHTML(true)}${mvpHTML()}</details>`;}
+function rewardReportHTML(){const f=battleFacts().slice(0,2);FACT_SKIP=f.length;const inner=`${reportHTML(true)}${mvpHTML()}`;FACT_SKIP=0;return `${f.length?`<div class="facts quick">${f.map(x=>`<p>${x}</p>`).join('')}</div>`:''}<details class="rewardreport"><summary>戦闘の記録・勇者の報告</summary>${inner}</details>`;}
 function showChest(){
   S.loot=S.loot||{round:S.round,drop:{},claimed:false,seconds:B?.t||0};if(S.loot.claimed)return;if(S.loot.receive){showLootReceive();return;}if(S.loot.chestUpgrade){showLootUpgrade();return;}
   const boons=[{k:'star',nm:'鍛冶屋',ic:'whet',ds:'★1の装備を1つ★2に'},{k:'hp',nm:'お守り',ic:'heart',ds:'この冒険の間、最大HP+20'},{k:'gold',nm:'金貨6G',ic:'coins',ds:'すぐに6Gもらう'},{k:'heal',nm:'鉄の護符',ic:'shield',ds:'以後ずっと、戦闘開始時のバリア+12'}];
@@ -2800,15 +2819,21 @@ let UIZ=1;
 const isLand68=()=>innerWidth>=900&&innerWidth/innerHeight>=1.25;
 function uiZoom(){const land=isLand68();document.body.classList.toggle('land',land);const k=land?Math.max(1,Math.min(2,innerWidth/940,innerHeight/780)):innerWidth>=600?Math.max(1,Math.min(2,innerWidth/470,innerHeight/800)):1;document.documentElement.style.setProperty('--zvh',(innerHeight/k)+'px');if(Math.abs(k-UIZ)>0.001||!document.body.dataset.z){UIZ=k;document.body.dataset.z=1;$('app').style.zoom=k===1?'':String(k);$('modal').style.zoom=k===1?'':String(k);}return UIZ;}
 function fit(){
-  const Z=uiZoom(),H=innerHeight/Z,bt=S.phase==='battle';if(isLand68()){const Wd=Math.min((innerWidth/Z-48)/2,460);const topH=bt?Math.max(220,Math.min(440,Math.round(H*0.62))):0;let c=Math.floor((H-14-6-40-24*2-4*2-18-4-10)/5);c=Math.max(36,Math.min(90,c,Math.floor((Wd-20-12-38)/4)));document.documentElement.style.setProperty('--cell',c+'px');if(bt)$('stage').style.height=topH+'px';sizeFx();if(B){sizeStage();bgCache=null;}return;}
+  const Z=uiZoom(),H=innerHeight/Z,bt=S.phase==='battle';
+  // r69：縦が短い画面では帯を詰める。第4章からは準備の案内も消す（序盤は残す）
+  document.body.classList.toggle('short',H<700);document.body.classList.toggle('late',S.run?.mode==='story'&&baseCh(S.run.ch)>=4);if(isLand68()){const Wd=Math.min((innerWidth/Z-48)/2,460);const topH=bt?Math.max(220,Math.min(440,Math.round(H*0.62))):0;let c=Math.floor((H-14-6-40-24*2-4*2-18-4-10)/5);c=Math.max(36,Math.min(90,c,Math.floor((Wd-20-12-38)/4)));document.documentElement.style.setProperty('--cell',c+'px');if(bt)$('stage').style.height=topH+'px';sizeFx();if(B){sizeStage();bgCache=null;}return;}
   const Wd=Math.min(innerWidth/Z,440)-32;
   const opH=(isOperation()?$('opStrip').offsetHeight:0)+($('relicStrip').hidden?0:$('relicStrip').offsetHeight);
   const topH=bt?Math.max(150,Math.min(340,Math.round(H*0.47))-opH):(64+6+32);
-  const fixed=14+30+6+topH+opH+6+(bt?0:84+6)+52+6+10;
+  // r69：系統・宝石の帯も高さに数える（小さい画面で下の段が帯に隠れていた）
+  const stripH=bt?0:['setStrip','gemStrip'].reduce((a,id)=>{const e=$(id);return a+(e&&!e.hidden?e.offsetHeight+6:0);},0);
+  const fixed=14+30+6+topH+opH+6+(bt?0:84+6)+52+6+10+stripH;
   const boardH=H-fixed-6;
   let c=Math.floor((boardH-24*2-4*2-18-4)/5);
-  c=Math.max(bt?26:36,Math.min(64,c,Math.floor((Wd-20-12-38)/4)));
+  c=Math.max(bt?26:30,Math.min(64,c,Math.floor((Wd-20-12-38)/4)));
   document.documentElement.style.setProperty('--cell',c+'px');
+  // r69：中身が枠からはみ出したら、収まるまでマスを小さくする（下の帯に重なってマスが押せなくなるため）
+  {const bd=$('board');for(let i=0;i<12&&bd&&bd.scrollHeight>bd.clientHeight+2&&c>22;i++){c-=1;document.documentElement.style.setProperty('--cell',c+'px');}}
   $('stage').style.height=topH+'px';
   sizeFx();if(B){sizeStage();bgCache=null;}
 }
@@ -2878,9 +2903,9 @@ function showItemDetails(k,star=1,l=null){
   $m('#bDetailBack').onclick=()=>{closeModal();render();};
 }
 function renderTop(){
-  const el=$('info');
+  const el=$('info');el.onclick=null;
   const l=S.info,p=l&&getP(l);
-  if(!p){const E=enemy(S.round);el.className='';el.innerHTML=`<div class="pic">${buddyHTML(E.spr,40)}${raceOf(E)?`<span class="racetag">${RACE68[raceOf(E)].nm}</span>`:''}</div><div class="who"><span class="name">次の敵 ${E.name}<small>HP ${E.hp}・攻撃${E.atk}／${E.int}秒</small></span><span class="line">${raceLineHTML(E)}${E.trait}</span></div>${eliteOk68()?`<button class="elbtn${S.eliteOn===S.round?' on':''}" id="eliteBtn">${S.eliteOn===S.round?'精鋭をやめる':'精鋭に挑む<small>勝てば宝石</small>'}</button>`:''}`;{const eb=document.getElementById('eliteBtn');if(eb)eb.onclick=e=>{e.stopPropagation();toggleElite68();};}return;}
+  if(!p){const E=enemy(S.round);el.className='';el.innerHTML=`<div class="pic">${buddyHTML(E.spr,40)}${raceOf(E)?`<span class="racetag">${RACE68[raceOf(E)].nm}</span>`:''}</div><div class="who"><span class="name">次の敵 ${E.name}<small class="enmore">押すと詳しく ▶</small></span><span class="line"><b class="enst">HP${E.hp}・攻撃${E.atk}／${E.int}秒</b> ${raceLineHTML(E)}${E.trait}</span></div>${eliteOk68()?`<button class="elbtn${S.eliteOn===S.round?' on':''}" id="eliteBtn">${S.eliteOn===S.round?'精鋭をやめる':'精鋭に挑む<small>勝てば宝石</small>'}</button>`:''}`;{const eb=document.getElementById('eliteBtn');if(eb)eb.onclick=e=>{e.stopPropagation();toggleElite68();};}el.onclick=()=>{if(S.phase!=='plan')return;sfx('tick');showEnemyInfo68(E);};return;}
   const d=ITEMS[p.type];let line=itemLine(p.type,p.star);
   if(p.type==='anvil'){const n=anvilPairs(l).length;line+=n?`。いま <b>${n}通り</b> 錬成できる。右の「錬成」を押そう`:'。<b>違う種類・同じ★</b>の武器を2つ持つと使える';}
   else if(d.kind==='passive'){const t=passiveTargets(l);if(d.adj)line+=l.a==='bench'?'':t.length?`。いま <b>${t.map(n=>ITEMS[getP(n).type].name).join('・')}</b> に効いている`:'。効く物の上下左右に置こう';}
@@ -2914,11 +2939,11 @@ function render(){
   $('mute').innerHTML=`<img src="${S.muted?spkOff:spkOn}" alt="${S.muted?'音なし':'音あり'}">`;
   if(S.info&&!getP(S.info))S.info=null;renderTop();
   const fx65=document.getElementById('relicFx');renderBoard();if(fx65&&S.phase!=='battle')$('board').appendChild(fx65);
-  $('shop').innerHTML=S.shop.map((o,s)=>!o?`<div class="ware sold"></div>`:`<button class="ware${o.special?' special':' r'+ITEMS[o.type].rar}${S.gold<price(o)?' cant':''}${S.pick===s?' pick':''}${S.locked[s]?' locked':''}" data-s="${s}">${S.locked[s]?`<img class="lk" src="${srcOf('assets/lock.png')}" alt="キープ">`:''}<img src="${oicon(o)}" alt="">${o.counter?'<span class="ctr">対策</span>':o.famous||(regionOf()&&REGIONS[regionOf()].famous.includes(o.type))?'<span class="ctr fam">名物</span>':''}${!o.special&&!o.counter?stBadge(o.type):''}${!o.special?raceBadge(o.type):''}${!o.special&&canMergeBuy(o.type)?'<span class="mrg">合体</span>':''}<span class="nm">${oname(o)}</span><span class="pr">${o.type==='focus'?'選ぶ':price(o)+'G'}</span></button>`).join('');
+  $('shop').innerHTML=S.shop.map((o,s)=>!o?`<div class="ware sold"></div>`:`<button class="ware${o.special?' special':' r'+ITEMS[o.type].rar}${S.gold<price(o)?' cant':''}${S.pick===s?' pick':''}${S.locked[s]?' locked':''}" data-s="${s}">${S.locked[s]?`<img class="lk" src="${srcOf('assets/lock.png')}" alt="キープ">`:''}<img src="${oicon(o)}" alt="">${o.counter?'<span class="ctr">対策</span>':!o.special&&nearRecipes68().some(x=>x.miss===o.type)?'<span class="ctr rcp">レシピ</span>':o.famous||(regionOf()&&REGIONS[regionOf()].famous.includes(o.type))?'<span class="ctr fam">名物</span>':''}${!o.special&&!o.counter?stBadge(o.type):''}${!o.special?raceBadge(o.type):''}${!o.special&&canMergeBuy(o.type)?'<span class="mrg">合体</span>':''}<span class="nm">${oname(o)}</span><span class="pr">${o.type==='focus'?'選ぶ':price(o)+'G'}</span></button>`).join('');
   const sp=S.sel&&getP(S.sel);
   $('bSell').disabled=!sp;$('bSell').innerHTML=sp?`売る<br><span class="dot">+${sellPrice(sp)}G</span>`:'売る';
   $('bReroll').disabled=S.gold<rerollCost();$('bFight').title=interest()?'':'';$('bReroll').innerHTML=`更新<br><span class="dot">${rerollCost()}G</span>`;$('bFight').classList.toggle('ready',!S.bench.some(Boolean)&&S.pick==null&&!S.sel);$('bUndo').disabled=!UNDO||!S.round||JSON.parse(UNDO).round!==S.round;
-  guide();renderPop();renderSetStrip();renderGemStrip();
+  guide();renderPop();renderSetStrip();renderGemStrip();{const k=['setStrip','gemStrip','opStrip','relicStrip'].map(id=>{const e=$(id);return e&&!e.hidden?e.offsetHeight:0;}).join();if(k!==window.__stripKey){window.__stripKey=k;fit();}}
 }
 const sellPrice=p=>Math.max(1,Math.floor(itemPrice(p.type)/2))*[0,1,2,4][p.star]+(p.bank||0);
 
@@ -3062,7 +3087,7 @@ $('mute').onclick=()=>{S.muted=!S.muted;if(S.muted)setMusic(null);else{try{audio
 
 // ===================== 小物 =====================
 let toastT=null;
-function toast(t){const el=$('toast');el.textContent=t;el.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>el.style.display='none',1800);}
+function toast(t,ms=1800){const el=$('toast');el.textContent=t;el.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>el.style.display='none',ms);}
 function flash(t){const el=$('flash');el.textContent=t;el.style.display='block';if(el.animate)el.animate([{transform:'translate(-50%,-50%) scale(.6)'},{transform:'translate(-50%,-50%) scale(1.1)'},{transform:'translate(-50%,-50%) scale(1)'}],{duration:300,easing:'steps(4,end)'});setTimeout(()=>el.style.display='none',1300);}
 function bump(l,kind){const el=cellEl(l);if(!el||!el.animate)return;
   if(kind==='merge'){el.animate([{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(.85)'},{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:300,easing:'steps(5,end)'});
