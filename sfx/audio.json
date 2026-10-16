@@ -1,0 +1,79 @@
+{
+ "sfx": {
+  "tick": [
+   "tick_0.m4a",
+   "tick_1.m4a"
+  ],
+  "open": [
+   "open_0.m4a"
+  ],
+  "err": [
+   "err_0.m4a"
+  ],
+  "buy": [
+   "buy_0.m4a"
+  ],
+  "coin": [
+   "coin_0.m4a"
+  ],
+  "reroll": [
+   "reroll_0.m4a",
+   "reroll_1.m4a"
+  ],
+  "merge": [
+   "merge_0.m4a"
+  ],
+  "rare": [
+   "rare_0.m4a"
+  ],
+  "place": [
+   "place_0.m4a"
+  ],
+  "placeW": [
+   "placeW_0.m4a",
+   "placeW_1.m4a"
+  ],
+  "placeG": [
+   "placeG_0.m4a",
+   "placeG_1.m4a"
+  ],
+  "slash": [
+   "slash_0.m4a",
+   "slash_1.m4a"
+  ],
+  "heavy": [
+   "heavy_0.m4a"
+  ],
+  "hit": [
+   "hit_0.m4a",
+   "hit_1.m4a",
+   "hit_2.m4a"
+  ],
+  "hurt": [
+   "hurt_0.m4a",
+   "hurt_1.m4a"
+  ],
+  "foe": [
+   "foe_0.m4a",
+   "foe_1.m4a"
+  ],
+  "block": [
+   "block_0.m4a",
+   "block_1.m4a"
+  ],
+  "shield": [
+   "shield_0.m4a"
+  ],
+  "freeze": [
+   "freeze_0.m4a",
+   "freeze_1.m4a"
+  ],
+  "heal": [
+   "heal_0.m4a"
+  ],
+  "special": [
+   "special_0.m4a"
+  ]
+ },
+ "bgm": {}
+}

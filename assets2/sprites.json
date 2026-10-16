@@ -1,0 +1,294 @@
+{
+ "knight": {
+  "w": 95,
+  "h": 71,
+  "body": 51,
+  "cx": 38.5,
+  "anims": {
+   "idle": 11,
+   "attack": 7,
+   "hit": 3,
+   "death": 11,
+   "run": 8
+  }
+ },
+ "mage": {
+  "w": 167,
+  "h": 136,
+  "body": 86,
+  "cx": 66.5,
+  "anims": {
+   "idle": 6,
+   "attack": 8,
+   "hit": 4,
+   "death": 7,
+   "run": 8
+  }
+ },
+ "archer": {
+  "w": 66,
+  "h": 45,
+  "body": 36,
+  "cx": 18.0,
+  "anims": {
+   "idle": 10,
+   "attack": 6,
+   "hit": 3,
+   "death": 10,
+   "run": 8
+  }
+ },
+ "skeleton": {
+  "w": 98,
+  "h": 59,
+  "body": 51,
+  "cx": 32.5,
+  "anims": {
+   "idle": 4,
+   "attack": 8,
+   "hit": 3,
+   "death": 4
+  }
+ },
+ "mushroom": {
+  "w": 71,
+  "h": 45,
+  "body": 37,
+  "cx": 31.5,
+  "anims": {
+   "idle": 4,
+   "attack": 8,
+   "hit": 3,
+   "death": 4
+  }
+ },
+ "goblin": {
+  "w": 88,
+  "h": 46,
+  "body": 36,
+  "cx": 43.5,
+  "anims": {
+   "idle": 4,
+   "attack": 8,
+   "hit": 3,
+   "death": 4
+  }
+ },
+ "eye": {
+  "w": 56,
+  "h": 41,
+  "body": 33,
+  "cx": 27.0,
+  "anims": {
+   "idle": 8,
+   "attack": 8,
+   "hit": 3,
+   "death": 4
+  }
+ },
+ "king": {
+  "w": 144,
+  "h": 82,
+  "body": 81,
+  "cx": 63.5,
+  "anims": {
+   "idle": 6,
+   "attack": 6,
+   "hit": 4,
+   "death": 11,
+   "run": 8
+  }
+ },
+ "fwarrior": {
+  "w": 114,
+  "h": 59,
+  "body": 45,
+  "cx": 67.0,
+  "anims": {
+   "idle": 10,
+   "attack": 7,
+   "hit": 3,
+   "death": 7
+  }
+ },
+ "mimic": {
+  "w": 69,
+  "h": 44,
+  "body": 30,
+  "cx": 30.5,
+  "anims": {
+   "idle": 9,
+   "attack": 14,
+   "hit": 3,
+   "death": 6
+  }
+ },
+ "rat": {
+  "w": 46,
+  "h": 22,
+  "body": 20,
+  "cx": 20.0,
+  "anims": {
+   "idle": 10,
+   "attack": 12,
+   "hit": 3,
+   "death": 6
+  }
+ },
+ "slime": {
+  "w": 111,
+  "h": 35,
+  "body": 20,
+  "cx": 34.0,
+  "anims": {
+   "idle": 14,
+   "attack": 19,
+   "hit": 3,
+   "death": 11
+  }
+ },
+ "bat": {
+  "w": 72,
+  "h": 55,
+  "body": 55,
+  "cx": 33.5,
+  "anims": {
+   "idle": 11,
+   "attack": 11,
+   "hit": 3,
+   "death": 4
+  }
+ },
+ "fireworm": {
+  "w": 77,
+  "h": 54,
+  "body": 45,
+  "cx": 30.0,
+  "anims": {
+   "idle": 9,
+   "attack": 16,
+   "hit": 3,
+   "death": 8
+  }
+ },
+ "wizard3": {
+  "w": 88,
+  "h": 66,
+  "body": 53,
+  "cx": 25.5,
+  "anims": {
+   "idle": 10,
+   "attack": 13,
+   "hit": 3,
+   "death": 18
+  }
+ },
+ "darkwiz": {
+  "w": 88,
+  "h": 58,
+  "body": 58,
+  "cx": 19.5,
+  "anims": {
+   "idle": 8,
+   "attack": 8,
+   "hit": 3,
+   "death": 5
+  }
+ },
+ "mushroom_p": {
+  "w": 71,
+  "h": 45,
+  "body": 37,
+  "cx": 31.5,
+  "anims": {
+   "idle": 4,
+   "attack": 8,
+   "hit": 3,
+   "death": 4
+  }
+ },
+ "skeleton_b": {
+  "w": 98,
+  "h": 59,
+  "body": 51,
+  "cx": 32.5,
+  "anims": {
+   "idle": 4,
+   "attack": 8,
+   "hit": 3,
+   "death": 4
+  }
+ },
+ "skeleton_s": {
+  "w": 98,
+  "h": 59,
+  "body": 51,
+  "cx": 32.5,
+  "anims": {
+   "idle": 4,
+   "attack": 8,
+   "hit": 3,
+   "death": 4
+  }
+ },
+ "goblin_r": {
+  "w": 88,
+  "h": 46,
+  "body": 36,
+  "cx": 43.5,
+  "anims": {
+   "idle": 4,
+   "attack": 8,
+   "hit": 3,
+   "death": 4
+  }
+ },
+ "eye_o": {
+  "w": 56,
+  "h": 41,
+  "body": 33,
+  "cx": 27.0,
+  "anims": {
+   "idle": 8,
+   "attack": 8,
+   "hit": 3,
+   "death": 4
+  }
+ },
+ "demon1": {
+  "w": 88,
+  "h": 58,
+  "body": 58,
+  "cx": 19.5,
+  "anims": {
+   "idle": 8,
+   "attack": 8,
+   "hit": 3,
+   "death": 5
+  }
+ },
+ "demon2": {
+  "w": 88,
+  "h": 58,
+  "body": 58,
+  "cx": 19.5,
+  "anims": {
+   "idle": 8,
+   "attack": 8,
+   "hit": 3,
+   "death": 5
+  }
+ },
+ "slime_d": {
+  "w": 111,
+  "h": 35,
+  "body": 20,
+  "cx": 34.0,
+  "anims": {
+   "idle": 14,
+   "attack": 19,
+   "hit": 3,
+   "death": 11
+  }
+ }
+}
