@@ -136,9 +136,10 @@ const PRICE={hsword:8,lbow:8,hshield:7,sword:4,bow:4,staff:4,dagger:3,spear:6,sh
 const WEAPON=k=>ITEMS[k].kind==='atk';
 const SUPPORT=k=>['whet','bell','flag'].includes(ITEMS[k].kind);
 const canMerge=(k,t)=>ITEMS[k].v.length>1&&(t||1)<3;
-const HEROES=[{id:'knight',nm:'アオ',job:'剣士',col:'#4f8fd8',likes:['sword','hsword'],sp:'knight'},{id:'archer',nm:'リン',job:'弓士',col:'#69b552',likes:['bow','lbow'],sp:'archer'},{id:'mage',nm:'ミナ',job:'僧侶',col:'#a070d0',likes:['staff'],sp:'mage'}];
-const ownerFor=k=>Math.max(0,HEROES.findIndex(h=>h.likes.includes(k)));
-const META={"knight":{"w":95,"h":71,"body":51,"anims":{"idle":11,"attack":7,"hit":3,"death":11}},"archer":{"w":66,"h":45,"body":36,"anims":{"idle":10,"attack":6,"hit":3,"death":10}},"mage":{"w":167,"h":136,"body":86,"anims":{"idle":6,"attack":8,"hit":4,"death":7}},"skeleton":{"w":98,"h":59,"body":51,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"goblin":{"w":88,"h":46,"body":36,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"slime":{"w":111,"h":35,"body":20,"anims":{"idle":14,"attack":19,"hit":3,"death":11}},"bat":{"w":72,"h":55,"body":55,"anims":{"idle":11,"attack":11,"hit":3,"death":4}},"rat":{"w":46,"h":22,"body":20,"anims":{"idle":10,"attack":12,"hit":3,"death":6}},"mushroom":{"w":71,"h":45,"body":37,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"mushroom_p":{"w":71,"h":45,"body":37,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"goblin_r":{"w":88,"h":46,"body":36,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"eye":{"w":56,"h":41,"body":33,"anims":{"idle":8,"attack":8,"hit":3,"death":4}},"eye_o":{"w":56,"h":41,"body":33,"anims":{"idle":8,"attack":8,"hit":3,"death":4}},"mimic":{"w":69,"h":44,"body":30,"anims":{"idle":9,"attack":14,"hit":3,"death":6}},"skeleton_s":{"w":98,"h":59,"body":51,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"darkwiz":{"w":88,"h":58,"body":58,"anims":{"idle":8,"attack":8,"hit":3,"death":5}}};
+const HEROES=[{id:'knight',nm:'アオ',job:'剣士',col:'#4f8fd8',likes:['sword','hsword'],sp:'knight'},{id:'archer',nm:'リン',job:'弓士',col:'#69b552',likes:['bow','lbow'],sp:'archer'},{id:'mage',nm:'ミナ',job:'僧侶',col:'#a070d0',likes:['staff'],sp:'mage'},{id:'lancer',nm:'ガク',job:'槍兵',col:'#d0803a',likes:['spear'],sp:'fwarrior'}];
+const HN=()=>(S.ch||0)>=2?4:3;
+const ownerFor=k=>{const i=HEROES.findIndex(h=>h.likes.includes(k));return i>=0&&i<HN()?i:0;};
+const META={"knight":{"w":95,"h":71,"body":51,"anims":{"idle":11,"attack":7,"hit":3,"death":11}},"archer":{"w":66,"h":45,"body":36,"anims":{"idle":10,"attack":6,"hit":3,"death":10}},"mage":{"w":167,"h":136,"body":86,"anims":{"idle":6,"attack":8,"hit":4,"death":7}},"skeleton":{"w":98,"h":59,"body":51,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"goblin":{"w":88,"h":46,"body":36,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"slime":{"w":111,"h":35,"body":20,"anims":{"idle":14,"attack":19,"hit":3,"death":11}},"bat":{"w":72,"h":55,"body":55,"anims":{"idle":11,"attack":11,"hit":3,"death":4}},"rat":{"w":46,"h":22,"body":20,"anims":{"idle":10,"attack":12,"hit":3,"death":6}},"mushroom":{"w":71,"h":45,"body":37,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"fwarrior":{"w":114,"h":59,"body":45,"anims":{"idle":10,"attack":7,"hit":3,"death":7}},"fwarrior_cas":{"w":114,"h":59,"body":45,"anims":{"idle":10,"attack":7,"hit":3,"death":7}},"fwarrior_vol":{"w":114,"h":59,"body":45,"anims":{"idle":10,"attack":7,"hit":3,"death":7}},"skeleton_b":{"w":98,"h":59,"body":51,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"bat_cas":{"w":72,"h":55,"body":55,"anims":{"idle":11,"attack":11,"hit":3,"death":4}},"goblin_vol":{"w":88,"h":46,"body":36,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"wizard3_cas":{"w":88,"h":66,"body":53,"anims":{"idle":10,"attack":13,"hit":3,"death":18}},"mushroom_p":{"w":71,"h":45,"body":37,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"goblin_r":{"w":88,"h":46,"body":36,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"eye":{"w":56,"h":41,"body":33,"anims":{"idle":8,"attack":8,"hit":3,"death":4}},"eye_o":{"w":56,"h":41,"body":33,"anims":{"idle":8,"attack":8,"hit":3,"death":4}},"mimic":{"w":69,"h":44,"body":30,"anims":{"idle":9,"attack":14,"hit":3,"death":6}},"skeleton_s":{"w":98,"h":59,"body":51,"anims":{"idle":4,"attack":8,"hit":3,"death":4}},"darkwiz":{"w":88,"h":58,"body":58,"anims":{"idle":8,"attack":8,"hit":3,"death":5}}};
 // ===== 章。2戦目と4戦目のあとに道を選ぶ。敵は列で来る：[種類,HP,攻撃,間隔,守り] =====
 const CHAPTERS=[
  {nm:'国境の村',boss:'骸骨の隊長',bag:[5,4],grow:[6,4],gold:10,enc:{
@@ -165,6 +166,18 @@ const CHAPTERS=[
   boss:{nm:'森の魔術師',bg:'forest',boss:1,foes:[['darkwiz',1700,12,2.2,3]],big:{every:7,dmg:40,nm:'雷'}}},
   routes:{2:[{k:'A',nm:'けもの道',gain:'勝つたびに金＋3',ds:'目玉とゴブリン。攻撃が速い。'},{k:'B',nm:'古い祠',gain:'報酬の道具が段階2',ds:'宝箱お化けと苔むした骨。守りが硬い。'}],
    4:[{k:'A',nm:'がけの道',gain:'勝つと金＋5',ds:'目玉とゴブリン。'},{k:'B',nm:'宝の洞くつ',gain:'段階2と珍しい道具が出やすい',ds:'大きな宝箱お化け。勝つと金＋12。'}]}},
+ {nm:'砦',boss:'砦の将軍',bag:[6,5],grow:[7,5],gold:18,enc:{
+  r1:{nm:'砦の見張り',bg:'fort',foes:[['goblin_vol',300,8,1.6,2],['goblin_vol',300,8,1.6,2]]},
+  r2:{nm:'盾の骨兵',bg:'fort',foes:[['skeleton_b',560,10,2.2,6]]},
+  A3:{nm:'砦の剣士',bg:'fort',foes:[['fwarrior_cas',500,12,1.8,3],['goblin_vol',280,8,1.6,1]]},
+  A4:{nm:'塔のコウモリ',bg:'tower',foes:[['bat_cas',300,9,1.3,0],['bat_cas',300,9,1.3,0],['bat_cas',300,9,1.3,0]]},
+  B3:{nm:'鎧の骨兵',bg:'grave',foes:[['skeleton_b',760,12,2.2,8]]},
+  B4:{nm:'砦の魔術師',bg:'fort',foes:[['wizard3_cas',700,15,2.4,4]]},
+  A5:{nm:'剣士の隊',bg:'fort',foes:[['fwarrior_cas',560,12,1.8,4],['fwarrior_cas',560,12,1.8,4]]},
+  B5:{nm:'鉄壁の骨',bg:'grave',chest:12,foes:[['skeleton_b',1100,14,2.2,10]]},
+  boss:{nm:'砦の将軍',bg:'fort',boss:1,foes:[['fwarrior_vol',2200,13,2.2,6]],big:{every:7,dmg:40,nm:'突撃'}}},
+  routes:{2:[{k:'A',nm:'城壁の上',gain:'勝つたびに金＋3',ds:'剣士とコウモリ。守りは低め。'},{k:'B',nm:'地下の牢',gain:'報酬の道具が段階2',ds:'鎧の骨兵と魔術師。守りがとても硬い。'}],
+   4:[{k:'A',nm:'正面の門',gain:'勝つと金＋5',ds:'剣士2人。'},{k:'B',nm:'武器庫',gain:'段階2と珍しい道具が出やすい',ds:'鉄壁の骨（守り10）。勝つと金＋12。'}]}},
 ];
 const CH=()=>CHAPTERS[S.ch||0];
 const ENCX=()=>CH().enc;
@@ -188,11 +201,12 @@ const itemAt=(x,y,ignore)=>S.items.find(it=>it!==ignore&&cellsOf(it).some(p=>p[0
 function stats(it){const d=ITEMS[it.k],tier=it.t||1,base=d.v[Math.min(tier,d.v.length)-1];if(!WEAPON(it.k)&&d.kind!=='heal')return null;
  let atk=base,cd=d.cd,why=[];const owner=HEROES[it.o??0];
  if(owner.likes.includes(it.k)){atk+=2;why.push(owner.nm+'の得意＋2');}
+ const pierce=it.k==='spear'&&owner.id==='lancer';if(pierce)why.push('ガクの槍：守りを無視');
  if(d.kind==='atk'){const nb=S.items.filter(o=>o!==it&&touching(it,o));
   const wh=nb.filter(o=>o.k==='whet').slice(0,2);if(wh.length){atk+=4*wh.length;why.push('砥石＋'+4*wh.length);}
   const bl=nb.find(o=>o.k==='bell');if(bl){cd=Math.max(1,cd-1);why.push('鈴で1秒はやく');}
   const fl=nb.find(o=>o.k==='flag'&&flagOn(o));if(fl){atk*=2;why.push('旗×2');}}
- return {atk,cd,why};}
+ return {atk,cd,why,pierce};}
 const flagOn=f=>new Set(S.items.filter(w=>WEAPON(w.k)&&touching(w,f)).map(w=>w.k)).size>=2;
 const guardOf=()=>S.items.filter(i=>ITEMS[i.k].kind==='guard').map(i=>ITEMS[i.k].v[0]).sort((a,b)=>b-a).slice(0,3).reduce((a,b)=>a+b,0);
 // となりで効き合う相手（線で結ぶ）
@@ -204,7 +218,7 @@ function linksOf(it){const out=[];const nb=S.items.filter(o=>o!==it&&touching(it
 // 鞄の強さ（次の敵の守りを引いた攻撃・回復・守り）と、その変化の一言
 const pw=()=>{const p=power(encOf(S.round).foes[0][4]||0);return {d:p.dps,h:p.hps,g:guardOf()};};
 function deltaText(b,a){const out=[],f=v=>v.toFixed(1);if(Math.abs(a.d-b.d)>=.05)out.push(`攻撃 毎秒${f(b.d)}→${f(a.d)}`);if(Math.abs(a.h-b.h)>=.05)out.push(`回復 毎秒${f(b.h)}→${f(a.h)}`);if(a.g!==b.g)out.push(`守り${b.g}→${a.g}`);return out.join('　');}
-function power(arm){let dps=0,hps=0;for(const it of S.items){const st=stats(it);if(!st)continue;if(ITEMS[it.k].kind==='heal')hps+=st.atk/st.cd;else dps+=Math.max(1,st.atk-arm)/st.cd;}return {dps,hps};}
+function power(arm){let dps=0,hps=0;for(const it of S.items){const st=stats(it);if(!st)continue;if(ITEMS[it.k].kind==='heal')hps+=st.atk/st.cd;else dps+=Math.max(1,st.atk-(st.pierce?0:arm))/st.cd;}return {dps,hps};}
 // ===== 音（Web Audio で合成。離れて戻ったら起こし直す） =====
 let AC=null,MG=null,SND=true;try{SND=localStorage.getItem('oukaban.snd')!=='0';}catch(e){}
 function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();MG=AC.createGain();MG.gain.value=.5;MG.connect(AC.destination);}catch(e){return null;}}if(AC.state!=='running')AC.resume().catch(()=>{});return AC;}
@@ -286,7 +300,7 @@ function renderInfo(){const e=$('info');const it=S.sel,pk=S.pick!=null?S.shop[S.
   if(!st&&SUPPORT(it.k))main+=lk.length?`（${lk.length}つに効いている）`:'（まだ何にも効いていない）';
   e.innerHTML=`<span><b>${d.nm}${it.t>1?' '+it.t:''}</b>${d.own?` <span style="color:${HEROES[it.o].col}">${HEROES[it.o].nm}</span>`:''}　${main}${st&&st.why.length?'<br><small>'+st.why.join('・')+'</small>':''}</span><span class="acts">${d.own?'<button class="btn" id="iOwn">持ち主</button>':''}${shapeOf(it.k,0).length>1?'<button class="btn" id="iRot">回す</button>':''}<button class="btn" id="iSell">売る ${sellPrice(it)}</button></span>`;}
  else e.innerHTML='<span class="sub">店の道具を鞄へ動かして詰める。道具を押すと、効いている相手と線でつながる。</span>';
- const r=$('iRot');if(r)r.onclick=rotateSel;const o=$('iOwn');if(o)o.onclick=()=>{pushUndo();S.sel.o=(S.sel.o+1)%HEROES.length;sfx('tick');render();};const s=$('iSell');if(s)s.onclick=sellSel;}
+ const r=$('iRot');if(r)r.onclick=rotateSel;const o=$('iOwn');if(o)o.onclick=()=>{pushUndo();S.sel.o=(S.sel.o+1)%HN();sfx('tick');render();};const s=$('iSell');if(s)s.onclick=sellSel;}
 const sellPrice=it=>Math.max(1,Math.floor(PRICE[it.k]*Math.pow(2,(it.t||1)-1)/2));
 // ===== 手ほどき（初めての1回だけ） =====
 const TIPS={1:'<b>手ほどき 1/3</b>　店の<b>砥石</b>を、鞄の<b>剣のとなり</b>へ動かそう。砥石を押してから、光るマスを押してもよい。',
@@ -396,14 +410,14 @@ function addText(x,y,s,c,big){B.texts.push({x,y,s,c,a:0,big});}
 function popItem(it,s,c){if(window.__fast)return;const el=document.querySelector(`.it[data-id="${it.id}"]`);if(!el)return;const p=document.createElement('span');p.className='pop';p.textContent=s;p.style.color=c;p.onanimationend=()=>p.remove();el.appendChild(p);}
 let last=0;
 // 勇者の立ち位置：剣士が先頭、僧侶がいちばん後ろ
-const HERO_X=i=>Math.round((cv.width||360)*[0.4,0.25,0.1][i]);
+const HERO_X=i=>Math.round((cv.width||360)*(HN()>3?[0.43,0.21,0.08,0.32]:[0.4,0.25,0.1])[i]);
 const frontFoe=()=>B.foes.find(f=>f.hp>0);
 function step(dt){B.t+=dt;
  for(const f of B.foes){f.hitT=Math.max(0,f.hitT-dt);f.atkT=Math.max(0,f.atkT-dt);if(f.deadT>=0)f.deadT+=dt;}B.heroHit=Math.max(0,B.heroHit-dt);for(const k in B.heroAtk)B.heroAtk[k]=Math.max(0,B.heroAtk[k]-dt);
  if(!frontFoe()){B.endT=(B.endT||0)+dt;if(B.endT>0.8)endBattle(true);return;}
  for(const u of B.users){u.t+=dt;if(u.t>=u.st.cd){u.t-=u.st.cd;const d=ITEMS[u.it.k];
   if(d.kind==='heal'){u.fire=0.3;B.heroAtk[u.it.o]=0.5;const h=Math.min(u.st.atk,S.max-S.hp);S.hp+=h;B.healed+=h;u.dealt+=h;popItem(u.it,'+'+u.st.atk,'#9f9');if(h>0){addText(HERO_X(2),40,'+'+h,'#8f8');sfx('heal');}}
-  else{const tgt=frontFoe();if(!tgt)break;u.fire=0.3;B.heroAtk[u.it.o]=0.5;const dmg=Math.max(1,u.st.atk-tgt.arm);tgt.hp=Math.max(0,tgt.hp-dmg);tgt.hitT=0.25;u.dealt+=dmg;popItem(u.it,''+dmg,'#ffd34a');addText(tgt.x??foeX(0),46,''+dmg,'#ffd34a',dmg>=20);
+  else{const tgt=frontFoe();if(!tgt)break;u.fire=0.3;B.heroAtk[u.it.o]=0.5;const dmg=Math.max(1,u.st.atk-(u.st.pierce?0:tgt.arm));tgt.hp=Math.max(0,tgt.hp-dmg);tgt.hitT=0.25;u.dealt+=dmg;popItem(u.it,''+dmg,'#ffd34a');addText(tgt.x??foeX(0),46,''+dmg,'#ffd34a',dmg>=20);
    sfx(u.it.k==='bow'?'arrow':dmg>=20?'heavy':'hit');if(tgt.hp<=0){tgt.deadT=0;sfx('die');}}}}
  const rage=B.t>RAGE_T?Math.floor((B.t-RAGE_T)/3+1)*2:0;if(rage&&!B.raged){B.raged=1;addText(cv.width/2,60,'敵が怒った','#ff9050',true);sfx('warn');}
  for(const f of B.foes){if(f.hp<=0)continue;f.t+=dt;if(f.t>=f.cd){f.t-=f.cd;f.atkT=0.4;const dmg=Math.max(1,f.atk+rage-B.guard);hurt(dmg,'-'+dmg);}}
@@ -415,8 +429,10 @@ function hurt(dmg,label,big){S.hp=Math.max(0,S.hp-dmg);B.taken+=dmg;B.heroHit=0.
  if(S.hp>0&&S.hp<=S.max/2){const p=B.potions.findIndex(x=>x);if(p>=0){B.potions[p]=0;S.hp=Math.min(S.max,S.hp+25);B.healed+=25;addText(HERO_X(1),30,'薬 +25','#8f8');sfx('potion');const pi=S.items.filter(i=>i.k==='potion')[p];if(pi)popItem(pi,'+25','#9f9');}}}
 const foeX=i=>cv.width-56-i*64,RAGE_T=30;
 // 帯の背景（場所ごとに色と形を変える）
-const BG={village:['#5a7fb0','#8fb0d0','#4c7a3a','#3a5f2c','house'],forest:['#2c4a3a','#4a6a4a','#2f5a2a','#24461f','tree'],swamp:['#3a4a3a','#5a6a4a','#3a4a2a','#2c3a20','reed'],tower:['#1a1a3a','#2a2a50','#3a3a3a','#2a2a2a','tower'],grave:['#2a2238','#443652','#3a3a30','#2a2a22','grave']};
-function drawBg(W,H,gy,key){const b=BG[key]||BG.village;const g=cx.createLinearGradient(0,0,0,gy);g.addColorStop(0,b[0]);g.addColorStop(1,b[1]);cx.fillStyle=g;cx.fillRect(0,0,W,gy);
+const BG={village:['#5a7fb0','#8fb0d0','#4c7a3a','#3a5f2c','house'],forest:['#2c4a3a','#4a6a4a','#2f5a2a','#24461f','tree'],swamp:['#3a4a3a','#5a6a4a','#3a4a2a','#2c3a20','reed'],tower:['#1a1a3a','#2a2a50','#3a3a3a','#2a2a2a','tower'],grave:['#2a2238','#443652','#3a3a30','#2a2a22','grave'],fort:['#4a5060','#6a7080','#4a4a46','#38382f','tower']};
+// Codex の画像生成で作った背景（768×192、地面は上から154px）。読めないときは手描きの形
+function drawBg(W,H,gy,key){const im=img('bg2/'+(BG[key]?key:'village'));if(im.complete&&im.naturalWidth){const sc=Math.max(gy/154,W/768),w=768*sc,x0=(W-w)/2,y0=gy-154*sc;cx.drawImage(im,x0,y0,w,192*sc);if(y0+192*sc<H){cx.fillStyle='#2a2418';cx.fillRect(0,y0+192*sc,W,H);}return;}
+ const b=BG[key]||BG.village;const g=cx.createLinearGradient(0,0,0,gy);g.addColorStop(0,b[0]);g.addColorStop(1,b[1]);cx.fillStyle=g;cx.fillRect(0,0,W,gy);
  cx.fillStyle='rgba(0,0,0,.2)';for(let x=-20;x<W+40;x+=46){const h=18+((x*7)%23+23)%23;
   if(b[4]==='tree'){cx.fillRect(x+14,gy-h-26,6,h+26);cx.beginPath();cx.moveTo(x,gy-h-14);cx.lineTo(x+17,gy-h-52);cx.lineTo(x+34,gy-h-14);cx.fill();}
   else if(b[4]==='house'){cx.fillRect(x,gy-h,30,h);cx.beginPath();cx.moveTo(x-4,gy-h);cx.lineTo(x+15,gy-h-14);cx.lineTo(x+34,gy-h);cx.fill();}
@@ -428,7 +444,7 @@ let planFoes=null,planKey='';
 function draw(){const W=cv.width=cv.clientWidth,H=cv.height=cv.clientHeight;cx.imageSmoothingEnabled=false;const gy=H-24,now=performance.now();
  const enc=encOf(S.round);drawBg(W,H,gy,B?B.bg:enc.bg);
  const sprite=(k,x,anim,flip,scale,frame)=>{const m=META[k];if(!m)return;const im=img(k+'_'+anim);if(!im.complete||!im.naturalWidth)return;const n=m.anims[anim]||1,fr=frame!=null?Math.max(0,Math.min(n-1,frame)):Math.floor(now/100)%n;const s=scale*Math.min(1.8,(H*0.36)/m.body);cx.save();cx.translate(Math.round(x),gy);if(flip)cx.scale(-1,1);cx.drawImage(im,fr*m.w,0,m.w,m.h,-m.w*s/2,-m.h*s+(m.h-m.body)*s*0.2,m.w*s,m.h*s);cx.restore();};
- HEROES.forEach((h,i)=>{const at=B&&!B.done&&B.heroAtk[i]>0;sprite(h.sp,HERO_X(i),at?'attack':B&&B.heroHit>0&&i===0?'hit':'idle',false,1,at?Math.floor((0.5-B.heroAtk[i])/0.5*META[h.sp].anims.attack):null);});
+ HEROES.slice(0,HN()).forEach((h,i)=>{const at=B&&!B.done&&B.heroAtk[i]>0;sprite(h.sp,HERO_X(i),at?'attack':B&&B.heroHit>0&&i===0?'hit':'idle',false,1,at?Math.floor((0.5-B.heroAtk[i])/0.5*META[h.sp].anims.attack):null);});
  let foes;if(B)foes=B.foes;else{const key=S.round+':'+enc.nm+':'+(S.lost||0);if(planKey!==key){planKey=key;planFoes=enc.foes.map(([sp,hp0,atk,cd,arm])=>{const hp=hpNow(hp0);return {sp,hp,max:hp,arm,deadT:-1,hitT:0,atkT:0,x:null};});}foes=planFoes;}
  // 生きている敵は前へ詰める
  const bossNow=B?B.boss:enc.boss;let slot=0;foes.forEach(f=>{const tx=foeX(f.hp>0?slot++:Math.max(0,slot-1))-(bossNow?18:0);if(f.x==null)f.x=tx+(B?70:0);f.x+=(tx-f.x)*0.12;});
@@ -491,24 +507,27 @@ function save(){if(S.phase!=='plan'||!S.started)return;try{localStorage.setItem(
 function load(){try{const j=JSON.parse(localStorage.getItem(SAVE)||'null');if(j&&j.items){uid=j.uid||100;S={...fresh(),...j,sel:null,pick:null,deskPick:null,phase:'plan'};syncBag();return true;}}catch(e){}return false;}
 const clearSave=()=>{try{localStorage.removeItem(SAVE);}catch(e){}};
 // ===== 城と物語 =====
-const PT={'王様':'king','アオ':'knight','リン':'archer','ミナ':'mage'};
+const PT={'王様':'king','アオ':'knight','リン':'archer','ミナ':'mage','ガク':'scout'};
 const STORY=[{
  intro:[['王様','国境の村が魔物に襲われた。骸骨の隊長が、村の墓地から兵を起こしているらしい。'],['アオ','おまかせを！ …でも、荷物はどうしましょう。'],['王様','鞄の中身は、わしが詰める。並べ方しだいで、道具は何倍にも働くぞ。']],
  boss:[['リン','いました、骸骨の隊長です！ ときどき大きく振りかぶってきます。'],['ミナ','大振りは盾で軽くできます。回復も切らさないように。']],
  clear:[['リン','村を取り戻しました！ 王様の詰めた鞄のおかげです。'],['王様','ようやった。だが隊長は「森の奥の方に伝えろ」と言い残したそうだな。'],['アオ','森の向こうに、まだ何かいる…。次の鞄も、お願いします。']]},
  {intro:[['王様','北の森に入った旅人が戻らない。森の魔術師が道を閉ざしたらしい。'],['ミナ','森の魔物は攻撃が速いと聞きます。盾を多めに持っていきたいです。'],['王様','鞄は少し広くしておいた。それから、森では珍しい道具が見つかるそうだ。']],
   boss:[['リン','森の魔術師です！ ときどき雷を落としてきます。'],['アオ','雷は盾で受けて、その間に一気に攻めよう。']],
-  clear:[['ミナ','森の道が開きました。旅人たちも無事です。'],['王様','ようやった。魔術師は「砦の将軍」の名を口にしたそうだな。'],['アオ','砦…次はそこですね。鞄、もっと強くしてください。']]}];
+  clear:[['ミナ','森の道が開きました。旅人たちも無事です。'],['王様','ようやった。魔術師は「砦の将軍」の名を口にしたそうだな。'],['アオ','砦…次はそこですね。鞄、もっと強くしてください。']]},
+ {intro:[['王様','砦の将軍が国境の兵を集めている。鎧の硬い兵ばかりだそうだ。'],['ガク','おれは砦の門番だった。将軍のやり方にはついていけない。'],['ガク','槍ならまかせてくれ。おれが持てば、どんな鎧でも貫ける。'],['王様','よし、鞄の槍はガクに持たせよう。鞄もまた広げておいた。']],
+  boss:[['ガク','将軍だ。ときどき突撃してくるぞ。'],['ミナ','突撃は盾で軽くできます。鎧はガクの槍で。']],
+  clear:[['ガク','砦は取り戻した。…将軍は、鉱山の奥に「あの方」がいると言っていた。'],['王様','魔王の手下か。ようやった、皆。'],['リン','次は鉱山ですね。暗いのは苦手だなあ。']]}];
 function scene(lines,then,i=0){const [who,txt]=lines[i];$('mcard').innerHTML=`<div class="say"><img src="${A}portraits/${PT[who]||'king'}.png" alt=""><div><div class="who">${who}</div><p>${txt}</p></div></div><button class="btn go" id="scOk" style="width:100%;margin-top:8px">${i<lines.length-1?'つぎへ':'つづける'}</button>`;$('modal').style.display='flex';
  $('scOk').onclick=()=>{sfx('tick');if(i<lines.length-1)scene(lines,then,i+1);else{$('modal').style.display='none';render();then&&then();}};}
 function showCastle(){const pg=loadProg(),has=load();S.phase='castle';const open=n=>n===0||!!pg['c'+n];
  if(castle.sel==null||!open(castle.sel))castle.sel=Math.max(0,CHAPTERS.findIndex((c,n)=>open(n)&&!pg['c'+(n+1)]));if(castle.sel<0)castle.sel=CHAPTERS.length-1;
  const sel=castle.sel,C0=CHAPTERS[sel];
  $('mcard').innerHTML=`<h2>王の玉座</h2><p class="sub">勇者たちの鞄を詰めて、魔王を倒そう。</p>
- <div id="castleMap" style="background-image:url(${A}map/kingdom.png)"><span class="pin${open(0)?'':' off'}" style="left:26%;top:74%">第1章 国境の村${pg.c1?'（済）':''}</span><span class="pin${open(1)?'':' off'}" style="left:48%;top:42%">第2章 北の森${pg.c2?'（済）':''}</span><span class="pin off" style="left:76%;top:16%">魔王城</span></div>
- <div class="choices" style="grid-template-columns:1fr 1fr">${CHAPTERS.map((c,n)=>`<button class="choice chs" data-n="${n}" ${open(n)?'':'disabled'} style="min-height:64px;${n===sel?'outline:2px solid #fff':''}"><b>第${n+1}章 ${c.nm}</b><small>${open(n)?(pg['c'+(n+1)]?'クリア '+pg['c'+(n+1)]+'回':'まだ'):'前の章をクリアすると行ける'}</small></button>`).join('')}</div>
+ <div id="castleMap" style="background-image:url(${A}map/kingdom.png)"><span class="pin${open(0)?'':' off'}" style="left:26%;top:74%">第1章 国境の村${pg.c1?'（済）':''}</span><span class="pin${open(1)?'':' off'}" style="left:48%;top:42%">第2章 北の森${pg.c2?'（済）':''}</span><span class="pin${open(2)?'':' off'}" style="left:70%;top:62%">第3章 砦${pg.c3?'（済）':''}</span><span class="pin off" style="left:76%;top:16%">魔王城</span></div>
+ <div class="choices" style="grid-template-columns:repeat(3,1fr)">${CHAPTERS.map((c,n)=>`<button class="choice chs" data-n="${n}" ${open(n)?'':'disabled'} style="min-height:64px;${n===sel?'outline:2px solid #fff':''}"><b>第${n+1}章 ${c.nm}</b><small>${open(n)?(pg['c'+(n+1)]?'クリア '+pg['c'+(n+1)]+'回':'まだ'):'前の章をクリアすると行ける'}</small></button>`).join('')}</div>
  <div class="stat"><b>第${sel+1}章 ${C0.nm}</b>　6戦・最後に${C0.boss}。命は${LIVES}つ。鞄 ${C0.bag[0]}×${C0.bag[1]}。${pg.keep?`<br>王家の宝：<b>${ITEMS[pg.keep.k].nm}${pg.keep.t>1?' '+pg.keep.t:''}</b>（机に入れて出発）`:''}</div>
- <p class="sub">第3章 砦：準備中</p>
+ <p class="sub">第4章 鉱山：準備中</p>
  ${has?`<button class="btn" id="cCont" style="width:100%;margin-bottom:6px">続きから（第${S.ch+1}章 ${S.round+1}戦目・命${S.lives}）</button>`:''}
  <button class="btn go" id="cGo" style="width:100%">${has?'はじめから：':''}第${sel+1}章へ出発</button>
  <p class="credit">アイコン：Shikashi's Fantasy Icons Pack（CC BY 4.0）／キャラ：LuizMelo</p>`;$('modal').style.display='flex';
@@ -517,7 +536,7 @@ function showCastle(){const pg=loadProg(),has=load();S.phase='castle';const open
  $('cGo').onclick=()=>{$('modal').style.display='none';clearSave();newRun(sel);S.started=true;if(!pg.tut&&sel===0){S.tut=1;S.shop=['whet','shield','dagger','potion'];pg.tut=1;saveProg(pg);}save();render();scene(STORY[sel].intro);};}
 const castle={sel:null};
 function rollShopIfEmpty(){if(!S.shop||!S.shop.length)rollShop();}
-function newRun(ch=0){undo=[];S=fresh();S.ch=ch;const c=CHAPTERS[ch];S.bag={c:c.bag[0],r:c.bag[1]};S.gold=c.gold;syncBag();const kp=loadProg().keep;if(kp)S.desk[0]={k:kp.k,t:kp.t||1,o:kp.o!=null?kp.o:ownerFor(kp.k),rot:0};
+function newRun(ch=0){undo=[];S=fresh();S.ch=ch;const c=CHAPTERS[ch];S.bag={c:c.bag[0],r:c.bag[1]};S.gold=c.gold;syncBag();const kp=loadProg().keep;if(kp)S.desk[0]={k:kp.k,t:kp.t||1,o:kp.o!=null&&kp.o<HN()?kp.o:ownerFor(kp.k),rot:0};
  // 最初の持ち物：剣（アオ）・弓（リン）・杖（ミナ）
  S.items.push({id:uid++,k:'sword',x:0,y:1,rot:0,t:1,o:0},{id:uid++,k:'bow',x:2,y:1,rot:0,t:1,o:1},{id:uid++,k:'staff',x:4,y:0,rot:0,t:1,o:2});rollShop();render();}
 addEventListener('resize',()=>{if(S.phase!=='castle')render();});
