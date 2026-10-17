@@ -224,7 +224,7 @@ body.short #relicStrip{padding:1px 4px}body.short .gemstrip{padding:1px 6px;marg
 details>summary:has(small.when){flex-direction:column;align-items:flex-start;justify-content:center}details>summary small.when{display:block;font-size:12px;color:var(--sub);font-family:var(--f-ui,inherit);margin-top:1px}h3.dict{margin-top:14px}
 body{font-variant-emoji:text}
 #pause68{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);color:#fff;font:16px var(--f-dot);z-index:5;pointer-events:none}#pause68[hidden]{display:none}
-/* r69：iPadでは次の敵の説明を3行まで */@media (min-width:600px){#info{height:auto;min-height:64px}#info .line{-webkit-line-clamp:3}}
+/* r69：縦に余裕のある画面（iPadと縦800px以上のスマホ）では、次の敵の説明を3行まで */@media (min-width:600px),(min-height:800px){#info{height:auto;min-height:64px}#info .line{-webkit-line-clamp:3}}
 .delta .n{color:#ff6070}
 #gDown,#gUp{min-width:44px;min-height:44px}
 #setStrip[hidden]{display:none!important}
@@ -2460,7 +2460,8 @@ function loseHint(){if(!B||!B.def)return'';const d=B.def,r=B.rec||{},rr=RACE68[r
   else if(d.mech==='leech'&&r.eheal>=20)t=`吸血で${N0(r.eheal)}回復された。盾で攻撃を通さないと、敵が回復する`;
   else if(r.shell>=20)t=`殻で${N0(r.shell)}減らされた。殻は1発ごとに減らすので、一撃の大きい武器・毒・やけどが効く`;
   return t?`<p class="hint2">次の手：${t}</p>`:'';}
-function rewardReportHTML(){const f=battleFacts().slice(0,2);FACT_SKIP=f.length;const inner=`${reportHTML(true)}${mvpHTML()}`;FACT_SKIP=0;return `${f.length?`<div class="facts quick">${f.map(x=>`<p>${x}</p>`).join('')}</div>`:''}<details class="rewardreport"><summary>戦闘の記録・勇者の報告</summary>${inner}</details>`;}
+// r69：中断して報酬の画面から再開しても、直前の戦いの記録を見られるように写しを残す
+function rewardReportHTML(){if(!B||!B.rec){return S.loot?.report||'';}const f=battleFacts().slice(0,2);FACT_SKIP=f.length;const inner=`${reportHTML(true)}${mvpHTML()}`;FACT_SKIP=0;const h=`${f.length?`<div class="facts quick">${f.map(x=>`<p>${x}</p>`).join('')}</div>`:''}<details class="rewardreport"><summary>戦闘の記録・勇者の報告</summary>${inner}</details>`;if(S.loot&&S.loot.report!==h){S.loot.report=h;saveRaw();}return h;}
 function showChest(){
   S.loot=S.loot||{round:S.round,drop:{},claimed:false,seconds:B?.t||0};if(S.loot.claimed)return;if(S.loot.receive){showLootReceive();return;}if(S.loot.chestUpgrade){showLootUpgrade();return;}
   const boons=[{k:'star',nm:'鍛冶屋',ic:'whet',ds:'★1の装備を1つ★2に'},{k:'hp',nm:'お守り',ic:'heart',ds:'この冒険の間、最大HP+20'},{k:'gold',nm:'金貨6G',ic:'coins',ds:'すぐに6Gもらう'},{k:'heal',nm:'鉄の護符',ic:'shield',ds:'以後ずっと、戦闘開始時のバリア+12'}];
