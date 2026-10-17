@@ -918,7 +918,7 @@ function genEnc(){const bossFirst=Math.random()<.5;const e=[null];
     else e.push({t:pickFrom(r<5?POOL_EARLY:POOL_LATE,e[r-1]&&e[r-1].t)});}
   S.enc=e;}
 // r66w：新しい装備・系統・遺物の枠で強くなった分、章ごとに敵を強くする（測定 review/r59-w66-run.txt）
-const EN66={2:1.2,3:1.05,5:1.12,6:1.08,7:1.2,8:1.22,9:1.15,10:0.92,11:0.98,12:1.15,13:1.5,14:1.26,15:1.35,16:1.95,17:1.75,18:1.65,19:1.3,20:1.75,21:1.25,22:1.6,23:1.7,24:1.9,25:1.4,26:1.3,27:1.35,28:1.2,29:1.45,30:1.3,31:0.88};
+const EN66={2:1.2,3:1.05,5:1.25,6:1.08,7:1.2,8:1.22,9:1.15,10:0.92,11:0.98,12:1.15,13:1.5,14:1.26,15:1.35,16:1.95,17:1.75,18:1.65,19:1.45,20:1.75,21:1.25,22:1.6,23:1.7,24:1.9,25:1.4,26:1.2,27:1.35,28:1.2,29:1.45,30:1.3,31:0.88};
 const SIDE_EN66={112:1.05};
 const en66=()=>S.run&&S.run.mode==='story'?(EN66[baseCh(S.run.ch)]||1)*(SIDE_EN66[S.run.ch]||1):1;
 function enemy(r){const base=ENEMIES[tierOf(r)];if(!base)return base;const en=S.enc&&S.enc[r];const tp=en?ENEMIES[en.t]:base;const m=dmul(),el=en&&en.elite;
@@ -1910,7 +1910,7 @@ function sfx(kind){if(S.muted||!kind)return;if(MASTER&&MASTER.gain.value<0.01)MA
     default:tone('triangle',620,520,0.05,0.05,t);// r69：知らない種類でも無音にしない
   }}finally{SYNV=1;}}catch(e){SYNV=1;}}
 // r69：録音の素材が無い戦闘の音は小さかった（0.04前後、ボタンの音0.44）ので、合成音の大きさをそろえる
-let SYNV=1;const SYN_GAIN68={arrow:4,magic:4,burnb:4,combo:2.6,poisonb:2,crit:2,bleed:1.5};
+let SYNV=1;const SYN_GAIN68={arrow:4,magic:4,burnb:4,combo:2.6,poisonb:2,crit:2,bleed:1.5,big:2.4,bomb:1.8};
 // ===== BGM（Web Audioで手続き生成。ファミコン風の矩形波・三角波・ノイズ） =====
 // 曲は8小節ループ。1小節=16ステップ。旋律は[MIDI番号|null, 8分音符の長さ]の列
 const SONGS={
@@ -2029,9 +2029,11 @@ const price=o=>o.special?SPECIAL[o.type].cost:Math.max(1,itemPrice(o.type)-(toke
 const oname=o=>o.special?SPECIAL[o.type].name:ITEMS[o.type].name;
 const oicon=o=>ICO(o.type==='focus'?THEMES[S.route?.theme||'fire'].ic:o.type==='forge'?'whet':o.type);
 let UNDO=null;
-function snap(){UNDO=JSON.stringify({gold:S.gold,bags:S.bags,belt:S.belt,bench:S.bench,shop:S.shop,bought:S.bought,round:S.round,route:S.route,locked:S.locked,relicUsed:S.relicUsed});}
-function undo(){if(!UNDO||S.phase!=='plan')return;const u=JSON.parse(UNDO);if(u.round!==S.round){UNDO=null;render();return;}
-  Object.assign(S,{gold:u.gold,bags:u.bags,belt:u.belt,bench:u.bench,shop:u.shop,bought:u.bought,route:u.route,locked:u.locked||S.locked,relicUsed:u.relicUsed||{}});UNDO=null;S.sel=null;S.info=null;S.pick=null;recordPlay('undo',{equipment:logInventory(),shop:logShop()});sfx('tick');toast('一手戻した');render();save();}
+/* r69：一手戻すは5手まで（UNDO は古い順の配列。null で全部消す） */
+function snap(){const j=JSON.stringify({gold:S.gold,bags:S.bags,belt:S.belt,bench:S.bench,shop:S.shop,bought:S.bought,round:S.round,route:S.route,locked:S.locked,relicUsed:S.relicUsed});UNDO=[...(Array.isArray(UNDO)?UNDO:[]),j].slice(-5);}
+const undoTop68=()=>Array.isArray(UNDO)&&UNDO.length?UNDO[UNDO.length-1]:null;
+function undo(){const top=undoTop68();if(!top||S.phase!=='plan')return;const u=JSON.parse(top);if(u.round!==S.round){UNDO=null;render();return;}
+  Object.assign(S,{gold:u.gold,bags:u.bags,belt:u.belt,bench:u.bench,shop:u.shop,bought:u.bought,route:u.route,locked:u.locked||S.locked,relicUsed:u.relicUsed||{}});UNDO.pop();if(!UNDO.length)UNDO=null;S.sel=null;S.info=null;S.pick=null;recordPlay('undo',{equipment:logInventory(),shop:logShop()});sfx('tick');toast(UNDO?`一手戻した（あと${UNDO.length}手戻せる）`:'一手戻した');render();save();}
 function buy(s){
   const o=S.shop[s];if(!o||S.phase!=='plan')return false;
   const c=price(o);if(S.gold<c){toast('ゴールドが足りない');sfx('err');return false;}
@@ -2979,7 +2981,7 @@ function render(){
   $('shop').innerHTML=S.shop.map((o,s)=>!o?`<div class="ware sold"></div>`:`<button class="ware${o.special?' special':' r'+ITEMS[o.type].rar}${S.gold<price(o)?' cant':''}${S.pick===s?' pick':''}${S.locked[s]?' locked':''}" data-s="${s}">${S.locked[s]?`<img class="lk" src="${srcOf('assets/lock.png')}" alt="キープ">`:''}<img src="${oicon(o)}" alt="">${o.counter?'<span class="ctr">対策</span>':!o.special&&nearRecipes68().some(x=>x.miss===o.type)?'<span class="ctr rcp">レシピ</span>':o.famous||(regionOf()&&REGIONS[regionOf()].famous.includes(o.type))?'<span class="ctr fam">名物</span>':''}${!o.special&&!o.counter?stBadge(o.type):''}${!o.special?raceBadge(o.type):''}${!o.special&&canMergeBuy(o.type)?'<span class="mrg">合体</span>':''}<span class="nm">${oname(o)}</span><span class="pr">${o.type==='focus'?'選ぶ':price(o)+'G'}</span></button>`).join('');
   const sp=S.sel&&getP(S.sel);
   $('bSell').disabled=!sp;$('bSell').innerHTML=sp?`売る<br><span class="dot">+${sellPrice(sp)}G</span>`:'売る';
-  $('bReroll').disabled=S.gold<rerollCost();$('bFight').title=interest()?'':'';$('bReroll').innerHTML=`更新<br><span class="dot">${rerollCost()}G</span>`;$('bFight').classList.toggle('ready',!S.bench.some(Boolean)&&S.pick==null&&!S.sel);$('bUndo').disabled=!UNDO||!S.round||JSON.parse(UNDO).round!==S.round;
+  $('bReroll').disabled=S.gold<rerollCost();$('bFight').title=interest()?'':'';$('bReroll').innerHTML=`更新<br><span class="dot">${rerollCost()}G</span>`;$('bFight').classList.toggle('ready',!S.bench.some(Boolean)&&S.pick==null&&!S.sel);$('bUndo').disabled=!undoTop68()||!S.round||JSON.parse(undoTop68()).round!==S.round;
   guide();renderPop();renderSetStrip();renderGemStrip();{const k=['setStrip','gemStrip','opStrip','relicStrip'].map(id=>{const e=$(id);return e&&!e.hidden?e.offsetHeight:0;}).join();if(k!==window.__stripKey){window.__stripKey=k;fit();}}
 }
 const sellPrice=p=>Math.max(1,Math.floor(itemPrice(p.type)/2))*[0,1,2,4][p.star]+(p.bank||0);
