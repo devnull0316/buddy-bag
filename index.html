@@ -219,8 +219,13 @@ body.short #relicStrip{padding:1px 4px}body.short .gemstrip{padding:1px 6px;marg
 .enmore{font-size:10px!important;color:#7a6040!important;margin-left:6px}.enst{font-weight:700;margin-right:4px}.eninfo{display:flex;gap:12px;align-items:center}.enpic{width:72px;height:72px;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.25);flex:none}
 /* r69：指2本の拡大は許す。ボタンの2回押しで勝手に拡大しないように */html,body,button,.ware,.cell{touch-action:manipulation}#board .cell,#bench .cell,#bar{touch-action:none}
 .far{color:var(--sub);font-size:12px}
-/* r69：戦闘中にマスが小さい（40px未満）ときは、星・◎△・状態の印を消して絵を見せる（準備の画面では出す） */body.battle.tinycell .cell .star,body.battle.tinycell .cell .rcm,body.battle.tinycell .cell .stb{display:none}
-/* r69：店の札の文字の重なりをなくす。名物・対策は左はしの縦の札、合体は値段の横、マスの◎は右上へ */#shop .ware .ctr{top:-8px;left:3px;padding:0 4px;line-height:15px;height:15px;white-space:nowrap;z-index:4;box-shadow:0 1px 0 rgba(0,0,0,.5)}#shop .ware .stb{left:auto;right:4px;top:24px}.ware .pr .mrg{position:static;display:inline-block;margin-left:3px;padding:0 3px;font-size:12px!important;line-height:1.25;vertical-align:1px}.cell .rcm{top:2px;bottom:auto}
+#mcard .rw.gemrw{display:grid!important;grid-template-columns:repeat(2,minmax(0,150px))!important;justify-content:center;gap:12px;width:100%;margin:10px 0 4px}.gemopt{border:2px solid var(--gc)!important;background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.35)),#3a2a1e!important;box-shadow:inset 0 0 0 2px #1a120c,0 0 12px color-mix(in srgb,var(--gc) 35%,transparent)}.gemopt .gemimg{width:64px;height:64px;image-rendering:pixelated;filter:hue-rotate(var(--gh)) drop-shadow(0 0 6px var(--gc));margin:6px auto 4px;display:block}.gemopt .nm{color:var(--gc)!important;font-size:16px}
+#gemStrip[hidden]{display:none!important}
+#pop #bPopX{left:auto!important;right:68px;top:-2px;width:44px;min-height:44px;padding:0;display:flex;align-items:center;justify-content:center;z-index:2}
+/* r69：訓練・遺物の枠で勇者の絵が左下に重なっていた（.buddy の absolute を戻す） */.trhead .buddy,.trainhero .buddy,.vname .buddy{position:static}
+#rlxOpen{min-height:44px}.rlxrow small{font-size:12px!important}.delta.sm{font-size:12px!important}
+/* r69：戦闘中にマスが小さい（48px未満）ときは、星・◎△・状態の印を消して絵を見せる（準備の画面では出す） */body.battle.tinycell .cell .star,body.battle.tinycell .cell .rcm,body.battle.tinycell .cell .stb{display:none}body.tinycell .cell .rcm{display:none}
+/* r69：店の札の文字の重なりをなくす。名物・対策は左はしの縦の札、合体は値段の横、マスの◎は右上へ */#shop .ware .ctr{top:-8px;left:3px;padding:0 4px;line-height:15px;height:15px;white-space:nowrap;z-index:4;box-shadow:0 1px 0 rgba(0,0,0,.5)}#shop .ware .stb{left:auto;right:4px;top:24px}.ware .pr .mrg{position:static;display:inline-block;margin-left:3px;padding:0 3px;font-size:12px!important;line-height:1.25;vertical-align:1px}.cell:has(.delta) .rcm{display:none}
 /* r69：マスの押せる範囲を、見た目は変えずにすき間（4px）の半分まで広げる。40pxのマスでも指の当たりは44px */[data-loc].cell::before{content:'';position:absolute;inset:-2px}[data-loc^="belt"].cell::before{inset:-4px}[data-loc].cell.off::before{inset:-3px}
 /* r69：序盤だけ、戦いの画面の隅に止め方を出す */body.battle:not(.late) #stage::after{content:'画面を押すと一時停止';position:absolute;right:6px;bottom:4px;font:12px var(--f-dot);color:rgba(255,255,255,.6);text-shadow:1px 1px 0 #000;pointer-events:none;z-index:4}
 /* r69：第4章からは「押すと詳しく」を消して、敵の名前と説明に場所を回す */body.late #info:not(.trunc) .enmore{display:none}
@@ -1063,7 +1068,7 @@ function renderGemStrip(){const el=$('gemStrip');if(!el)return;const own=S.gemOw
   el.innerHTML=`<b>宝石</b>${pouch.map((g,i)=>`<button class="gemb" data-g="${g}" style="--gc:${GEM68[g].col}">◆${GEM68[g].nm}</button>`).join('')}${pouch.length?'':'<small>全部はめている</small>'}${sp&&sp.gem?`<button class="gemb off" data-g="">外す</button>`:''}<small class="gh">${sp?(gemOk(ITEMS[sp.type])?'宝石を押すとはまる':'この装備にははめられない'):'装備を選んでから宝石を押す'}</small>`;
   el.querySelectorAll('.gemb').forEach(b=>b.onclick=e=>{e.stopPropagation();const g=b.dataset.g;if(!S.sel||S.sel.a==='bench'||!getP(S.sel)){toast('先にバッグかベルトの装備を選ぼう');sfx('err');return;}setGem(S.sel,g||null);});}
 function showGemOffer68(){const opts=Object.keys(GEM68).sort(()=>Math.random()-.5).slice(0,2);
-  modal(`<h2>宝石を手に入れた</h2><p class="sub">精鋭を倒した。どちらか1つを選ぶ。準備のあいだ、攻撃する装備にはめたり外したりできる</p><div class="rw">${opts.map(g=>`<button class="pk gemopt" data-g="${g}" style="--gc:${GEM68[g].col}"><span class="gemico">◆</span><span class="nm">${GEM68[g].nm}の宝石</span><span class="ds">${GEM68[g].ds}</span></button>`).join('')}</div>`);
+  modal(`<h2>宝石を手に入れた</h2><p class="sub">精鋭を倒した。どちらか1つを選ぶ。準備のあいだ、攻撃する装備にはめたり外したりできる</p><div class="rw gemrw">${opts.map(g=>`<button class="pk gemopt" data-g="${g}" style="--gc:${GEM68[g].col};--gh:${({fire:0,ice:195,poison:95})[g]||0}deg"><img class="gemimg" src="${ICO('ruby')}" alt=""><span class="nm">${GEM68[g].nm}の宝石</span><span class="ds">${GEM68[g].ds}</span></button>`).join('')}</div>`);
   document.querySelectorAll('#mcard .gemopt').forEach(b=>b.onclick=()=>{S.gemOwn=[...(S.gemOwn||[]),b.dataset.g];S.gemOffer=0;recordPlay('gem_get',{gem:b.dataset.g});sfx('buy');closeModal();save();nextRound();});}
 // 精鋭：物語の章で1回だけ、ボス以外の戦いを強くできる。勝つと宝石
 function eliteOk68(){const r=S.round,e=S.enc&&S.enc[r];return S.run?.mode==='story'&&baseCh(S.run.ch)>=3&&!hasMod('elite')&&!isOperation()&&S.phase==='plan'&&e&&!e.boss&&!e.mission&&r<runLimit()&&(!S.eliteDone||S.eliteOn===r);}
@@ -1152,9 +1157,13 @@ function setSummaryHTML(full=false){const n=setCounts(),ks=Object.keys(n).filter
 // r69：持っている品で、あと1品だけ足りないレシピ（隣かどうかは問わない）
 function nearRecipes68(){if(!S.heroes?.length)return[];const own=allLocs().map(getP).filter(Boolean).map(q=>q.type),out=[];
   for(const r of RECIPES66){const left=[...own],miss=[];for(const t of r.ins){const i=left.indexOf(t);if(i>=0)left.splice(i,1);else miss.push(t);}if(miss.length===1&&r.ins.length>1)out.push({r,miss:miss[0]});}return out;}
+// r69：敵の特徴は最初の一文だけ札に出す
+function shortTrait68(t){t=String(t||'');const i=t.indexOf('。');return i>=0&&i<t.length-1?t.slice(0,i+1):t;}
+// r69：系統は効いているものだけ帯に出す（数の一覧は「詳しく」で）
+function setOnHTML68(){const n=setCounts(),ks=Object.keys(n).filter(k=>setTier(k)).sort((a,b)=>n[b]-n[a]);return ks.length?ks.map(k=>`<span class="setc on">${CLSN[k]}${n[k]}</span>`).join(' '):'';}
 function renderSetStrip(){const el=$('setStrip');if(!el)return;const on=S.phase==='plan'&&!S.inBattle&&S.heroes?.length&&!(S.relicPage==='relic');if(!on){el.hidden=true;return;}
  const fs=findRecipes(),n=setCounts(),tot=Object.values(n).reduce((a,b)=>a+b,0);if(!fs.length&&(tot<2||S.run?.mode==='story'&&baseCh(S.run.ch)<2)){el.hidden=true;return;}el.hidden=false;
- const nr=fs.length?[]:nearRecipes68();el.innerHTML=fs.length?`<b class="recipeon">レシピ：${ITEMS[fs[0].r.out].name}が作れます ▶︎</b>`:nr.length?`<b class="recipenear">あと1品：${ITEMS[nr[0].miss].name}で${ITEMS[nr[0].r.out].name}</b><small>　系統 ${setSummaryHTML()} ▶︎</small>`:`系統 ${setSummaryHTML()}<small>　▶︎ レシピ・詳しく</small>`;el.onclick=()=>{sfx('tick');showRecipes66();};}
+ const nr=fs.length?[]:nearRecipes68();el.innerHTML=fs.length?`<b class="recipeon">レシピ：${ITEMS[fs[0].r.out].name}が作れます ▶︎</b>`:nr.length?`<b class="recipenear">あと1品：${ITEMS[nr[0].miss].name}で${ITEMS[nr[0].r.out].name}</b><small>　▶︎</small>`:setOnHTML68()?`系統 ${setOnHTML68()}<small>　▶︎ 詳しく</small>`:`<small>系統・レシピ　▶︎ 詳しく</small>`;el.onclick=()=>{sfx('tick');showRecipes66();};}
 
 // ===== 遺物の枠（r65b）：ナイトレイン型。勇者ごとに色付きの枠、出撃のたびにランダム効果の遺物 =====
 // 色：r＝攻め（赤） b＝守り・回復（青） y＝技・状態異常（黄） w＝どの色でもはまる（白）
@@ -2866,21 +2875,23 @@ function uiZoom(){const land=isLand68();document.body.classList.toggle('land',la
 function fit(){
   const Z=uiZoom(),H=innerHeight/Z,bt=S.phase==='battle';
   // r69：縦が短い画面では帯を詰める。第4章からは準備の案内も消す（序盤は残す）
-  document.body.classList.toggle('short',H<700);document.body.classList.toggle('late',S.run?.mode==='story'&&baseCh(S.run.ch)>=4);if(isLand68()){const Wd=Math.min((innerWidth/Z-48)/2,460);const topH=bt?Math.max(220,Math.min(440,Math.round(H*0.62))):0;let c=Math.floor((H-14-6-40-24*2-4*2-18-4-10)/5);c=Math.max(36,Math.min(90,c,Math.floor((Wd-20-12-38)/4)));document.documentElement.style.setProperty('--cell',c+'px');document.body.classList.toggle('tinycell',c<40);if(bt)$('stage').style.height=topH+'px';sizeFx();if(B){sizeStage();bgCache=null;}return;}
+  document.body.classList.toggle('short',H<700);document.body.classList.toggle('late',S.run?.mode==='story'&&baseCh(S.run.ch)>=4);if(isLand68()){const Wd=Math.min((innerWidth/Z-48)/2,460);const topH=bt?Math.max(220,Math.min(440,Math.round(H*0.62))):0;let c=Math.floor((H-14-6-40-24*2-4*2-18-4-10)/5);c=Math.max(36,Math.min(90,c,Math.floor((Wd-20-12-38)/4)));document.documentElement.style.setProperty('--cell',c+'px');document.body.classList.toggle('tinycell',c<48);if(bt)$('stage').style.height=topH+'px';sizeFx();if(B){sizeStage();bgCache=null;}return;}
   const Wd=Math.min(innerWidth/Z,440)-32;
   const opH=(isOperation()?$('opStrip').offsetHeight:0)+($('relicStrip').hidden?0:$('relicStrip').offsetHeight);
-  const topH=bt?Math.max(150,Math.min(340,Math.round(H*0.47))-opH):(64+6+32);
+  let topH=bt?Math.max(150,Math.min(340,Math.round(H*0.47))-opH):(64+6+32);
   // r69：系統・宝石の帯も高さに数える（小さい画面で下の段が帯に隠れていた）
   const stripH=bt?0:['setStrip','gemStrip'].reduce((a,id)=>{const e=$(id);return a+(e&&!e.hidden?e.offsetHeight+6:0);},0);
   const barH=bt?52:Math.max(52,($('bar')?.offsetHeight)||52);
-  const fixed=14+30+6+topH+opH+6+(bt?0:84+6)+barH+6+10+stripH;
-  const boardH=H-fixed-6;
+  let fixed=14+30+6+topH+opH+6+(bt?0:84+6)+barH+6+10+stripH;
+  let boardH=H-fixed-6;
   let c=Math.floor((boardH-24*2-4*2-18-4)/5);
+  // r69：戦闘中、短い画面でバッグが入りきらない（マス30px未満）ときは、舞台を縮めて場所を作る（舞台は130pxまで）
+  if(bt&&c<30&&H<600){const cut=Math.min(topH-130,(30-c)*5+14);if(cut>0){topH-=cut;fixed-=cut;boardH+=cut;c=Math.floor((boardH-24*2-4*2-18-4)/5);}}
   // r69：準備中のマスは40px以上。入りきらないときは画面をスクロールにする（下のボタンの列は固定）
   c=Math.max(bt?26:40,Math.min(64,c,Math.floor((Wd-20-12-38)/4)));document.body.classList.toggle('scrollfit',!bt&&Math.floor((boardH-24*2-4*2-18-4)/5)<40);{const bar=$('bar');if(bar)document.documentElement.style.setProperty('--barH',bar.offsetHeight+'px');}
-  document.documentElement.style.setProperty('--cell',c+'px');document.body.classList.toggle('tinycell',c<40);
+  document.documentElement.style.setProperty('--cell',c+'px');document.body.classList.toggle('tinycell',c<48);
   // r69：中身が枠からはみ出したら、収まるまでマスを小さくする（下の帯に重なってマスが押せなくなるため）
-  {const bd=$('board');for(let i=0;i<12&&bd&&!document.body.classList.contains('scrollfit')&&bd.scrollHeight>bd.clientHeight+2&&c>40;i++){c-=1;document.documentElement.style.setProperty('--cell',c+'px');document.body.classList.toggle('tinycell',c<40);}}
+  {const bd=$('board'),lo=bt?24:40;for(let i=0;i<12&&bd&&!document.body.classList.contains('scrollfit')&&bd.scrollHeight>bd.clientHeight+(bt?0:2)&&c>lo;i++){c-=1;document.documentElement.style.setProperty('--cell',c+'px');document.body.classList.toggle('tinycell',c<48);}}
   $('stage').style.height=topH+'px';
   sizeFx();if(B){sizeStage();bgCache=null;}
 }
@@ -2952,7 +2963,7 @@ function showItemDetails(k,star=1,l=null){
 function renderTop(){
   const el=$('info');el.onclick=null;
   const l=S.info,p=l&&getP(l);
-  if(!p){const E=enemy(S.round);el.className='';el.innerHTML=`<div class="pic">${buddyHTML(E.spr,raceOf(E)?34:40)}${raceOf(E)?`<span class="racetag">${RACE68[raceOf(E)].nm}</span>`:''}</div><div class="who"><span class="name">次の敵 ${E.name}<small class="enmore">押すと詳しく ▶︎</small></span><span class="line"><b class="enst">HP${E.hp}・攻撃${E.atk}／${E.int}秒</b> ${raceLineHTML(E)}${E.trait}</span></div>${eliteOk68()?`<button class="elbtn${S.eliteOn===S.round?' on':''}" id="eliteBtn">${S.eliteOn===S.round?'精鋭をやめる':'精鋭に挑む<small>勝てば宝石</small>'}</button>`:''}`;{const eb=document.getElementById('eliteBtn');if(eb)eb.onclick=e=>{e.stopPropagation();toggleElite68();};}{const ln=el.querySelector('.line');el.classList.toggle('trunc',!!ln&&ln.scrollHeight>ln.clientHeight+1);}el.onclick=()=>{if(S.phase!=='plan')return;sfx('tick');showEnemyInfo68(E);};return;}
+  if(!p){const E=enemy(S.round);el.className='';el.innerHTML=`<div class="pic">${buddyHTML(E.spr,raceOf(E)?34:40)}${raceOf(E)?`<span class="racetag">${RACE68[raceOf(E)].nm}</span>`:''}</div><div class="who"><span class="name">次の敵 ${E.name}<small class="enmore">押すと詳しく ▶︎</small></span><span class="line"><b class="enst">HP${E.hp}・攻撃${E.atk}／${E.int}秒</b> ${raceLineHTML(E)}${shortTrait68(E.trait)}</span></div>${eliteOk68()?`<button class="elbtn${S.eliteOn===S.round?' on':''}" id="eliteBtn">${S.eliteOn===S.round?'精鋭をやめる':'精鋭に挑む<small>勝てば宝石</small>'}</button>`:''}`;{const eb=document.getElementById('eliteBtn');if(eb)eb.onclick=e=>{e.stopPropagation();toggleElite68();};}{const ln=el.querySelector('.line');el.classList.toggle('trunc',!!ln&&ln.scrollHeight>ln.clientHeight+1);}el.onclick=()=>{if(S.phase!=='plan')return;sfx('tick');showEnemyInfo68(E);};return;}
   const d=ITEMS[p.type];let line=itemLine(p.type,p.star);
   if(p.type==='anvil'){const n=anvilPairs(l).length;line+=n?`。いま <b>${n}通り</b> 錬成できる。右の「錬成」を押そう`:'。<b>違う種類・同じ★</b>の武器を2つ持つと使える';}
   else if(d.kind==='passive'){const t=passiveTargets(l);if(d.adj)line+=l.a==='bench'?'':t.length?`。いま <b>${t.map(n=>ITEMS[getP(n).type].name).join('・')}</b> に効いている`:'。効く物の上下左右に置こう';}
@@ -2986,7 +2997,7 @@ function render(){
   $('mute').innerHTML=`<img src="${S.muted?spkOff:spkOn}" alt="${S.muted?'音なし':'音あり'}">`;
   if(S.info&&!getP(S.info))S.info=null;renderTop();
   const fx65=document.getElementById('relicFx');renderBoard();if(fx65&&S.phase!=='battle')$('board').appendChild(fx65);
-  $('shop').innerHTML=S.shop.map((o,s)=>!o?`<div class="ware sold"></div>`:`<button class="ware${o.special?' special':' r'+ITEMS[o.type].rar}${S.gold<price(o)?' cant':''}${S.pick===s?' pick':''}${S.locked[s]?' locked':''}" data-s="${s}">${S.locked[s]?`<img class="lk" src="${srcOf('assets/lock.png')}" alt="キープ">`:''}<img src="${oicon(o)}" alt="">${o.counter?'<span class="ctr">対策</span>':!o.special&&nearRecipes68().some(x=>x.miss===o.type)?'<span class="ctr rcp">レシピ</span>':o.famous||(regionOf()&&REGIONS[regionOf()].famous.includes(o.type))?'<span class="ctr fam">名物</span>':''}${!o.special&&!o.counter?stBadge(o.type):''}${!o.special?raceBadge(o.type):''}<span class="nm">${oname(o)}</span><span class="pr">${o.type==='focus'?'選ぶ':price(o)+'G'}${!o.special&&canMergeBuy(o.type)?'<b class="mrg">合体</b>':''}</span></button>`).join('');
+  $('shop').innerHTML=S.shop.map((o,s)=>!o?`<div class="ware sold"></div>`:`<button class="ware${o.special?' special':' r'+ITEMS[o.type].rar}${S.gold<price(o)?' cant':''}${S.pick===s?' pick':''}${S.locked[s]?' locked':''}" data-s="${s}">${S.locked[s]?`<img class="lk" src="${srcOf('assets/lock.png')}" alt="キープ">`:''}<img src="${oicon(o)}" alt="">${o.counter?'<span class="ctr">対策</span>':!o.special&&nearRecipes68().some(x=>x.miss===o.type)?'<span class="ctr rcp">レシピ</span>':''}${!o.special&&!o.counter?stBadge(o.type):''}${!o.special?raceBadge(o.type):''}<span class="nm">${oname(o)}</span><span class="pr">${o.type==='focus'?'選ぶ':price(o)+'G'}${!o.special&&canMergeBuy(o.type)?'<b class="mrg">合体</b>':''}</span></button>`).join('');
   const sp=S.sel&&getP(S.sel);
   $('bSell').disabled=!sp;$('bSell').innerHTML=sp?`売る<br><span class="dot">+${sellPrice(sp)}G</span>`:'売る';
   $('bReroll').disabled=S.gold<rerollCost();$('bFight').title=interest()?'':'';$('bReroll').innerHTML=`更新<br><span class="dot">${rerollCost()}G</span>`;$('bFight').classList.toggle('ready',!S.bench.some(Boolean)&&S.pick==null&&!S.sel);$('bUndo').disabled=!undoTop68()||!S.round||JSON.parse(undoTop68()).round!==S.round;
