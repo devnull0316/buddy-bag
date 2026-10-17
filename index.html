@@ -927,7 +927,9 @@ function genEnc(){const bossFirst=Math.random()<.5;const e=[null];
 // r66w：新しい装備・系統・遺物の枠で強くなった分、章ごとに敵を強くする（測定 review/r59-w66-run.txt）
 const EN66={2:1.2,3:1.05,5:1.25,6:1.08,7:1.2,8:1.22,9:1.15,10:0.92,11:0.98,12:1.15,13:1.5,14:1.26,15:1.35,16:1.95,17:1.75,18:1.65,19:1.45,20:1.75,21:1.25,22:1.6,23:1.7,24:1.9,25:1.4,26:1.2,27:1.35,28:1.2,29:1.45,30:1.3,31:0.88};
 const SIDE_EN66={112:1.05};
-const en66=()=>S.run&&S.run.mode==='story'?(EN66[baseCh(S.run.ch)]||1)*(SIDE_EN66[S.run.ch]||1):1;
+// r69：全体の難しさ（レベル1で第5章まで行けたため、第3章から上げる）
+const DIFF68=1.1;
+const en66=()=>S.run&&S.run.mode==='story'?(EN66[baseCh(S.run.ch)]||1)*(SIDE_EN66[S.run.ch]||1)*(baseCh(S.run.ch)>=3&&!window.__noBeh68?DIFF68:1):1;
 function enemy(r){const base=ENEMIES[tierOf(r)];if(!base)return base;const en=S.enc&&S.enc[r];const tp=en?ENEMIES[en.t]:base;const m=dmul(),el=en&&en.elite;
   // HPはその戦数の基準。攻撃は「基準の1秒あたり攻撃力 × この敵の攻撃間隔」で、速い敵ほど一撃が軽い
   const ca=S.run&&S.run.mode==='story'&&en?CHAPTERS[S.run.ch]:null;const hp=(en&&en.hp||base.hp*(en&&en.hm||1))*(el?1.2:1)*(hasMod('hp')?1.25:1)*(ca&&ca.hmAll||1)*en66(),atk=base.atk/base.int*tp.int*(el?1.15:1)*(en&&en.dps||1)*(en&&en.dm||1)*(ca&&ca.dmAll||1)*(1+(en66()-1)*.6);
