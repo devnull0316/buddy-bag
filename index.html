@@ -221,7 +221,7 @@ body.short #relicStrip{padding:1px 4px}body.short .gemstrip{padding:1px 6px;marg
 .far{color:var(--sub);font-size:12px}
 /* r69：マスの押せる範囲を、見た目は変えずにすき間（4px）の半分まで広げる。40pxのマスでも指の当たりは44px */[data-loc].cell::before{content:'';position:absolute;inset:-2px}[data-loc^="belt"].cell::before{inset:-4px}[data-loc].cell.off::before{inset:-3px}
 /* r69：序盤だけ、戦いの画面の隅に止め方を出す */body.battle:not(.late) #stage::after{content:'画面を押すと一時停止';position:absolute;right:6px;bottom:4px;font:12px var(--f-dot);color:rgba(255,255,255,.6);text-shadow:1px 1px 0 #000;pointer-events:none;z-index:4}
-/* r69：第4章からは「押すと詳しく」を消して、敵の名前と説明に場所を回す */body.late #info .enmore{display:none}
+/* r69：第4章からは「押すと詳しく」を消して、敵の名前と説明に場所を回す */body.late #info:not(.trunc) .enmore{display:none}
 details>summary:has(small.when){flex-direction:column;align-items:flex-start;justify-content:center}details>summary small.when{display:block;font-size:12px;color:var(--sub);font-family:var(--f-ui,inherit);margin-top:1px}h3.dict{margin-top:14px}
 body{font-variant-emoji:text}
 #pause68{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);color:#fff;font:16px var(--f-dot);z-index:5;pointer-events:none}#pause68[hidden]{display:none}
@@ -2941,7 +2941,7 @@ function showItemDetails(k,star=1,l=null){
 function renderTop(){
   const el=$('info');el.onclick=null;
   const l=S.info,p=l&&getP(l);
-  if(!p){const E=enemy(S.round);el.className='';el.innerHTML=`<div class="pic">${buddyHTML(E.spr,raceOf(E)?34:40)}${raceOf(E)?`<span class="racetag">${RACE68[raceOf(E)].nm}</span>`:''}</div><div class="who"><span class="name">次の敵 ${E.name}<small class="enmore">押すと詳しく ▶︎</small></span><span class="line"><b class="enst">HP${E.hp}・攻撃${E.atk}／${E.int}秒</b> ${raceLineHTML(E)}${E.trait}</span></div>${eliteOk68()?`<button class="elbtn${S.eliteOn===S.round?' on':''}" id="eliteBtn">${S.eliteOn===S.round?'精鋭をやめる':'精鋭に挑む<small>勝てば宝石</small>'}</button>`:''}`;{const eb=document.getElementById('eliteBtn');if(eb)eb.onclick=e=>{e.stopPropagation();toggleElite68();};}el.onclick=()=>{if(S.phase!=='plan')return;sfx('tick');showEnemyInfo68(E);};return;}
+  if(!p){const E=enemy(S.round);el.className='';el.innerHTML=`<div class="pic">${buddyHTML(E.spr,raceOf(E)?34:40)}${raceOf(E)?`<span class="racetag">${RACE68[raceOf(E)].nm}</span>`:''}</div><div class="who"><span class="name">次の敵 ${E.name}<small class="enmore">押すと詳しく ▶︎</small></span><span class="line"><b class="enst">HP${E.hp}・攻撃${E.atk}／${E.int}秒</b> ${raceLineHTML(E)}${E.trait}</span></div>${eliteOk68()?`<button class="elbtn${S.eliteOn===S.round?' on':''}" id="eliteBtn">${S.eliteOn===S.round?'精鋭をやめる':'精鋭に挑む<small>勝てば宝石</small>'}</button>`:''}`;{const eb=document.getElementById('eliteBtn');if(eb)eb.onclick=e=>{e.stopPropagation();toggleElite68();};}{const ln=el.querySelector('.line');el.classList.toggle('trunc',!!ln&&ln.scrollHeight>ln.clientHeight+1);}el.onclick=()=>{if(S.phase!=='plan')return;sfx('tick');showEnemyInfo68(E);};return;}
   const d=ITEMS[p.type];let line=itemLine(p.type,p.star);
   if(p.type==='anvil'){const n=anvilPairs(l).length;line+=n?`。いま <b>${n}通り</b> 錬成できる。右の「錬成」を押そう`:'。<b>違う種類・同じ★</b>の武器を2つ持つと使える';}
   else if(d.kind==='passive'){const t=passiveTargets(l);if(d.adj)line+=l.a==='bench'?'':t.length?`。いま <b>${t.map(n=>ITEMS[getP(n).type].name).join('・')}</b> に効いている`:'。効く物の上下左右に置こう';}
