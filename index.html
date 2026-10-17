@@ -231,6 +231,7 @@ body.short #relicStrip{padding:1px 4px}body.short .gemstrip{padding:1px 6px;marg
 .rlxrow{display:flex;align-items:center;gap:10px;background:#2a2017;border:2px solid #b08a3a;padding:8px 10px;margin:8px 0}.rlxrow span{flex:1;display:flex;flex-direction:column}.rlxrow b{font-family:var(--f-dot);font-weight:400;color:#ffe9a8;font-size:15px}.rlxrow small{font-size:11px;color:#c9b99f}.rlxrow .btn{flex:none;min-width:84px}
 .rcm{position:absolute;right:2px;bottom:7px;z-index:3;font:bold 11px/13px var(--f-dot);width:14px;height:14px;text-align:center;border-radius:50%;pointer-events:none;box-shadow:1px 1px 0 #000}.rcm.up{background:#2f7a3a;color:#eaffd8}.rcm.dn{background:#4a4440;color:#cfc6b8}.ware .rcm{right:4px;top:4px;bottom:auto}
 .raceln i{font-style:normal;font-weight:700;margin-right:6px}.raceln .up{color:#2f7a3a}.raceln .dn{color:#7a7068}.pic{position:relative}.racetag{position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);font:11px/14px var(--f-dot);background:#3a2c22;color:#f0e6d6;padding:0 4px;border:1px solid #6a5238;white-space:nowrap}
+/* r69：種族の札は絵に重ねず、絵の下に置く */#info .pic:has(.racetag){flex-direction:column;align-items:center;justify-content:flex-end;width:auto;height:52px;min-width:48px;max-width:72px}#info .pic:has(.racetag) .buddy{flex:0 1 auto;min-height:0;margin-bottom:-3px}#info .pic .racetag{position:relative;left:auto;bottom:auto;z-index:1;flex:none;transform:none;font-size:12px;line-height:14px;max-width:72px;overflow:hidden}
 .stb,.ware img.stb,.cell img.stb{position:absolute;top:2px;left:2px;width:12px!important;height:12px!important;margin:0;image-rendering:pixelated;pointer-events:none;z-index:2;filter:drop-shadow(1px 1px 0 #000)}
 .ware .ctr.fam{background:#8a5a1a;color:#ffe8b0}
 .ware .ctr{position:absolute;top:1px;left:2px;font-size:9px;background:#2f6f3a;color:#e8ffe0;padding:0 3px;line-height:1.4;pointer-events:none}
@@ -909,7 +910,7 @@ function genEnc(){const bossFirst=Math.random()<.5;const e=[null];
     else e.push({t:pickFrom(r<5?POOL_EARLY:POOL_LATE,e[r-1]&&e[r-1].t)});}
   S.enc=e;}
 // r66w：新しい装備・系統・遺物の枠で強くなった分、章ごとに敵を強くする（測定 review/r59-w66-run.txt）
-const EN66={2:1.1,3:1.05,5:1.12,6:1.08,7:1.2,8:1.22,9:1.15,10:0.92,11:0.98,12:1.25,13:1.4,14:1.26,15:1.35,16:1.95,17:1.6,18:1.65,19:1.3,20:1.75,21:1.25,22:1.6,23:1.2,24:1.4,25:1.4,26:0.85,27:1.35,28:1.2,29:1.45,30:1.3,31:0.88};
+const EN66={2:1.1,3:1.05,5:1.12,6:1.08,7:1.2,8:1.22,9:1.15,10:0.92,11:0.98,12:1.25,13:1.5,14:1.26,15:1.35,16:1.95,17:1.6,18:1.65,19:1.3,20:1.75,21:1.25,22:1.6,23:1.2,24:1.4,25:1.4,26:0.85,27:1.35,28:1.2,29:1.45,30:1.3,31:0.88};
 const SIDE_EN66={112:1.05};
 const en66=()=>S.run&&S.run.mode==='story'?(EN66[baseCh(S.run.ch)]||1)*(SIDE_EN66[S.run.ch]||1):1;
 function enemy(r){const base=ENEMIES[tierOf(r)];if(!base)return base;const en=S.enc&&S.enc[r];const tp=en?ENEMIES[en.t]:base;const m=dmul(),el=en&&en.elite;
@@ -1893,8 +1894,8 @@ function sfx(kind){if(S.muted||!kind)return;if(MASTER&&MASTER.gain.value<0.01)MA
     case'open':tone('square',392,784,0.2,0.06,t);break;
     case'err':tone('square',110,100,0.09,0.07,t);break;
     case'tick':tone('square',1500,1500,0.02,0.04,t);break;
-    case'win':[523,659,784,1047,1319].forEach((f,i)=>tone('square',f,f,i===4?0.35:0.1,0.07,t+i*0.09,0.005));tone('triangle',262,262,0.6,0.08,t+0.36,0.01);break;
-    case'lose':[392,330,262,196].forEach((f,i)=>tone('triangle',f,f*0.97,0.22,0.1,t+i*0.16,0.01));break;
+    case'win':[523,659,784,1047,1319].forEach((f,i)=>tone('square',f,f,i===4?0.35:0.1,0.16,t+i*0.09,0.005));tone('triangle',262,262,0.6,0.18,t+0.36,0.01);break;
+    case'lose':[392,330,262,196].forEach((f,i)=>tone('triangle',f,f*0.97,0.22,0.24,t+i*0.16,0.01));break;
     default:tone('triangle',620,520,0.05,0.05,t);// r69：知らない種類でも無音にしない
   }}catch(e){}}
 // ===== BGM（Web Audioで手続き生成。ファミコン風の矩形波・三角波・ノイズ） =====
@@ -1950,7 +1951,7 @@ function setMusic(name){if(name==='home'&&!BGMB.home)name='shop';BGM.want=name;i
   if(BGMB[name]){const b=BGMB[name],src=AC.createBufferSource();src.buffer=b.buf;src.loop=true;src.loopStart=b.lead;src.loopEnd=Math.min(b.buf.duration,b.lead+(BGM_DUR[name]||b.buf.duration));BGM.bus.gain.linearRampToValueAtTime(0.3,AC.currentTime+0.6);src.connect(BGM.bus);src.start(AC.currentTime,b.lead);BGM.src=src;BGM.sample=true;return;}
   BGM.next=AC.currentTime+0.08;BGM.step=0;BGM.mel={i:0,at:0};if(!BGM.timer)BGM.timer=setInterval(bgmTick,30);}
 // 勝利・敗北の短い曲（BGMを止めて鳴らす）
-function jingle(win){setMusic(null);if(!AC||S.muted)return;const bus=AC.createGain();bus.gain.value=0.4;bus.connect(MASTER);const old=BGM.bus;BGM.bus=bus;const t=AC.currentTime+0.05,q=0.11;
+function jingle(win){setMusic(null);if(!AC||S.muted)return;const bus=AC.createGain();bus.gain.value=0.9;bus.connect(MASTER);const old=BGM.bus;BGM.bus=bus;const t=AC.currentTime+0.05,q=0.11;
   if(win){[[72,0,1],[76,1,1],[79,2,1],[84,3,3],[83,6,1],[84,7,5]].forEach(([m,a,l])=>bnote(t+a*q,m,l*q*0.95,0.1,'sq25'));[[48,0,3],[55,3,3],[60,6,6]].forEach(([m,a,l])=>bnote(t+a*q,m,l*q,0.18,'tri'));[0,3,6].forEach(a=>bdrum(t+a*q,'k'));bdrum(t+6*q,'s');}
   else[[69,0,2],[68,2,2],[67,4,2],[66,6,6]].forEach(([m,a,l])=>{bnote(t+a*0.16,m,l*0.16,0.09,'sq25');bnote(t+a*0.16,m-24,l*0.16,0.16,'tri');});
   BGM.bus=old;}
@@ -2922,7 +2923,7 @@ function showItemDetails(k,star=1,l=null){
 function renderTop(){
   const el=$('info');el.onclick=null;
   const l=S.info,p=l&&getP(l);
-  if(!p){const E=enemy(S.round);el.className='';el.innerHTML=`<div class="pic">${buddyHTML(E.spr,40)}${raceOf(E)?`<span class="racetag">${RACE68[raceOf(E)].nm}</span>`:''}</div><div class="who"><span class="name">次の敵 ${E.name}<small class="enmore">押すと詳しく ▶</small></span><span class="line"><b class="enst">HP${E.hp}・攻撃${E.atk}／${E.int}秒</b> ${raceLineHTML(E)}${E.trait}</span></div>${eliteOk68()?`<button class="elbtn${S.eliteOn===S.round?' on':''}" id="eliteBtn">${S.eliteOn===S.round?'精鋭をやめる':'精鋭に挑む<small>勝てば宝石</small>'}</button>`:''}`;{const eb=document.getElementById('eliteBtn');if(eb)eb.onclick=e=>{e.stopPropagation();toggleElite68();};}el.onclick=()=>{if(S.phase!=='plan')return;sfx('tick');showEnemyInfo68(E);};return;}
+  if(!p){const E=enemy(S.round);el.className='';el.innerHTML=`<div class="pic">${buddyHTML(E.spr,raceOf(E)?34:40)}${raceOf(E)?`<span class="racetag">${RACE68[raceOf(E)].nm}</span>`:''}</div><div class="who"><span class="name">次の敵 ${E.name}<small class="enmore">押すと詳しく ▶</small></span><span class="line"><b class="enst">HP${E.hp}・攻撃${E.atk}／${E.int}秒</b> ${raceLineHTML(E)}${E.trait}</span></div>${eliteOk68()?`<button class="elbtn${S.eliteOn===S.round?' on':''}" id="eliteBtn">${S.eliteOn===S.round?'精鋭をやめる':'精鋭に挑む<small>勝てば宝石</small>'}</button>`:''}`;{const eb=document.getElementById('eliteBtn');if(eb)eb.onclick=e=>{e.stopPropagation();toggleElite68();};}el.onclick=()=>{if(S.phase!=='plan')return;sfx('tick');showEnemyInfo68(E);};return;}
   const d=ITEMS[p.type];let line=itemLine(p.type,p.star);
   if(p.type==='anvil'){const n=anvilPairs(l).length;line+=n?`。いま <b>${n}通り</b> 錬成できる。右の「錬成」を押そう`:'。<b>違う種類・同じ★</b>の武器を2つ持つと使える';}
   else if(d.kind==='passive'){const t=passiveTargets(l);if(d.adj)line+=l.a==='bench'?'':t.length?`。いま <b>${t.map(n=>ITEMS[getP(n).type].name).join('・')}</b> に効いている`:'。効く物の上下左右に置こう';}
@@ -2987,7 +2988,7 @@ function guide(){
   else if(S.round===2&&shopIdx('whet')>=0&&!allLocs().some(l=>getP(l)&&getP(l).type==='whet')){txt=`<b>砥石</b>は上下左右の武器を強くする。タップして見てみよう`;target=document.querySelector(`.ware[data-s="${shopIdx('whet')}"]`);}
   else if(S.bench.some(Boolean)){const i=S.bench.findIndex(Boolean);txt=`控えの<b>${ITEMS[S.bench[i].type].name}</b>は戦わない。タップしてバッグへ`;target=cellEl({a:'bench',i});}
   else if(S.round>=3&&beltEmpty&&weaponLocs.length){const w=weaponLocs.find(l=>l.a!=='belt');txt=`武器を<b>ベルトの枠</b>へ動かそう`;target=w?cellEl(w):null;}
-  else{txt=S.round<=2?`準備ができたら<b>戦闘へ</b>`:`ショップの品はタップで中身が見える。準備ができたら<b>戦闘へ</b>`;target=S.round<=2?$('bFight'):null;}
+  else{txt=S.round<=2?`準備ができたら<b>戦闘へ</b>`:`品はタップで中身が見える。準備ができたら<b>戦闘へ</b>`;target=S.round<=2?$('bFight'):null;}
   {const rt=S.route,ok=rt&&!rt.used&&S.round<=rt.until&&(rt.type==='focus'||rt.type==='forge');
     if(S.delivery||S.deliveryOffer)txt=S.delivery?`あと${S.delivery.left}戦で${S.delivery.reward+(hasRelic("courier")?courierBonus65():0)}G`:'配達の依頼：3Gか、2戦後に8G';
     if(ok)txt=`<span class="gtx">${txt}</span><button class="rtbtn" id="bRoute"><img src="${ICO(rt.type==='focus'?THEMES[rt.theme].ic:'whet')}" alt="">${rt.type==='focus'?'選んで買う':'工房'}<small>〜${rt.until}戦</small></button>`;}
