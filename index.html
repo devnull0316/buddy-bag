@@ -219,6 +219,7 @@ body.short #relicStrip{padding:1px 4px}body.short .gemstrip{padding:1px 6px;marg
 .enmore{font-size:10px!important;color:#7a6040!important;margin-left:6px}.enst{font-weight:700;margin-right:4px}.eninfo{display:flex;gap:12px;align-items:center}.enpic{width:72px;height:72px;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.25);flex:none}
 /* r69：指2本の拡大は許す。ボタンの2回押しで勝手に拡大しないように */html,body,button,.ware,.cell{touch-action:manipulation}#board .cell,#bench .cell,#bar{touch-action:none}
 .far{color:var(--sub);font-size:12px}
+/* r69：マスの押せる範囲を、見た目は変えずにすき間（4px）の半分まで広げる。40pxのマスでも指の当たりは44px */[data-loc].cell::before{content:'';position:absolute;inset:-2px}[data-loc^="belt"].cell::before{inset:-4px}[data-loc].cell.off::before{inset:-3px}
 /* r69：序盤だけ、戦いの画面の隅に止め方を出す */body.battle:not(.late) #stage::after{content:'画面を押すと一時停止';position:absolute;right:6px;bottom:4px;font:12px var(--f-dot);color:rgba(255,255,255,.6);text-shadow:1px 1px 0 #000;pointer-events:none;z-index:4}
 /* r69：第4章からは「押すと詳しく」を消して、敵の名前と説明に場所を回す */body.late #info .enmore{display:none}
 details>summary:has(small.when){flex-direction:column;align-items:flex-start;justify-content:center}details>summary small.when{display:block;font-size:12px;color:var(--sub);font-family:var(--f-ui,inherit);margin-top:1px}h3.dict{margin-top:14px}
@@ -432,7 +433,7 @@ body.relicpage #hand{visibility:hidden}body.relicpage #bar{margin-top:82px}#reli
 #hud{height:44px}#bQuit{height:44px;min-width:56px}#mute{width:44px;height:44px}
 .elbtn{min-height:44px}#opOpen{min-height:44px}#bNote{min-height:44px}#bReroll{min-width:44px}
 #setStrip{min-height:44px}.gemb{min-height:44px;min-width:44px}#bench .cell{--cell:44px;width:44px;height:44px}.vslot{min-width:44px!important;min-height:44px!important}details>summary{min-height:44px;display:flex;align-items:center}
-.kingmap summary{min-height:40px;display:flex;align-items:center}
+.kingmap summary{min-height:44px;display:flex;align-items:center}
 .rgn small,.homenext small,.btn small,.credit,.credit summary,.nm small,.racetag,.enmore,.elbtn small,.cell .star,.rcm,.recipenear,.setstrip small,.setc,.gemstrip small,.ware .ctr,.ware .nm,#bench .cap,.trstat small,.vname small,.vslot small,.vitem small,.pactds,.newdot{font-size:12px!important}
 .rcm{width:16px!important;height:16px!important;line-height:16px!important}
 .ware .mrg{font-size:12px!important}.boss{font-size:12px!important}#opStrip button{min-height:44px!important}#mute{flex:none}body.short .gemb{min-height:44px}
