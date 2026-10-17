@@ -219,6 +219,8 @@ body.short #relicStrip{padding:1px 4px}body.short .gemstrip{padding:1px 6px;marg
 .enmore{font-size:10px!important;color:#7a6040!important;margin-left:6px}.enst{font-weight:700;margin-right:4px}.eninfo{display:flex;gap:12px;align-items:center}.enpic{width:72px;height:72px;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.25);flex:none}
 /* r69：指2本の拡大は許す。ボタンの2回押しで勝手に拡大しないように */html,body,button,.ware,.cell{touch-action:manipulation}#board .cell,#bench .cell,#bar{touch-action:none}
 .far{color:var(--sub);font-size:12px}
+/* r69：iPadでは次の敵の説明を3行まで */@media (min-width:600px){#info{height:auto;min-height:64px}#info .line{-webkit-line-clamp:3}}
+.delta .n{color:#ff6070}
 #gDown,#gUp{min-width:44px;min-height:44px}
 #setStrip[hidden]{display:none!important}
 .volrow{display:flex;align-items:center;gap:10px;margin:8px 0;font:14px var(--f-dot)}.volrow input{flex:1;min-height:44px;accent-color:#e3b54a}.volrow span{min-width:3ch;text-align:right}
@@ -910,7 +912,7 @@ function genEnc(){const bossFirst=Math.random()<.5;const e=[null];
     else e.push({t:pickFrom(r<5?POOL_EARLY:POOL_LATE,e[r-1]&&e[r-1].t)});}
   S.enc=e;}
 // r66w：新しい装備・系統・遺物の枠で強くなった分、章ごとに敵を強くする（測定 review/r59-w66-run.txt）
-const EN66={2:1.1,3:1.05,5:1.12,6:1.08,7:1.2,8:1.22,9:1.15,10:0.92,11:0.98,12:1.25,13:1.5,14:1.26,15:1.35,16:1.95,17:1.6,18:1.65,19:1.3,20:1.75,21:1.25,22:1.6,23:1.2,24:1.4,25:1.4,26:0.85,27:1.35,28:1.2,29:1.45,30:1.3,31:0.88};
+const EN66={2:1.2,3:1.05,5:1.12,6:1.08,7:1.2,8:1.22,9:1.15,10:0.92,11:0.98,12:1.25,13:1.5,14:1.26,15:1.35,16:1.95,17:1.75,18:1.65,19:1.3,20:1.75,21:1.25,22:1.6,23:1.7,24:1.9,25:1.4,26:1.3,27:1.35,28:1.2,29:1.45,30:1.3,31:0.88};
 const SIDE_EN66={112:1.05};
 const en66=()=>S.run&&S.run.mode==='story'?(EN66[baseCh(S.run.ch)]||1)*(SIDE_EN66[S.run.ch]||1):1;
 function enemy(r){const base=ENEMIES[tierOf(r)];if(!base)return base;const en=S.enc&&S.enc[r];const tp=en?ENEMIES[en.t]:base;const m=dmul(),el=en&&en.elite;
@@ -1807,7 +1809,8 @@ function deltaAt(h,to){if(!h||!usable(to)||to.a==='bench')return null;if(h.from&
   else setP(to,null);
   return{atk:b1.atk-b0.atk,def:b1.def-b0.def};}
 function deltaHTML(dv,sm){if(!dv)return'';const f=v=>v>=10?Math.round(v):v.toFixed(1);let t='';
-  if(dv.atk>0.05)t+=`<span class="a">攻+${f(dv.atk)}</span>`;if(dv.def>0.05)t+=`${t?'<br>':''}<span class="d">守+${f(dv.def)}</span>`;
+  /* r69：動かして弱くなるときは減る数字も出す */const g=v=>f(Math.abs(v));
+  if(dv.atk>0.05)t+=`<span class="a">攻+${f(dv.atk)}</span>`;else if(dv.atk<-0.05)t+=`<span class="n">攻-${g(dv.atk)}</span>`;if(dv.def>0.05)t+=`${t?'<br>':''}<span class="d">守+${f(dv.def)}</span>`;else if(dv.def<-0.05)t+=`${t?'<br>':''}<span class="n">守-${g(dv.def)}</span>`;
   return t?`<span class="delta${sm?' sm':''}">${t}</span>`:'';}
 function passiveTargets(l){const p=getP(l);if(!p||ITEMS[p.type].kind!=='passive'||l.a==='bench')return[];
   return neighbors(l).filter(n=>{const q=getP(n);return q&&affects(p,ITEMS[q.type],n);});}
@@ -2095,8 +2098,11 @@ function tapLoc(l){
   if(S.sel&&same(S.sel,l)){S.sel=null;S.info=null;render();return;}
   const a=S.sel&&getP(S.sel);
   if(a&&!p){movePiece(S.sel,l);return;}
+  /* r69：選んだまま別の品をタップしたら選び直し（勝手に合体・交換しない＝r23）。入れ替え・合体はドラッグと1回だけ知らせる */
+  if(a&&p&&!TAPHINT68){TAPHINT68=1;setTimeout(()=>toast('入れ替え・合体は、品を押したまま動かす'),50);}
   S.sel=p?l:null;S.info=S.sel;if(p)sfx('tick');render();
 }
+let TAPHINT68=0;
 function tapWare(s){
   if(S.phase!=='plan'||!S.shop[s])return;
   if(S.pick!==s)S.hintN=(S.hintN||0)+1;
@@ -2406,7 +2412,7 @@ function endBattle(win){
   const wait=SILENT?0:1200;
   if(isNormal()){const pg=loadProg(),key=S.heroes.join('+')+'@'+(S.diff||0);const reached=win&&r===MAX_ROUND?11:r;pg.best[key]=Math.max(pg.best[key]||0,reached);if(win&&r===MAX_ROUND)pg.unlocked=Math.max(pg.unlocked,Math.min(5,(S.diff||0)+1));saveProg(pg);}
   if(r>=runLimit()&&S.run&&S.run.mode==='story'&&!S.retry){if(win)recordPact68();recordRun(win?11:r,win);if(win&&isCastle(S.run.ch)&&isCastle(S.run.ch+1)){S.climbReady68=S.run.ch;S.inBattle=0;S.pending=null;saveRaw();}else clearSave();const firstClear=!!(win&&!storyProg().story[storyKey(S.run.ch)]);S.chapterFirstClear=firstClear;{const pg=storyProg(),k=storyKey(S.run.ch);if(win&&newRelicRule())addCoins(clearReward(S.run.ch,firstClear),'clear');if(win){if(isOperation())awardHonor(pg);pg.story[k]=(pg.story[k]||0)+1;pg.story['fail'+S.run.ch]=0;}else pg.story['fail'+S.run.ch]=(pg.story['fail'+S.run.ch]||0)+1;saveProg(pg);}if(win)stampRelics63();
-    setTimeout(()=>showScene(storyScene(win?'clear':'fail',r),()=>modal(win?`<h2>${chName(S.run.ch)} クリア</h2><p>${CHAPTERS[S.run.ch].done}</p>${isOperation()?honorResultHTML():''}${relicVictoryHTML63()}${newRelicRule()?levelHTML():''}${mvpHTML()}<p class="sub">${isSide(S.run.ch)?'寄り道をクリアした。':STORY_CHS.includes(S.run.ch+1)?`${chName(S.run.ch+1)}「${CHAPTERS[S.run.ch+1].nm}」が開いた。${SIDE66.some(x=>x.p===S.run.ch)?'寄り道も開いた。':''}`:'続きの章は準備中。'}${S.run.ch===1?'フリー出撃（10戦の冒険・挑戦・遠征・縛り）も遊べるようになった。':''}</p>${chapterActionsHTML(firstClear)}`:`<h2>撤退</h2><p>${r}戦目（${B.def.name}）で負けた。章のはじめからやり直そう。</p>${loseHint()}${levelHTML()}${mvpHTML()}${chapterActionsHTML()}`),win?`${chName(S.run.ch)} クリア`:'撤退'),wait);return;}
+    setTimeout(()=>showScene(storyScene(win?'clear':'fail',r),()=>modal(win?`<h2>${S.run.ch===Math.max(...STORY_CHS)?'王国奪還！ '+chName(S.run.ch)+' クリア':chName(S.run.ch)+' クリア'}</h2><p>${CHAPTERS[S.run.ch].done}</p>${isOperation()?honorResultHTML():''}${relicVictoryHTML63()}${newRelicRule()?levelHTML():''}${mvpHTML()}<p class="sub">${isSide(S.run.ch)?'寄り道をクリアした。':STORY_CHS.includes(S.run.ch+1)?`${chName(S.run.ch+1)}「${CHAPTERS[S.run.ch+1].nm}」が開いた。${SIDE66.some(x=>x.p===S.run.ch)?'寄り道も開いた。':''}`:S.run.ch===Math.max(...STORY_CHS)?'<b>魔王を倒し、王国を取り戻した。おめでとう！</b> 契約で難しさを上げて、もう一度挑むこともできる。':'続きの章は準備中。'}${S.run.ch===1?'フリー出撃（10戦の冒険・挑戦・遠征・縛り）も遊べるようになった。':''}</p>${chapterActionsHTML(firstClear)}`:`<h2>撤退</h2><p>${r}戦目（${B.def.name}）で負けた。章のはじめからやり直そう。</p>${loseHint()}${levelHTML()}${mvpHTML()}${chapterActionsHTML()}`),win?`${chName(S.run.ch)} クリア`:'撤退'),wait);return;}
   if(r>=runLimit()&&!S.retry){recordRun(win?11:r,win);if(win&&!isNormal()){const pg=loadProg();pg.modes=pg.modes||{};pg.modes[modeKey()]=(pg.modes[modeKey()]||0)+1;saveProg(pg);}clearSave();setTimeout(()=>modal(win?`<h2>クリア！</h2><p>${enemy(r).name}を倒して、${isNormal()?'冒険':modeLabel()}をやりとげた。</p>${isNormal()&&(S.diff||0)<5?`<p class="sub">難易度「${DIFF_NAME[(S.diff||0)+1]}」が開いた（敵が15%強くなる）</p>`:''}${mvpHTML()}<p class="sub">どんな組み方で勝てたか教えてほしい</p>${again}`:`<h2>あと一歩</h2><p>最後の${enemy(r).name}を倒せなかった。</p>${mvpHTML()}${again}`),wait);return;}
   if(!win&&!(S.retry&&S.run?.mode==='story'))S.lives--;
   S.pending=win?(chestRounds().includes(r)?'chest':'reward'):'lose';S.pendingGold=S.pending==='reward'?rewardGold():null;saveRaw();
@@ -2561,7 +2567,8 @@ function routeHTML(c,i,r){const seg=segMap()[r];let nm,ds,ic;
   return `<button class="pk route" data-i="${i}"><span class="rt"><img src="${ICO(ic)}" alt="">${nm}</span><span class="ds">${ds}</span><span class="foes">${foes}</span></button>`;}
 function foeTag(t){if(t.boss)return'ボス';return{leech:'吸血',shell:'硬い殻',poison:'毒',fireproof:'炎に強い'}[t.mech]||(t.int>=2?'一撃が重い':t.int<1?'連続攻撃':'');}
 function showRoute(){const r=S.round;const cs=S.routeCands&&S.routeCands.r===r?S.routeCands.list:routeCands(r);S.routeCands={r,list:cs};S.pending='route';offerDelivery();saveRaw();
-  modal(`<h2>道を選ぶ</h2><p class="sub">${r+1}〜${segUntil(r)}戦目。敵を見て、手持ちに合う道を</p>${S.deliveryOffer?'<p class="sub">道を選んだあと、配達の依頼：すぐ3Gか、バッグ1マスを2戦使って8G。</p>':''}<div class="routes">${cs.map((c,i)=>routeHTML(c,i,r)).join('')}</div>`);
+  const same68=cs.length>1&&cs.every(c=>JSON.stringify(c.enc)===JSON.stringify(cs[0].enc)&&!c.eliteR);
+  modal(`<h2>道を選ぶ</h2><p class="sub">${r+1}〜${segUntil(r)}戦目。${same68?'<b>どの道も敵は同じ</b>。お店の品ぞろえや工房が変わる':'敵を見て、手持ちに合う道を'}</p>${S.deliveryOffer?'<p class="sub">道を選んだあと、配達の依頼：すぐ3Gか、バッグ1マスを2戦使って8G。</p>':''}<div class="routes">${cs.map((c,i)=>routeHTML(c,i,r)).join('')}</div>`);
   document.querySelectorAll('#mcard .route').forEach(b=>b.onclick=()=>{const c=cs[+b.dataset.i];
     Object.entries(c.enc).forEach(([x,t])=>S.enc[x]={...(storyDef(+x)||{}),t});if(c.eliteR)S.enc[c.eliteR].elite=1;
     (S.routeLog=S.routeLog||[]).push(c.type==='focus'?THEMES[c.theme].name:c.type==='forge'?'工房の道':'精鋭の道');
@@ -2943,7 +2950,7 @@ function renderPop(){const el=$('pop');
   el.innerHTML=`${o.special?`<div class="pic"><img src="${oicon(o)}" alt=""></div>`:`<button class="pic detailbtn" id="bShopDetails" aria-label="${oname(o)}の詳しい説明"><img src="${oicon(o)}" alt=""><small>詳細</small></button>`}<div class="who">${body}</div><div class="side"><button class="buy" id="bBuy" ${S.gold<c?'disabled':''}>${o.type==='focus'||o.type==='forge'?'選ぶ':!o.special&&mergePartner(o.type,1)?'買って<br>合体':'買う'}<br>${o.type==='focus'?'定価':c+'G'}</button>${o.special?'':`<button class="keep${S.locked[S.pick]?' on':''}" id="bKeep"><img src="${srcOf('assets/lock.png')}" alt="キープ" title="キープ（更新しても残す）"></button>`}</div><button class="x" id="bPopX" aria-label="閉じる">×</button>`;
   if($('bShopDetails'))$('bShopDetails').onclick=()=>showItemDetails(o.type);
   const tp=$('top').getBoundingClientRect();
-  el.style.display='flex';el.style.left=tp.left+'px';el.style.width=tp.width+'px';el.style.top=tp.top+'px';el.style.height=tp.height+'px';
+  el.style.display='flex';/* r69：iPadでは他の画面と同じ倍率で出す */const PZ68=UIZ||1;el.style.zoom=PZ68===1?'':String(PZ68);el.style.left=tp.left/PZ68+'px';el.style.width=tp.width/PZ68+'px';el.style.top=tp.top/PZ68+'px';el.style.height=tp.height/PZ68+'px';
   $('bBuy').onclick=()=>{const q=!o.special&&mergePartner(o.type,1);if(q)buyTo(S.pick,q);else buy(S.pick);};if($('bKeep'))$('bKeep').onclick=()=>{S.locked[S.pick]=S.locked[S.pick]?0:1;recordPlay('shop_keep',{slot:S.pick,type:o.type,locked:!!S.locked[S.pick]});sfx('tick');render();save();};$('bPopX').onclick=()=>{S.pick=null;render();};}
 let goldShown=null,goldAnim=null;
 function rollGold(){const el=$('hGold');if(goldShown===null)goldShown=S.gold;const from=goldShown,to=S.gold;goldShown=to;if(from===to){el.innerHTML=`<i></i>${to}`;return;}
@@ -3137,7 +3144,7 @@ function bindRlxRow68(){const b=$m('#rlxOpen');if(!b)return;b.onclick=()=>{sfx('
   card.innerHTML=`${rlxPendingHTML()}<div class="row2"><button class="btn" id="rlxBack">もどる</button></div>`;card.scrollTop=0;
   card.querySelectorAll('[data-rlx]').forEach(x=>x.onclick=()=>{const i=+x.dataset.rlx;if(!rlxTake(i))return;sfx(i>=0?'buy':'tick');back(i>=0);});
   $m('#rlxBack').onclick=()=>{sfx('tick');back(null);};};}
-function chapterActionsHTML(firstClear=false){const pg=loadProg(),first=!pg.help?.samePair63;if(first){pg.help={...pg.help,samePair63:1};saveProg(pg);}const ch=S.run.ch,next=firstClear&&STORY_CHS.includes(ch+1)&&!isCastle(ch);const climb=isCastle(ch)&&isCastle(ch+1)&&S.phase==='result'&&B?.win;return relicDropRow68()+(first?samePairHelpHTML():'')+'<div class="row2 resultactions">'+(climb?'<button class="btn go" id="climbNext" onclick="climbNext68()">'+(CHAPTERS[ch+1].castle)+'階へ登る（装備を持ち越す）</button>':'')+(next?'<button class="btn go" id="nextChapter" onclick="repeatChapter(true)">'+chName(ch+1)+'へ進む（同じ2人）</button>':'')+'<button class="btn'+(next||climb?'':' go')+'" id="samePair" onclick="repeatChapter()">'+chName(ch)+'をもう一度（同じ2人）</button><button class="btn" onclick="resetRun()">作戦室へ（訓練・編成）</button></div>';}
+function chapterActionsHTML(firstClear=false){const pg=loadProg(),first=!pg.help?.samePair63;if(first){pg.help={...pg.help,samePair63:1};saveProg(pg);}const ch=S.run.ch,next=firstClear&&STORY_CHS.includes(ch+1)&&!isCastle(ch);const climb=isCastle(ch)&&isCastle(ch+1)&&S.phase==='result'&&B?.win;return relicDropRow68()+(first?samePairHelpHTML():'')+'<div class="row2 resultactions">'+(climb?'<button class="btn go" id="climbNext" onclick="climbNext68()">'+(CHAPTERS[ch+1].castle)+'階へ登る（装備を持ち越す）</button>':'')+(next?'<button class="btn go" id="nextChapter" onclick="repeatChapter(true)">'+chName(ch+1)+'へ進む（同じ2人）'+(()=>{const rl=recLv(ch+1),lv=S.heroes.map(h=>heroLv(h,pg));return '<small style="display:block;font-size:12px">推奨Lv'+rl+'・今 '+lv.join('・')+(lv.some(x=>x<rl)?'（作戦室で訓練できる）':'')+'</small>';})()+'</button>':'')+'<button class="btn'+(next||climb?'':' go')+'" id="samePair" onclick="repeatChapter()">'+chName(ch)+'をもう一度（同じ2人）</button><button class="btn" onclick="resetRun()">作戦室へ（訓練・編成）</button></div>';}
 // r68：魔王城の次の階へ。バッグ・ベルト・控え・お金・宝石はそのまま。敵と店は新しくする
 function climbNext68(){const from=S.run?.ch;if(S.run?.mode!=='story'||S.phase!=='result'||!isCastle(from)||!isCastle(from+1)||!B?.win)return;
   recordPlay('castle_climb',{from,to:from+1,equipment:logInventory(),gold:S.gold});
