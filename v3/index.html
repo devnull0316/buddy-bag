@@ -392,7 +392,7 @@ button{cursor:pointer}button:focus-visible,[tabindex]:focus-visible{outline:3px 
 #app.mobile-edit .inventory-tools{display:flex;gap:6px;align-items:center;margin-bottom:4px}
 #app.mobile-edit .inventory-tools>span{display:none}
 #app.mobile-edit .bag-window>.wt small{display:none}
-@media (max-width:699px){#app:not(.mobile-edit):not(:has(#recovery:not(:empty))):not(:has(#selection-tray:not(:empty))):not(:has(.welcome)) #stagewrap{height:min(50dvh,460px)!important}#app:not(.mobile-edit) #stagewrap>#stage{height:calc(100% - 46px)!important}}
+@media (max-width:699px){#app[data-tab="adv"]:not(.mobile-edit):not(:has(#recovery:not(:empty))):not(:has(#selection-tray:not(:empty))):not(:has(.welcome)) #stagewrap{height:min(50dvh,460px)!important}#app:not([data-tab="adv"]) #stagewrap{height:150px!important}#app:not(.mobile-edit) #stagewrap>#stage{height:calc(100% - 46px)!important}}
 @media (min-width:700px){.hero-bag{grid-template-columns:82px minmax(0,1fr) 132px!important}.hero-bag>:last-child{white-space:nowrap}}
 @media (min-width:700px){.advicebar:not(:has(.welcome)){position:absolute!important;right:14px;top:2px;z-index:6;background:none!important;padding:0;margin:0;gap:6px}.advicebar:not(:has(.welcome)) .notice-mark,.advicebar:not(:has(.welcome)) #chestbar button{min-height:34px;height:34px}}
 @media (min-width:700px){#main:has(.advicebar:not(:empty)) .expedition-layout{margin-top:36px}}
@@ -1053,7 +1053,8 @@ function tabIcon(k){if(k==='map')return `<span class="tic" style="background:url
   if(k==='hero')return `<span class="tic" style="overflow:hidden">${faceBox(S.party[0],29)}</span>`;return `<img src="${ICO(k)}" alt="">`;}
 function renderTabs(){$('tabs').innerHTML=TABS.map(([k,n,ic])=>`<button data-t="${k}" class="${S.tab===k?'on':''}"><span class="tab-orb">${['stash','town'].includes(k)&&!featureOpen(k)?lockHTML():tabIcon(ic)}</span><span>${n}</span>${badges[k]&&S.tab!==k?'<span class="badge"></span>':''}</button>`).join('');
   document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{if(['stash','town'].includes(b.dataset.t)&&!featureOpen(b.dataset.t))return lockedFeature(b.dataset.t);closeModal();INFO=null;S.tab=b.dataset.t;badges[S.tab]=0;setMobileEdit(S.tab==='adv');if(S.tab!=='adv')setMobileEdit(false);sfx('tick');renderTabs();renderMain();tutorialTick();$('main').scrollTop=0;});}
-function renderMain(){const m=$('main');if(['town','stash'].includes(S.tab)&&!featureOpen(S.tab)){S.tab='adv';setMobileEdit(false);}placeSelectionTray();({adv:renderAdv,stash:renderStash,map:renderMap,town:renderTown,heroes:renderHeroes})[S.tab](m);placeSelectionTray();renderTutorial();}
+function renderMain(){if($('app'))$('app').dataset.tab=S.tab;// 今のタブ（CSSで戦闘の高さを変える）
+const m=$('main');if(['town','stash'].includes(S.tab)&&!featureOpen(S.tab)){S.tab='adv';setMobileEdit(false);}placeSelectionTray();({adv:renderAdv,stash:renderStash,map:renderMap,town:renderTown,heroes:renderHeroes})[S.tab](m);placeSelectionTray();renderTutorial();}
 // 品を持ち上げている間だけ戦闘を止める
 function setSel(v){SEL=v;renderSelection();if(!B||B.sim)return;if(v){if(!B.paused){B.paused=true;B.selPause=true;}}else if(B.selPause){B.paused=false;B.selPause=false;}}
 const running=()=>B&&!B.sim&&(B.phase==='fight'||B.nextS!=null);
