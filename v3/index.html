@@ -453,6 +453,13 @@ details:not([open])>:not(summary){display:none}summary{list-style:none}summary::
  #app.mobile-edit:has(#selection-tray:not(:empty)) #bagnote{display:none}
 }
 .battle-rate span{display:block;white-space:nowrap}.battle-rate b{display:inline!important;margin-left:2px}/* 眺める画面の札も数字を1行に */
+
+/* 作者「隠れるし行動表記いらない」：戦闘の帯の行動の文章は出さない（キャラの近くの小さな表示は残す） */
+#combat-readout{display:none!important}
+/* 広い画面のおかえりは1行の帯にして、鞄を押し下げない */
+@media (min-width:700px){.return-summary{display:flex!important;flex-wrap:wrap;align-items:center;gap:4px 16px;padding:6px 12px!important}
+.return-summary .welcome-title{display:contents}.return-summary .welcome-title b{font-size:15px}.return-summary>div{margin:0}
+.return-summary .btn.go{min-height:44px;padding:0 18px;margin:0}.return-summary details{margin-left:auto}.return-summary details[open]{flex-basis:100%}}
 </style>
 </head>
 <body>
