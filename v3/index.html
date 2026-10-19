@@ -392,11 +392,13 @@ button{cursor:pointer}button:focus-visible,[tabindex]:focus-visible{outline:3px 
 #app.mobile-edit .inventory-tools{display:flex;gap:6px;align-items:center;margin-bottom:4px}
 #app.mobile-edit .inventory-tools>span{display:none}
 #app.mobile-edit .bag-window>.wt small{display:none}
-@media (max-width:699px){#app:not(.mobile-edit):not(:has(#recovery:not(:empty))):not(:has(#selection-tray:not(:empty))) #stagewrap{height:min(50dvh,460px)!important}}
+@media (max-width:699px){#app:not(.mobile-edit):not(:has(#recovery:not(:empty))):not(:has(#selection-tray:not(:empty))):not(:has(.welcome)) #stagewrap{height:min(50dvh,460px)!important}#app:not(.mobile-edit) #stagewrap>#stage{height:calc(100% - 46px)!important}}
 @media (min-width:700px){.hero-bag{grid-template-columns:82px minmax(0,1fr) 132px!important}.hero-bag>:last-child{white-space:nowrap}}
 @media (min-width:700px){.advicebar:not(:has(.welcome)){position:absolute!important;right:14px;top:2px;z-index:6;background:none!important;padding:0;margin:0;gap:6px}.advicebar:not(:has(.welcome)) .notice-mark,.advicebar:not(:has(.welcome)) #chestbar button{min-height:34px;height:34px}}
 @media (min-width:700px){#main:has(.advicebar:not(:empty)) .expedition-layout{margin-top:36px}}
 #mcard .welcome-modal{color:var(--text);background:#241913;margin:-14px;padding:14px}
+@media (max-width:699px){#app.mobile-edit .advicebar,#app.mobile-edit .milestone,#app.mobile-edit #chestbar{display:none!important}}/* 編集中は知らせを隠し、鞄と持ち物を優先（知らせは眺める画面に出る） */
+.welcome{max-height:none!important;overflow:visible!important}/* 札の中で別にスクロールさせない */
 </style>
 </head>
 <body>
