@@ -1326,7 +1326,8 @@ function arrangePlan(stage){const foes=stageFoes(STAGES[stage]),res=el=>foes.red
   for(let n=0;n<18;n++){let best=null;for(const it of L){if(used.has(it)||ITEMS[it.id].kind!=='atk')continue;for(const j of S.party){const slot=bags[j].indexOf(null);if(slot<0)continue;const v=score(it,j);if(!best||v>best.v)best={it,j,slot,v};}}if(!best)break;put(best.j,best.slot,best.it);}
   const value=bs=>compileBag(bs,S.party).reduce((n,o)=>n+rateOf(o)*(o.kind==='atk'?res(o.el):o.kind==='shield'?.75:.8),0);
   for(const it of L.filter(it=>ITEMS[it.id].kind==='sup').sort((a,b)=>b.st-a.st)){
-    let best=null,base=value(bags);for(const j of S.party)for(let i=0;i<BAG_N;i++){const old=bags[j][i];bags[j][i]=it;const gain=value(bags)-base;bags[j][i]=old;if(gain>0&&(!best||gain>best.gain))best={j,i,old,gain};}
+    let best=null,base=value(bags);for(const j of S.party)for(let i=0;i<BAG_N;i++){const old=bags[j][i];if(old&&ITEMS[old.id].kind!=='atk')continue;// 盾と薬は外さない
+      bags[j][i]=it;const gain=value(bags)-base;bags[j][i]=old;if(gain>0&&(!best||gain>best.gain))best={j,i,old,gain};}
     if(best){if(best.old){const match=[...used].find(x=>x.id===best.old.id&&x.st===best.old.st);if(match)used.delete(match);}put(best.j,best.i,it);}
   }
   const stash={};for(const it of L)if(!used.has(it)){const k=it.id+'|'+it.st;stash[k]=(stash[k]||0)+1;}
