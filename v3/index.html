@@ -198,6 +198,11 @@ button{cursor:pointer}button:focus-visible,[tabindex]:focus-visible{outline:3px 
 .skill-tier{grid-column:1/-1;margin:0}.skill-grid{gap:6px}.skill-tile{min-height:82px}#mapc{background-color:#d8be86;background-blend-mode:soft-light,luminosity}
 @media(max-height:740px){:root{--cell:min(58px,calc((100vw - 66px)/4))}#stagewrap{height:130px}.win{margin-bottom:10px}#mapc{height:330px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important}.resource-float{animation:none;display:none}.loot{display:none}}
+
+/* 見切れ対策：操作の段の分だけ絵の高さを縮める。iPadなど広い画面では幅を広げる */
+#stagewrap{height:calc(clamp(118px,17dvh,150px) + 40px)!important}#stage{height:calc(100% - 40px)!important}
+#hud .hud-rail{bottom:3px!important}
+@media (min-width:700px){#app{max-width:720px}:root{--cell:min(92px,calc((100vw - 80px)/4))}}
 </style>
 </head>
 <body>
