@@ -452,6 +452,7 @@ body.run.battle #guide{display:flex;visibility:hidden}
 body.run.battle #shop{display:grid!important;opacity:.38;filter:grayscale(.6);pointer-events:none}
 body.run.battle #info{pointer-events:none}
 .belt70{height:10px}
+.tgt74{color:#ffb0a0;font-weight:700}
 .apt{display:none!important}
 .newf70{font:16px/1.5 var(--f-dot);background:rgba(0,0,0,.25);border-left:4px solid var(--brass);padding:6px 10px}
 .fit70{display:inline-block;margin-left:6px;padding:0 5px;font:11px var(--f-dot);font-style:normal;color:#1d1611;background:#9fd35a;vertical-align:2px}
@@ -2273,7 +2274,7 @@ function fireOne(x){
   afterFire66(x,crit);
   if(on70('special'))B.gauge[x.u]+=10+(tagsOf(d).includes('magic')?setVal('magic','gauge'):0)+(x.hero==='archer'?levelStats(runLv('archer')).m:0)+(x.hero==='mage'&&tal('m40a')?2:0)+(x.hero==='archer'&&tal('a40a')?2:0)+rxv(x.hero,'gauge');if(B.gauge[x.u]>=100){B.gauge[x.u]=0;special(x.u);}
 }
-function addText(txt,where,color,big){const same=B.texts.find(t=>t.txt===txt&&t.t<0.8&&!/^\d/.test(txt));if(same)return;if(where==='enemy'){const en=B.texts.filter(t=>t.where==='enemy');if(en.length>=4)en.sort((a,b)=>b.t-a.t)[0].t=0.9;}B.lane=((B.lane||0)+1)%4;B.texts.push({txt,where,color,t:0,big,dx:(fxRandom()-.5)*36,dy:B.lane*15});}
+function addText(txt,where,color,big){const u74=where==='party'&&B&&B.hu&&B.textU74!=null?B.textU74:null;const same=B.texts.find(t=>t.txt===txt&&t.t<0.8&&!/^\d/.test(txt));if(same)return;if(where==='enemy'){const en=B.texts.filter(t=>t.where==='enemy');if(en.length>=4)en.sort((a,b)=>b.t-a.t)[0].t=0.9;}B.lane=((B.lane||0)+1)%4;B.texts.push({txt,where,color,t:0,big,dx:(fxRandom()-.5)*(u74!=null?14:36),dy:B.lane*15,u:u74});}
 function drawVictory(W,H){const t=reducedMotion()?1:(performance.now()-B.vicT0)/1000,w=B.vic.win;const txt=w?'勝利！':'敗北…';
   const k=Math.min(1,t/0.22),y=H*0.42-(1-k)*60+(t>0.22&&t<0.32?Math.sin((t-0.22)/0.1*Math.PI)*-6:0);
   if(t<0.3&&w){sx.fillStyle=`rgba(255,240,180,${0.3*(1-t/0.3)})`;sx.fillRect(0,0,W,H);}
@@ -2335,7 +2336,7 @@ function lightActivation(el,col){if(!el||!el.animate)return;
     {boxShadow:`inset 0 0 0 1px ${col}`,offset:.3},{boxShadow:'inset 0 0 0 0 transparent'}],
     {duration:reducedMotion()?200:260,easing:'ease-out'});
 }
-function specialHelpHTML(){return on70('special')?'<div class="ophelp" id="specialHelp"><p>装備が動くと、マスが光ります。</p><p>必殺ゲージが満タンで、自動発動。</p><p>「もうすぐ」が出たら、あと少し。</p></div>':'<div class="ophelp" id="specialHelp"><p>選んだ2人が、それぞれのバッグの装備を使って戦います。</p><p>2人はそれぞれHPを持ちます。前（上のバッグ）の勇者ほど狙われます。</p><p>回復の品は、持ち主を治します。倒れた勇者の装備は止まります。</p></div>';}
+function specialHelpHTML(){return on70('special')?'<div class="ophelp" id="specialHelp"><p>装備が動くと、マスが光ります。</p><p>必殺ゲージが満タンで、自動発動。</p><p>「もうすぐ」が出たら、あと少し。</p></div>':'<div class="ophelp" id="specialHelp"><p>選んだ2人が、それぞれのバッグの装備を使って戦います。</p><p>2人はそれぞれHPを持ちます。敵はふだん前（上のバッグ）の勇者を狙います。前の勇者は最大HPが2割多くなります。</p><p>回復の品は、持ち主を治します。倒れた勇者の装備は止まります。</p></div>';}
 function specialGauge(u,W){const h=HEROES[S.heroes[u]],w=(W/2-22)/2,x=8+u*(w+8),v=Math.min(100,B.gauge[u]),soon=v>=80,y=26;
   sx.save();sx.fillStyle='rgba(15,12,10,.85)';sx.fillRect(x-2,y-2,w+4,15);
   sx.textAlign='left';sx.font='9px DotGothic16, monospace';sx.fillStyle=soon?'#ffe199':'#eee3d1';sx.fillText(h.name,x,y+8,w*0.42);
@@ -2384,18 +2385,26 @@ function drawSpecialFx(W,H){if(!B.specialFx?.length)return;const now=performance
 }
 // r72 勇者ごとのHP（タスクバーヒーロー型）。バリアは2人で共有。敵は3回に2回は前、1回は後ろを狙う
 const HPW72={knight:1.3,mage:0.8,archer:0.95};
-function initHU72(){if(/hp1=1/.test(location.search))return;const tot=B.party.max,ws=(S.heroes||[]).map(h=>HPW72[h]||1),sum=ws.reduce((a,b)=>a+b,0)||1;B.hu=S.heroes.map((h,u)=>{const m=Math.round(tot*ws[u]/sum);return{hp:m,max:m};});B.atkN72=0;syncP72();}
+function initHU72(){if(/hp1=1/.test(location.search))return;const tot=B.party.max,ws=(S.heroes||[]).map(h=>HPW72[h]||1),sum=ws.reduce((a,b)=>a+b,0)||1;B.hu=S.heroes.map((h,u)=>{const m=Math.round(tot*ws[u]/sum*(u===0?1.2:1));return{hp:m,max:m};});B.atkN72=0;syncP72();}
 function syncP72(){if(!B||!B.hu)return;B.party.hp=B.hu.reduce((a,x)=>a+Math.max(0,x.hp),0);B.party.max=B.hu.reduce((a,x)=>a+x.max,0);}
 const aliveU72=u=>!!(B&&B.hu&&B.hu[u]&&B.hu[u].hp>0);
 function lowestU72(){let best=-1,r=9;(B.hu||[]).forEach((x,u)=>{if(x.hp>0&&x.hp/x.max<r){r=x.hp/x.max;best=u;}});return best;}
 function healU72(u,amt){const t=(u>=0&&aliveU72(u))?u:lowestU72();if(t<0||!(amt>0))return 0;const x=B.hu[t],h=Math.max(0,Math.min(amt,x.max-x.hp));x.hp+=h;syncP72();return h;}
-function nextTargetU72(){const front=aliveU72(0)?0:1,back=1-front;if(!aliveU72(back))return front;return ((B.atkN72||0)+1)%3===0?back:front;}
+// r74 狙いの型（敵ごとに1つ）。ふつうの攻撃は必ず前。後ろや二人を狙うのは、その性質を持つ敵の3回目だけ
+const TGT74={eye:'back',eye_o:'back',bat:'back',wizard3:'aoe',mushroom_p:'aoe'};
+function tgtType74(def){const k=String(def?.spr||'').replace(/_(vol|dem|cas)$/,'');return /hp1=1/.test(location.search)?null:TGT74[k]||null;}
+function tgtTxt74(def){const t=tgtType74(def);return t==='back'?'3回目は後ろを狙う':t==='aoe'?'3回目は二人に攻撃':'';}
+function nextKind74(){const t=tgtType74(B.def);return t&&((B.eAtk74||0)+1)%3===0?t:'front';}
+function nextTargetU72(){if(B.forceU72!=null)return B.forceU72;const front=aliveU72(0)?0:1;return front;}
+function targetsSoon74(){if(!B.hu)return[];const k=nextKind74(),front=aliveU72(0)?0:1,back=1-front;if(k==='aoe')return [0,1].filter(aliveU72);if(k==='back'&&aliveU72(back))return [back];return [front];}
+// 二人まとめての攻撃：1人あたり6割。共有のバリアは2人で半分ずつ使う（後ろだけ損をしない）
+function aoeHit74(dmg){const al=[0,1].filter(aliveU72);if(!al.length){partyHit(dmg);return;}const P=B.party,sh=P.shield;addText('二人に攻撃','enemy','#ffb0a0',true);al.forEach((u,i)=>{const share=sh/al.length;P.shield=share+(i?P.shield:0);B.forceU72=u;partyHit(dmg*0.6);});B.forceU72=null;}
 function hurtU72(u,d){const x=B.hu[u];if(!x||x.hp<=0)return;x.hp-=d;if(x.hp<=0){x.hp=0;if(B.party.revive){x.hp=Math.round(x.max*B.party.revive);B.party.revive=0;B.banner={txt:`不死鳥の羽で${HEROES[S.heroes[u]].name}が起き上がった！`,t:1.2};sfx('open');}else{play(B.actors[u],'death');B.banner={txt:`${HEROES[S.heroes[u]].name}が倒れた。鞄の装備が止まる`,t:1.4};}}syncP72();}
 function partyHit(dmg){const P=B.party;dmg*=1-0.03*Math.min(20,B.enemy.weak||0);let d=dmg*(B.rallyT>0?0.4:1);if(dmg>0){const back=(B.thornmail||0)+(B.setThorns||0);if(back){B.enemy.hp-=back;B.rec.thorns+=back;}if(B.frostarmor)hitEnemy({freeze:B.frostarmor});}B.rec.rally+=dmg-d;if(B.rallyT>0)(B.ripples=B.ripples||[]).push({t0:performance.now(),a:-0.3+fxRandom()*0.6});
   if(d>0&&P.shield>0&&!(B.assaultT>0)){const mail=boardLocs().map(getP).filter(q=>q?.type==='chainmail').reduce((v,q)=>Math.max(v,[0,2,3,4][q.star]),0),v=Math.min(d,mail);d-=v;B.rec.blocked+=v;}
   const thornBlock=d>0&&P.shield>0;if(!newRelicRule()&&d>0&&P.shield>0&&hasRelic('thorn')&&!B.relicOnce?.thorn&&!(B.assaultT>0)){B.relicOnce={...B.relicOnce,thorn:1};const h=Math.min(rv('thorn',6),P.max-P.hp);P.hp+=h;B.rec.healed+=h;relicTick('thorn',h);}
   if(P.shield>0){const a=Math.min(P.shield,d);P.shield-=a;d-=a;B.rec.blocked+=a;if(a>0&&tal('k10b')&&B.t-(B.counterT??-9)>=1){B.counterT=B.t;B.enemy.hp-=4;B.rec.hit+=4;addText('反撃 4','enemy','#9cc8f5');talentFx('k10b','反撃 4');}if(a>0&&pairKey()==='guard+speed'&&S.heroes.includes('knight')){if(!(B.haste>0))addText('迅盾！','party','#7ad07a');B.haste=1;}if(B.thorns){B.enemy.hp-=B.thorns;B.rec.thorns+=B.thorns;B.contrib[B.thornSrc]=(B.contrib[B.thornSrc]||0)+B.thorns;addText(`反撃${Math.round(B.thorns)}`,'enemy','#c9c2b4');}}
-  {const tu=B.hu?nextTargetU72():-1;if(B.hu){B.atkN72=(B.atkN72||0)+1;B.lastHitU72=tu;hurtU72(tu,Math.max(0,d));}else P.hp-=d;}armCampPot();if(newRelicRule()&&thornBlock&&P.hp>0&&P.hp<P.max&&hasRelic('thorn')&&!B.relicOnce?.thorn&&!(B.assaultT>0)){const h=Math.min(rv('thorn',6),P.max-P.hp);if(h>0){P.hp+=h;B.rec.healed+=h;B.relicOnce={...B.relicOnce,thorn:1};relicTick('thorn',h);}}B.rec.taken+=Math.max(0,d);P.flash=0.18;addText(d>0?`-${Math.round(d)}`:'防いだ','party','#ff8a7a');if(d>25)B.shake=Math.max(B.shake,0.08);
+  {const tu=B.hu?nextTargetU72():-1;if(B.hu){B.atkN72=(B.atkN72||0)+1;B.lastHitU72=tu;B.textU74=tu;hurtU72(tu,Math.max(0,d));}else P.hp-=d;}armCampPot();if(newRelicRule()&&thornBlock&&P.hp>0&&P.hp<P.max&&hasRelic('thorn')&&!B.relicOnce?.thorn&&!(B.assaultT>0)){const h=Math.min(rv('thorn',6),P.max-P.hp);if(h>0){P.hp+=h;B.rec.healed+=h;B.relicOnce={...B.relicOnce,thorn:1};relicTick('thorn',h);}}B.rec.taken+=Math.max(0,d);P.flash=0.18;addText(d>0?`-${Math.round(d)}`:'防いだ','party','#ff8a7a');B.textU74=null;if(d>25)B.shake=Math.max(B.shake,0.08);
   if(d>0){play(B.actors[B.hu&&B.lastHitU72>=0?B.lastHitU72:Math.floor(fxRandom()*B.actors.length)],'hit');sfx('hurt');}else{sfx('block');B.guardT=performance.now();}
   if(B.def.mech==='leech'&&d>0){const h=Math.min(d*0.6,B.enemy.max-B.enemy.hp);B.enemy.hp+=h;B.rec.eheal+=h;if(h>=1)addText(`吸血+${Math.round(h)}`,'enemy','#9be38a');}}
 function rowOf(l){if(l.a==='belt')return 2;const r=Math.floor(l.i/4);return l.a==='A'?r:3+r;}
@@ -2456,7 +2465,7 @@ function step(dt){
   if(E.hp<=0&&def.beh68==='bone'&&!B.boneUp){B.boneUp=1;B.rec.boneUp=1;E.hp=Math.round(E.max*0.2);B.banner={txt:'骨が立ち上がった！',t:1};sfx('boom');}
   if(E.hp<=0&&!(def.mission==='20秒防衛'&&B.t+1e-7>=20)){if(def.boss==='demon'&&!B.phase2)enterDemonPhase();else{endBattle(true);return;}}
   const tt=B.t-(B.phaseT||0),enr=tt>25?1+0.5*Math.floor((tt-25)/8+1):1;
-  E.timer+=dt*(def.beh68==='beast'&&E.hp<E.max/2?1.5:1);if(E.timer>=def.int){E.timer-=def.int;clapper68();play(B.foe,'attack');sfx('foe');if(def.boss==='breaker'||def.support==='breaker'){B.atkN=(B.atkN||0)+1;if(B.atkN%3===0&&P.shield>0){P.shield*=1-0.4*(def.support==='breaker'?supportScale():1);addText('盾くずし！','party','#ff8a7a',true);B.shake=.25;}}partyHit(def.atk*enr*(1+0.1*(B.curseN||0)));if(enr>1&&!B.enr){B.enr=1;B.banner={txt:'敵が怒った！',t:1};}}
+  E.timer+=dt*(def.beh68==='beast'&&E.hp<E.max/2?1.5:1);if(E.timer>=def.int){E.timer-=def.int;clapper68();play(B.foe,'attack');sfx('foe');if(def.boss==='breaker'||def.support==='breaker'){B.atkN=(B.atkN||0)+1;if(B.atkN%3===0&&P.shield>0){P.shield*=1-0.4*(def.support==='breaker'?supportScale():1);addText('盾くずし！','party','#ff8a7a',true);B.shake=.25;}}{const dm74=def.atk*enr*(1+0.1*(B.curseN||0)),k74=B.hu?nextKind74():'front';B.eAtk74=(B.eAtk74||0)+1;if(k74==='aoe')aoeHit74(dm74);else{if(k74==='back'){const fr=aliveU72(0)?0:1;B.forceU72=aliveU72(1-fr)?1-fr:fr;}partyHit(dm74);B.forceU72=null;}}if(enr>1&&!B.enr){B.enr=1;B.banner={txt:'敵が怒った！',t:1};}}
   if(!B.hu&&P.hp<=0&&P.revive){P.hp=P.max*P.revive;P.revive=0;B.banner={txt:'不死鳥の羽で復活！',t:1.2};sfx('open');}
   E.flash=Math.max(0,E.flash-dt);P.flash=Math.max(0,P.flash-dt);B.shake=Math.max(0,B.shake-dt);
   B.texts.forEach(t=>t.t+=dt);B.texts=B.texts.filter(t=>t.t<0.9);
@@ -2859,7 +2868,7 @@ function drawStage(){
     sx.fillStyle='rgba(0,0,0,.45)';sx.fillRect(x-14,base-2,28,4);sx.fillRect(x-18,base-1,36,2);
     if(walkOn){drawChar({name:ac.name,anim:'run',t:(vt-1.3)%(META[ac.name].anims.run/14)},x,base+2,hb,false);}else if(walking73&&META[ac.name].anims.run&&ac.anim!=='death'){drawChar({name:ac.name,anim:'run',t:(B.intro||0)%(META[ac.name].anims.run/14)},x,base+2+dy,hb,false);}else drawChar(ac,x,base+2+dy,hb,false);
     });
-  if(B.hu){const tgt=!B.done?nextTargetU72():-1,soon=B.enemy.timer/B.def.int>0.55;B.hu.forEach((x,u)=>{const cx=heroX(u,W)+actorOff(B.actors[u],true)[0],y=Math.max(40,Math.round(base-hb*1.3)),w=30;
+  if(B.hu){const tg74=!B.done?targetsSoon74():[],soon=B.enemy.timer/B.def.int>0.55||nextKind74()!=='front';B.hu.forEach((x,u)=>{const tgt=tg74.includes(u)?u:-1;const cx=heroX(u,W)+actorOff(B.actors[u],true)[0],y=Math.max(40,Math.round(base-hb*1.3)),w=30;
       sx.fillStyle='rgba(10,8,6,.8)';sx.fillRect(cx-w/2-1,y-1,w+2,6);sx.fillStyle=x.hp>0?(x.hp/x.max<0.3?'#d9a03a':'#79b85a'):'#5a4a3a';sx.fillRect(cx-w/2,y,Math.round(w*Math.max(0,x.hp)/x.max),4);
       if(u===tgt&&x.hp>0&&soon){sx.fillStyle='#ff6a5a';sx.beginPath();sx.moveTo(cx-5,y-9);sx.lineTo(cx+5,y-9);sx.lineTo(cx,y-3);sx.closePath();sx.fill();}});}
   // 敵
@@ -2877,13 +2886,13 @@ function drawStage(){
   {const E=B.enemy,ey=base-eb;if(E.burn>1){for(let i=0;i<Math.min(6,1+E.burn/12);i++){const ph=(B.t*2+i*0.37)%1;sx.fillStyle=ph<.5?'#ffb02e':'#ea6b3c';sx.fillRect(Math.round(ENEMY_X-12+((i*11)%24)),Math.round(ey+eb*0.4-ph*eb*0.6),3,3);}}
     if(E.poison>1){for(let i=0;i<Math.min(6,1+E.poison/4);i++){const ph=(B.t*1.3+i*0.29)%1;sx.fillStyle='#9fd35a';sx.fillRect(Math.round(ENEMY_X-14+((i*13)%28)),Math.round(ey+eb*0.9-ph*eb*0.9),2,2);}}}
   const P=B.party,E=B.enemy;
-  if(B.hu){const bw=(W/2-14-6)/2;B.hu.forEach((x,u)=>{const nm=HEROES[S.heroes[u]].name;bar(8+u*(bw+6),6,bw,x.hp/x.max,x.hp>0?(x.hp/x.max<0.3?'#d9a03a':'#79b85a'):'#5a4a3a',x.hp>0?`${nm} ${Math.round(x.hp)}`:`${nm} 倒れた`,u===0?P.shield/P.max:0,'p'+u);});
-    if(P.shield>0.5){sx.font='10px DotGothic16, monospace';sx.textAlign='left';const t=`盾${Math.round(P.shield)}`;sx.fillStyle='rgba(12,9,7,.75)';sx.fillRect(8,24,sx.measureText(t).width+8,12);sx.fillStyle='#9cc8f5';sx.fillText(t,12,34);}}
+  if(B.hu){const bw=(W/2-14-6)/2;B.hu.forEach((x,u)=>{const nm=HEROES[S.heroes[u]].name;bar(8+u*(bw+6),6,bw,x.hp/x.max,x.hp>0?(x.hp/x.max<0.3?'#d9a03a':'#79b85a'):'#5a4a3a',x.hp>0?`${nm} ${Math.round(x.hp)}`:`${nm} 倒れた`,P.shield/P.max,'p'+u);});
+    if(P.shield>0.5){sx.font='10px DotGothic16, monospace';sx.textAlign='left';const t=`2人の盾 ${Math.round(P.shield)}`;sx.fillStyle='rgba(12,9,7,.75)';sx.fillRect(8,24,sx.measureText(t).width+8,12);sx.fillStyle='#9cc8f5';sx.fillText(t,12,34);}}
   else bar(8,6,W/2-14,P.hp/P.max,'#79b85a',`パーティ ${Math.max(0,Math.round(P.hp))}`+(P.shield>0.5?`  盾${Math.round(P.shield)}`:'')+partyBuffTxt(),P.shield/P.max,'p');
   bar(W/2+6,6,W/2-14,E.hp/E.max,'#cf4b3f',`${B.def.name} ${Math.max(0,Math.round(E.hp))}${E.shield>0.5?' 盾'+Math.round(E.shield):''}`,(E.shield||0)/E.max,'e');
   if(!B.done){const r=Math.max(0,Math.min(1,E.timer/B.def.int)),gy=Math.max(isRun()?54:0,base-ENEMY_BODY()-18),soon=r>0.8;
     sx.fillStyle='rgba(0,0,0,.6)';sx.fillRect(ENEMY_X-22,gy,44,6);sx.fillStyle=E.frz>0?'#9fd8ff':soon?'#ffc29e':'#e0603a';sx.fillRect(ENEMY_X-22,gy,Math.round(44*r),6);
-    sx.font='10px DotGothic16, monospace';sx.textAlign='center';sx.fillStyle='#16110d';const lb=B.def.boss==='breaker'&&((B.atkN||0)+1)%3===0?'次：盾くずし':`攻撃${Math.round(B.def.atk)}`;sx.fillText(lb,ENEMY_X+1,gy-2);sx.fillStyle=soon||lb!==`攻撃${Math.round(B.def.atk)}`?'#ffd0c0':'#ecdcb8';sx.fillText(lb,ENEMY_X,gy-3);const bc=bossClock68();if(bc){const r2=Math.max(0,Math.min(1,1-bc.left/bc.total)),gy2=gy-(isRun()?14:24),wB=72,near=bc.count?bc.left<=1:bc.left<=1.6;
+    sx.font='10px DotGothic16, monospace';sx.textAlign='center';sx.fillStyle='#16110d';const k74=B.hu?nextKind74():'front',lb=B.def.boss==='breaker'&&((B.atkN||0)+1)%3===0?'次：盾くずし':k74==='aoe'?'次：二人に攻撃':k74==='back'?'次：後ろを狙う':`攻撃${Math.round(B.def.atk)}`;sx.fillText(lb,ENEMY_X+1,gy-2);sx.fillStyle=soon||lb!==`攻撃${Math.round(B.def.atk)}`?'#ffd0c0':'#ecdcb8';sx.fillText(lb,ENEMY_X,gy-3);const bc=bossClock68();if(bc){const r2=Math.max(0,Math.min(1,1-bc.left/bc.total)),gy2=gy-(isRun()?14:24),wB=72,near=bc.count?bc.left<=1:bc.left<=1.6;
       sx.fillStyle='rgba(0,0,0,.65)';sx.fillRect(ENEMY_X-wB/2,gy2,wB,6);sx.fillStyle=near?'#ffe07a':'#a77ad8';sx.fillRect(ENEMY_X-wB/2,gy2,Math.round(wB*r2),6);
       const t2=`${bc.nm}${bc.count?`まで${bc.left}回`:near?' もうすぐ！':`まで${Math.max(0,bc.left).toFixed(0)}秒`}`;sx.fillStyle='#16110d';sx.fillText(t2,ENEMY_X+1,gy2-2);sx.fillStyle=near?'#ffe07a':'#e6d8ff';sx.fillText(t2,ENEMY_X,gy2-3);}}
   // 敵の状態
@@ -2893,7 +2902,7 @@ function drawStage(){
   B.combos.forEach(cb=>{const a=1-cb.t/0.35;if(a<=0)return;sx.globalAlpha=a;const ey=base-eb*0.5;
     B.actors.forEach((ac,u)=>{sx.strokeStyle=u?cb.c2:cb.c1;sx.lineWidth=4;sx.beginPath();sx.moveTo(heroX(u,W),base-hb*0.6);sx.lineTo(ENEMY_X,ey);sx.stroke();});
     sx.fillStyle='#f7dc8a';sx.fillRect(ENEMY_X-14,ey-3,28,6);sx.fillRect(ENEMY_X-3,ey-14,6,28);sx.globalAlpha=1;});
-  B.texts.forEach(t=>{const tt=rm?.12:t.t,arc=tt<0.35?(1-Math.pow(1-tt/0.35,2))*22:22-((tt-0.35)/0.55)*10;const x=(t.where==='enemy'?ENEMY_X:W*0.24)+t.dx+(t.dx>0?1:-1)*tt*14,y=Math.max(t.big?52:46,base-Math.max(hb,eb)*0.8-6-(t.dy||0)*0.6-arc*0.6);
+  B.texts.forEach(t=>{const tt=rm?.12:t.t,arc=tt<0.35?(1-Math.pow(1-tt/0.35,2))*22:22-((tt-0.35)/0.55)*10;const x=(t.where==='enemy'?ENEMY_X:t.u!=null?heroX(t.u,W):W*0.24)+t.dx+(t.dx>0?1:-1)*tt*14,y=Math.max(t.big?52:46,base-Math.max(hb,eb)*0.8-6-(t.dy||0)*0.6-arc*0.6);
     sx.globalAlpha=tt<0.6?1:Math.max(0,1-(tt-0.6)/0.3);const pop=tt<0.06?1.7-tt*10:tt<0.12?1.1-(tt-0.06)*1.6:1;
     sx.font=`${Math.round((t.big?24:17)*pop)}px DotGothic16, monospace`;sx.lineWidth=4;sx.strokeStyle='#16110d';sx.textAlign='center';sx.strokeText(t.txt,x,y);sx.fillStyle=t.color;sx.fillText(t.txt,x,y);sx.textAlign='left';sx.globalAlpha=1;});
   if(B.boom&&B.banner)B.banner=null;
@@ -3079,7 +3088,7 @@ function showItemDetails(k,star=1,l=null){
 function renderTop(){
   const el=$('info');el.onclick=null;
   const l=S.info,p=l&&getP(l);
-  if(!p){const E=enemy(S.round);el.className='';el.innerHTML=`<div class="pic">${buddyHTML(E.spr,raceOf(E)?34:40)}${raceOf(E)?`<span class="racetag">${RACE68[raceOf(E)].nm}</span>`:''}</div><div class="who"><span class="name">${S.phase==='plan'?'次の敵':'いまの敵'} ${E.name}${S.phase==='plan'?'<small class="enmore">押すと詳しく</small>':''}</span><span class="line"><b class="enst">HP${E.hp}・攻撃${E.atk}／${E.int}秒</b> ${raceLineHTML(E)}${shortTrait68(E.trait)}</span></div>${eliteOk68()?`<button class="elbtn${S.eliteOn===S.round?' on':''}" id="eliteBtn">${S.eliteOn===S.round?'精鋭をやめる':'精鋭に挑む<small>勝てば宝石</small>'}</button>`:''}`;{const eb=document.getElementById('eliteBtn');if(eb)eb.onclick=e=>{e.stopPropagation();toggleElite68();};}{const ln=el.querySelector('.line');el.classList.toggle('trunc',!!ln&&ln.scrollHeight>ln.clientHeight+1);}el.onclick=()=>{if(S.phase!=='plan')return;sfx('tick');showEnemyInfo68(E);};return;}
+  if(!p){const E=enemy(S.round);el.className='';el.innerHTML=`<div class="pic">${buddyHTML(E.spr,raceOf(E)?34:40)}${raceOf(E)?`<span class="racetag">${RACE68[raceOf(E)].nm}</span>`:''}</div><div class="who"><span class="name">${S.phase==='plan'?'次の敵':'いまの敵'} ${E.name}${S.phase==='plan'?'<small class="enmore">押すと詳しく</small>':''}</span><span class="line"><b class="enst">HP${E.hp}・攻撃${E.atk}／${E.int}秒</b> ${tgtTxt74(E)?`<b class="tgt74">${tgtTxt74(E)}</b> `:''}${raceLineHTML(E)}${shortTrait68(E.trait)}</span></div>${eliteOk68()?`<button class="elbtn${S.eliteOn===S.round?' on':''}" id="eliteBtn">${S.eliteOn===S.round?'精鋭をやめる':'精鋭に挑む<small>勝てば宝石</small>'}</button>`:''}`;{const eb=document.getElementById('eliteBtn');if(eb)eb.onclick=e=>{e.stopPropagation();toggleElite68();};}{const ln=el.querySelector('.line');el.classList.toggle('trunc',!!ln&&ln.scrollHeight>ln.clientHeight+1);}el.onclick=()=>{if(S.phase!=='plan')return;sfx('tick');showEnemyInfo68(E);};return;}
   const d=ITEMS[p.type];let line=itemLine(p.type,p.star);
   if(p.type==='anvil'){const n=anvilPairs(l).length;line+=n?`。いま <b>${n}通り</b> 錬成できる。右の「錬成」を押そう`:'。<b>違う種類・同じ★</b>の武器を2つ持つと使える';}
   else if(d.kind==='passive'){const t=passiveTargets(l);if(d.adj)line+=l.a==='bench'?'':t.length?`。いま <b>${t.map(n=>ITEMS[getP(n).type].name).join('・')}</b> に効いている`:'。効く物の上下左右に置こう';}
@@ -3133,6 +3142,7 @@ function guide(){
   const shopIdx=t=>S.shop.findIndex(o=>o&&o.type===t);
   const beltEmpty=S.belt.open[1]&&!getP({a:'belt',i:1});
   if(S.pick!=null&&S.shop[S.pick]){txt=`数字は強さの目安。空きマスをタップで買う`;target=null;}
+  else if(!/hp1=1/.test(location.search)&&!S.sel&&chNow70()<=3&&(()=>{const heal=a=>boardLocs().filter(l=>l.a===a&&usable(l)).some(l=>{const q=getP(l);return q&&ITEMS[q.type].kind==='heal';});return heal('B')&&!heal('A');})()){txt=`<b>薬</b>は持ち主しか治さない。よく狙われる<b>前の勇者</b>の鞄に移そう`;const l=boardLocs().find(l=>l.a==='B'&&getP(l)&&ITEMS[getP(l).type].kind==='heal');target=l?cellEl(l):null;}
   else if(selP){
     if(selP.type==='anvil'){txt=anvilPairs(S.sel).length?`上の「<b>錬成</b>」を押すと、武器2つを1つにできる`:`違う種類・同じ★の武器が2つあると「錬成」できる`;}
     else if(ITEMS[selP.type].adj&&ITEMS[selP.type].adj!=='belt'&&weaponLocs.length&&S.sel.a==='bench'){txt=`<b>${ITEMS[selP.type].name}</b>は効く物の<b>上下左右</b>に置こう`;const n=weaponLocs.flatMap(neighbors).find(l=>!getP(l));target=n?cellEl(n):null;}
