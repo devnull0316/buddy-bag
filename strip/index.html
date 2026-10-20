@@ -85,7 +85,7 @@ button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 #battleBar:has(#bAssault:not([hidden])) #bSpeed,#battleBar:has(#bAssault:not([hidden])) #bSkip{flex:0 0 49px;padding:2px;font-size:12px}#battleBar .rally{min-width:0;white-space:nowrap}#battleBar .rally small{white-space:normal}
 .facts{margin:6px 0;padding:5px 8px;border:1px solid var(--edge);background:rgba(0,0,0,.18);text-align:left}.facts p{margin:2px 0;font-size:13px;line-height:1.45}.facts b{color:#ffe07a;font-weight:400}.facts .sub{font-size:11px}
 .hint2{background:rgba(224,96,58,.12);border:1px solid #6a3020;padding:5px 8px;font-size:13px;line-height:1.5}.hint2 b{color:#ffd8a0;font-weight:400}.hint2 small{color:var(--sub)}
-#hInt{font-size:11px;color:#c9b48a;margin-left:2px;align-self:flex-end;margin-bottom:2px}
+#hInt{display:none;font-size:11px;color:#c9b48a;margin-left:2px;align-self:flex-end;margin-bottom:2px}
 #hRound .mlab{background:#5a4320;color:#ffd34a;padding:0 4px;margin-right:4px;font-size:12px}
 #guide b{color:#a33a10;font-weight:400}
 #stage{display:none;position:relative;background:#1c1612;border:2px solid var(--edge);overflow:hidden}
@@ -270,7 +270,7 @@ body{font-variant-emoji:text}
 .btn:active{transform:translateY(2px);box-shadow:none}
 .btn.small{flex:none;font-size:12px;padding:0 8px}
 #board,#bench,#shop,#bar{touch-action:none}
-#bUndo{padding:0;width:26px;font-size:15px}
+#bUndo{padding:0;width:40px;font-size:17px}
 #planBar .btn.small{padding:0 5px}
 #bFight{white-space:nowrap;flex:1 1 auto;min-width:0;padding:0 4px}
 @media (max-width:389px){#bench .cell{--cell:36px;width:36px;height:36px}#bar{gap:4px}#bFight{font-size:15px}}
@@ -451,6 +451,10 @@ body.run.battle #info{display:flex}
 body.run.battle #guide{display:flex;visibility:hidden}
 body.run.battle #shop{display:grid!important;opacity:.38;filter:grayscale(.6);pointer-events:none}
 body.run.battle #info{pointer-events:none}
+.belt70{height:10px}
+.apt{display:none!important}
+.newf70{font:16px/1.5 var(--f-dot);background:rgba(0,0,0,.25);border-left:4px solid var(--brass);padding:6px 10px}
+.fit70{display:inline-block;margin-left:6px;padding:0 5px;font:11px var(--f-dot);font-style:normal;color:#1d1611;background:#9fd35a;vertical-align:2px}
 body.run.battle:not(.late) #stage::after{right:auto;left:6px}
 /* 窓は帯の下から出す。帯はいつも見えたまま（勝ったあと歩いていく所も見える） */
 body.run #modal{top:var(--stripB,0px)}
@@ -728,7 +732,7 @@ const PRICE={1:3,2:5,3:8};
 const APTV={S:1.4,A:1.2,B:1.0,C:0.8};
 const HORDER=['knight','mage','archer'];
 function aptOf(d,hero){return d.apt?d.apt[HORDER.indexOf(hero)]:null;}
-function aptHTML(k){const d=ITEMS[k];if(!d.apt)return'';return '適性'+HORDER.map(h=>{const a=aptOf(d,h);return `<span class="apt" style="background:${TAG[HEROES[h].tag].color}">${HEROES[h].name[0]}${a}</span>`;}).join('');}
+function aptHTML(k){return '';const d=ITEMS[k];if(!d.apt)return'';return '適性'+HORDER.map(h=>{const a=aptOf(d,h);return `<span class="apt" style="background:${TAG[HEROES[h].tag].color}">${HEROES[h].name[0]}${a}</span>`;}).join('');}
 const RARN={1:'普通',2:'珍しい',3:'伝説'};
 const KIND_TXT={dmg:'ダメージ',burn:'やけど',shield:'バリア',heal:'回復',once:'ダメージ',ignite:'着火',detonate:'毒爆発',bash:'盾殴り'};
 const STAR=[0,1,1.8,3.2];
@@ -786,8 +790,14 @@ const SHOP_REGIONAL={
 SHOP_REGIONAL.castle=['spring','herald','tinder','clapper','gearshield','chainbolt','demonsword','darktome','darkshield','bonecharm','executioner','katana','meteorstaff','thunderrod','claymore','ironwall','elixir','lifebloom','mirrorshield','starbow'];
 const SHOP_CARRY={north:['iceshard','istaff','frostward','frostbow','mirrorshield'],volcano:['lavahammer','fireshield','sulfur','eruptbow','firebrand'],frontier:['hdagger','bandage','firstshield','axe','anvil'],central:['gspear','coins','salve','emberguard','chainmail'],swamp:['blowpipe','fangspear','poison','scythe','venomherb'],mine:['pickaxe','axe','powder','bomb','fuse']};
 function shopGroups(){const rg=regionOf(),prev=REGION_ORDER[REGION_ORDER.indexOf(rg)-1];
+ if(Object.keys(SHELF70).length){/* r70：店は「共通の品」＋「今の地域と1つ前の地域で開いた品」だけ。後半に候補が増えすぎないように */if(!Object.keys(SHELF70_AT).length)shelf70Build();const open=Object.keys(ITEMS).filter(k=>shelfOpen70(k)&&!ITEMS[k].recipe&&!ITEMS[k].limited),rgOf=k=>CHAPTERS[SHELF70_AT[k]]?.region,near=new Set([rg,prev].filter(Boolean)),core=new Set(SHOP_COMMON);
+  const local=open.filter(k=>near.has(rgOf(k))),base=open.filter(k=>core.has(k)&&!near.has(rgOf(k)));return{common:base,regional:local,previous:[]};}
  return rg?{common:SHOP_COMMON,regional:SHOP_REGIONAL[rg]||[],previous:SHOP_CARRY[prev]||[]}:{common:Object.keys(ITEMS).filter(k=>!k.startsWith('fx:')&&!ITEMS[k].limited&&!ITEMS[k].recipe),regional:[],previous:[]};}
-const itemChapterOpen=d=>(d.ch||1)<=(S.run?.mode==='story'?S.run.ch:STORY_CHS[STORY_CHS.length-1]);
+// r70 品の棚：章ごとに店・戦利品へ加わる品。ここに無い品は出ない（SHELF70 が空なら今まで通り）
+const SHELF70={"1": ["sword", "dagger", "bow", "staff", "shield", "potion", "bandage", "whet", "tome", "herb", "mace", "buckler"], "2": ["gsword", "firstshield", "powder", "oil", "spiked"], "3": ["axe", "handaxe", "sling", "boomerang", "herbtea"], "4": ["hglass", "ruby", "longbow", "twinblade", "coins", "crossbow"], "5": ["chainmail", "salve", "renewal", "storm", "towershield"], "6": ["spear", "wall", "mercy", "pring", "duelist"], "7": ["prapier", "poison", "blowpipe", "venomherb"], "8": ["venomsac", "scythe", "lifebloom", "flail"], "9": ["fang", "elixir", "regenring"], "10": ["bdagger", "blood", "bomb", "fuse"], "11": ["hdagger", "baxe", "lantern", "warhammer", "grenade"], "12": ["executioner", "ironwall", "thornmail"], "13": ["iceshard", "istaff", "ice", "frostward", "frostbow"], "14": ["frostarmor", "snowglobe", "fhammer", "mirrorshield"], "15": ["wardstone", "thunderrod", "wardbell"], "16": ["orb", "emberguard", "firebrand", "bellows"], "17": ["meteorstaff", "tinder", "sulfur"], "18": ["eruptbow", "ashbag", "feather"], "19": ["cursebell", "darktome", "demonsword", "katana"], "20": ["cursedidol", "bonecharm", "darkshield"], "21": ["claymore", "starbow", "obsidian"]};
+const SHELF70_AT={};function shelf70Build(){for(const [c,ks] of Object.entries(SHELF70))for(const k of ks)if(!(k in SHELF70_AT))SHELF70_AT[k]=+c;}
+const shelfOpen70=k=>{if(!Object.keys(SHELF70).length)return true;if(!Object.keys(SHELF70_AT).length)shelf70Build();return k in SHELF70_AT&&SHELF70_AT[k]<=chNow70();};
+const itemChapterOpen=d=>shelfOpen70(d.type)&&(d.ch||1)<=(S.run?.mode==='story'?S.run.ch:STORY_CHS[STORY_CHS.length-1]);
 function shopPool(){const g=shopGroups(),rg=regionOf();
  return [...new Set([...g.common,...g.regional,...g.previous])].filter(k=>ITEMS[k]&&!ITEMS[k].recipe&&k!=='anvil'&&(ITEMS[k].min||1)<=tierOf(S.round)&&itemChapterOpen(ITEMS[k])&&(!ITEMS[k].limited||ITEMS[k].limited===rg)&&!(k==='coins'&&S.round>runLimit()-3));}
 const SHOP_REASONS={none:'まだ決めていない',merge:'同じ品を合体したい',change:'別の組み方に変えたい',counter:'次の敵に備えたい',care:'守り・回復を増やしたい'};
@@ -863,9 +873,9 @@ const hasMod=k=>!!(S.run&&S.run.mods&&S.run.mods.includes(k));
 const isNormal=()=>!S.run||S.run.mode==='normal';
 const rerollCost=()=>{const n=S.rerollN||0,extra=(hasMod('reroll')?1:0)+(envOf()==='pricy'?1:0);return newRelicRule()?Math.max(0,(n===0?0:n<3?1:2)+extra-(hasRelic('map')&&n<mapLimit65()?1:0)):(n>=2?2:1)+extra-(hasRelic('map')&&n<mapLimit65()?1:0);};
 // 収入：章（本編）と遠征は9G。フリー出撃は8G＋利子（出撃時の所持金5Gごとに+1G、最大+2G）
-const interest=()=>S.run&&(S.run.mode==='story'||S.run.mode==='expedition')?0:Math.min(2,Math.floor((S.goldAtFight||0)/5));
+const interest=()=>0&&S.run&&(S.run.mode==='story'||S.run.mode==='expedition')?0:Math.min(2,Math.floor((S.goldAtFight||0)/5));
 const roundIncome=()=>(S.run&&(S.run.mode==='story'||S.run.mode==='expedition')?(isOperation()&&S.operation?.challenge==='poor'||hasMod('poor')?6:9):(hasMod('poor')?5:8)+interest())+rxParty('gold');
-function specialAllowed(t){const r=S.run||{};if(t==='bagup'&&(hasMod('small')||(r.block||[]).includes('bagup')))return false;if(t==='socket'&&hasMod('thin'))return false;return true;}
+function specialAllowed(t){const r=S.run||{};if(t==='bagup'&&(hasMod('small')||(r.block||[]).includes('bagup')))return false;if(t==='socket'&&(hasMod('thin')||!on70('belt')))return false;return true;}
 function itemPrice(k){const d=ITEMS[k];let c=d.cost||PRICE[d.rar];const pr=S.run&&S.run.price;if(pr){if(pr.heal&&d.kind==='heal')c+=pr.heal;if(pr.weapon&&d.cls==='weapon')c+=pr.weapon;}return Math.max(1,c);}
 function modeKey(run){run=run||S.run;if(!run||run.mode==='normal')return'normal';return run.mode+':'+(run.id||[...(run.mods||[])].sort().join('+'));}
 function modeLabel(run){run=run||S.run;if(!run||run.mode==='normal')return'';if(run.mode==='story')return`${chName(run.ch)} ${CHAPTERS[run.ch].nm}`;if(run.mode==='challenge')return'挑戦：'+CHALLENGES[run.id].nm;if(run.mode==='expedition')return'遠征：'+EXPEDS[run.id].nm;
@@ -989,7 +999,7 @@ function relicHelpHTML(){return '<div class="ophelp"><p>出撃前に三つまで
 function dropHelpHTML(){return '<div class="ophelp"><p>敵は品を落とすことがあります。</p><p>落とした品は戦利品の一枠に並びます。</p><p>ほしい品を一つ選ぼう。</p></div>';}
 function dropHelpOnce(){if(!S.loot?.drop?.item)return'';const pg=loadProg();if(pg.help?.drop)return'';pg.help={...pg.help,drop:1};saveProg(pg);return dropHelpHTML();}
 function relicSummary(ids,inRun=false){if(!inRun)return vesselOn()?vesselSummary65(loadProg()):`持ち込み ${relicSetup51().ids.length}/1`;ids=cleanRelics(ids);const w=relicWeight();return `遺物 ${ids.length}/3・重さ ${w} ／ 敵の強さ +${w*RELIC_RATE}%（HP・攻撃）`;}
-function showRelics(inRun=false,back=showHome){if(!inRun)return vesselOn()?showVessel65(back):showShelf51(back);if(newRelicRule()){S.relicPage="relic";render();return;}if(inRun&&(S.phase!=='plan'||S.inBattle))return;const pg=loadProg();if(!pg.help?.relic){pg.help={...pg.help,relic:1};saveProg(pg);modal(`<h2>遺物の使い方</h2>${relicHelpHTML()}<div class="row2"><button class="btn go" id="relicLearn">遺物を見る</button></div>`);$m('#relicLearn').onclick=()=>showRelics(inRun,back);return;}
+function showRelics(inRun=false,back=showHome){if(!inRun)return showRelicBook70(back);if(newRelicRule()){S.relicPage="relic";render();return;}if(inRun&&(S.phase!=='plan'||S.inBattle))return;const pg=loadProg();if(!pg.help?.relic){pg.help={...pg.help,relic:1};saveProg(pg);modal(`<h2>遺物の使い方</h2>${relicHelpHTML()}<div class="row2"><button class="btn go" id="relicLearn">遺物を見る</button></div>`);$m('#relicLearn').onclick=()=>showRelics(inRun,back);return;}
  const setup=relicSetup(pg),ids=inRun?activeRelics():setup.ids;
  modal(`<h2>${inRun?'今回の遺物':'遺物の棚'}</h2><p>この出撃は以前のルールです。</p><p class="relicsummary">${relicSummary(ids,inRun)}</p><div class="relicslots">${[0,1,2].map(i=>`<span>${ids[i]?`<img src="${relicIcon(ids[i])}" alt="">${RELICS[ids[i]].nm}`:'空き枠'}</span>`).join('')}</div><p class="sub">${inRun?'外すと、次の戦闘から敵の強さも下がります。付け直しは次の出撃です。':'はめなくても出撃できます。飾るだけなら敵の強さは変わりません。'}</p><div class="relicgrid">${Object.entries(RELICS).map(([k,d])=>`<div class="relicrow${pg.relics?.[k]?'':' undiscovered'}" data-shelf="${k}"><img src="${relicIcon(k)}" alt="${pg.relics?.[k]?d.nm:'未入手の遺物'}"><div><b>${d.nm}</b><small>重さ${d.w}・${pg.relics?.[k]?'所持':'未入手：'+relicHint(k)}</small><p>${d.ds}</p>${pg.relics?.[k]?`<div class="row2"><button class="btn" data-relic="${k}" ${!ids.includes(k)&&(inRun||ids.length>=3)?'disabled':''}>${ids.includes(k)?'外す':inRun?'次の出撃で装着':'はめる'}</button>${inRun?'':`<button class="btn" data-rdisplay="${k}">${setup.display===k?'展示を外す':'棚に飾る'}</button>`}</div>`:''}</div></div>`).join('')}</div><p class="sub">精鋭はまれに遺物も落とします。第13章の追加の挑戦は、未所持の遺物を一つ入手できます。</p><div class="row2"><button class="btn go" id="relicBack">${inRun?'準備へ':'もどる'}</button></div>`);
  document.querySelectorAll('[data-relic]').forEach(b=>b.onclick=()=>{const k=b.dataset.relic;if(inRun){if(!hasRelic(k))return;S.relics=activeRelics().filter(x=>x!==k);UNDO=null;recordPlay('relic_remove',{relic:k,relics:activeRelics(),enemyBonus:relicWeight()*RELIC_RATE});render();save();}else{const now=relicSetup();saveRelicSetup(ids.includes(k)?ids.filter(x=>x!==k):[...ids,k],now.display);recordPlay('relic_select',{relics:relicSetup().ids});}showRelics(inRun,back);$m(`[data-relic="${k}"]`)?.scrollIntoView({block:'nearest'});});
@@ -1049,7 +1059,17 @@ const CLSN={blade:'刃',blunt:'鈍器',bow:'弓',magic:'魔法',poison:'毒',ice
 const RACE68={bone:{nm:'骨',weak:'blunt',res:'blade',ds:'骨の体。鈍器で砕ける',beh:'くずれても一度だけ、HP20%で起き上がる'},fly:{nm:'飛ぶ',weak:'bow',res:'blunt',ds:'宙に浮く。弓で落とせる',beh:'刃・鈍器の攻撃を4回に1回よける。弓と魔法は当たる'},soft:{nm:'やわらかい',weak:'fire',res:'blunt',ds:'ぷよぷよの体。炎に弱く、たたいても効きにくい',beh:'25以上の大きな一撃を2割減らす。連打ややけどが有利'},beast:{nm:'獣',weak:'poison',res:'bow',ds:'すばやく矢をよける。毒が回りやすい',beh:'HPが半分を切ると、攻撃が1.5倍速くなる'},dark:{nm:'魔の者',weak:'blade',res:'magic',ds:'魔法に強い。刃で斬ろう',beh:'6秒ごとに魔法の盾（最大HPの4%）を張る'},armor:{nm:'鎧',weak:'magic',res:'bow',ds:'鎧が矢をはじく。魔法は通る',beh:'1発ごとに3ダメージ減らす（貫通する攻撃には効かない）'},bug:{nm:'虫',weak:'ice',res:'fire',ds:'熱に強い。冷やすと弱る'},box:{nm:'宝箱',weak:'boom',res:'poison',ds:'木の箱。爆発で壊れる'}};
 const RACE_SPR={skeleton:'bone',skeleton_b:'bone',skeleton_s:'bone',bat:'fly',eye:'fly',eye_o:'fly',slime:'soft',slime_d:'soft',mushroom:'soft',mushroom_p:'soft',goblin:'beast',goblin_r:'beast',rat:'beast',wizard3:'dark',darkwiz:'dark',demon1:'dark',demon2:'dark',fwarrior:'armor',fireworm:'bug',mimic:'box'};
 const RACE_W=1.4,RACE_R=0.8,RACE_KINDS=['dmg','once','burn','ignite','detonate','poison'];
-function raceOf(e){if(!e)return null;const k=RACE_SPR[String(e.spr||'').replace(/_(vol|dem|cas)$/,'')];return RACE68[k]?k:null;}
+// r70 段階解放：第1章は「買う・置く・合体・隣の支え」だけ。章が進むたびに1つずつ足す
+const UNLOCK70={race:2,special:2,belt:3,sets:3,rally:4,relic:4,elite:5,op:13,stance:14};
+const UNLOCK70_TXT={race:'敵の種族と相性（◎はよく効く、△は効きにくい）',special:'勇者の必殺技（ゲージがたまると自動で出る）',belt:'ベルト（2人で一緒に使う枠）',sets:'系統（同じなかまの品をそろえると強くなる）',rally:'号令「守りを固めよ」（戦闘中に押す）',relic:'遺物（冒険のあいだ効き続ける宝）',elite:'精鋭（強い敵に挑むと宝石がもらえる）',op:'作戦（拠点を選んで攻める）',stance:'構え崩し（二本の武器で敵の構えを崩す）'};
+// 章の始めに、この章から使えるようになったものを1回だけ知らせる
+function newFeature70(){if(!isRun()||S.round!==1||S.run?.mode!=='story')return;if($('modal').style.display==='flex'){setTimeout(newFeature70,500);return;}
+  const c=chNow70(),pg=loadProg(),seen=pg.unl70||{},ks=Object.keys(UNLOCK70).filter(k=>UNLOCK70[k]===c&&!seen[k]);if(!ks.length)return;
+  pg.unl70={...seen,...Object.fromEntries(ks.map(k=>[k,1]))};saveProg(pg);sfx('open');
+  modal(`<h2>新しく使えるようになった</h2>${ks.map(k=>`<p class="newf70">${UNLOCK70_TXT[k]}</p>`).join('')}<div class="row2"><button class="btn go" id="nfOk">わかった</button></div>`);$m('#nfOk').onclick=()=>{closeModal();render();};}
+function chNow70(){if(!S.run){const st=loadProg().story||{};let c=1;while(c<30&&st[storyKey(c)])c++;return c;}if(S.run.mode==='story')return baseCh(S.run.ch);if(S.run.c70)return S.run.c70;const st=loadProg().story||{};let c=1;while(c<30&&st[storyKey(c)])c++;S.run.c70=c;return c;}
+const on70=k=>chNow70()>=(UNLOCK70[k]||1);
+function raceOf(e){if(!e||!on70('race'))return null;const k=RACE_SPR[String(e.spr||'').replace(/_(vol|dem|cas)$/,'')];return RACE68[k]?k:null;}
 function raceMul(d,e,gem){const r=RACE68[raceOf(e)];if(!r||!d||!RACE_KINDS.includes(d.kind))return 1;const t=gem?[...tagsOf(d),gem]:tagsOf(d);return t.includes(r.weak)?RACE_W:t.includes(r.res)?RACE_R:1;}
 function curFoe68(){try{return S.phase==='battle'&&typeof B!=='undefined'&&B&&B.def?B.def:S.heroes?.length&&S.enc?enemy(S.round):null;}catch(e){return null;}}
 // r68 ボスの大技までの時間（ゲージに出す）。{nm,left,total} か null
@@ -1078,7 +1098,7 @@ function showGemOffer68(){const opts=Object.keys(GEM68).sort(()=>Math.random()-.
   modal(`<h2>宝石を手に入れた</h2><p class="sub">精鋭を倒した。どちらか1つを選ぶ。準備のあいだ、攻撃する装備にはめたり外したりできる</p><div class="rw gemrw">${opts.map(g=>`<button class="pk gemopt" data-g="${g}" style="--gc:${GEM68[g].col};--gh:${({fire:0,ice:195,poison:95})[g]||0}deg"><img class="gemimg" src="${ICO('ruby')}" alt=""><span class="nm">${GEM68[g].nm}の宝石</span><span class="ds">${GEM68[g].ds}</span></button>`).join('')}</div>`);
   document.querySelectorAll('#mcard .gemopt').forEach(b=>b.onclick=()=>{S.gemOwn=[...(S.gemOwn||[]),b.dataset.g];S.gemOffer=0;recordPlay('gem_get',{gem:b.dataset.g});sfx('buy');closeModal();save();nextRound();});}
 // 精鋭：物語の章で1回だけ、ボス以外の戦いを強くできる。勝つと宝石
-function eliteOk68(){const r=S.round,e=S.enc&&S.enc[r];return S.run?.mode==='story'&&baseCh(S.run.ch)>=3&&!hasMod('elite')&&!isOperation()&&S.phase==='plan'&&e&&!e.boss&&!e.mission&&r<runLimit()&&(!S.eliteDone||S.eliteOn===r);}
+function eliteOk68(){const r=S.round,e=S.enc&&S.enc[r];return S.run?.mode==='story'&&on70('elite')&&!hasMod('elite')&&!isOperation()&&S.phase==='plan'&&e&&!e.boss&&!e.mission&&r<runLimit()&&(!S.eliteDone||S.eliteOn===r);}
 function toggleElite68(){const e=S.enc[S.round];if(!eliteOk68())return;if(S.eliteOn===S.round){delete e.elite;S.eliteOn=null;S.eliteDone=0;toast('精鋭をやめた');}else{e.elite=1;S.eliteOn=S.round;S.eliteDone=1;toast('この戦いを精鋭にした（HP+20%・攻撃+15%）。勝てば宝石');}sfx('tick');render();save();}
 // r68：ボス以外の敵に種族の行動。第1〜3章は付けない（覚えることを増やさない）
 function beh68(en,tp){const bs=en&&en.boss!==undefined?en.boss:tp.boss;if(window.__noBeh68||(en&&en.trait)||bs)return null;if(S.run?.mode==='story'&&baseCh(S.run.ch)<4)return null;const k=raceOf({spr:en&&en.spr||tp.spr});return RACE68[k]?.beh?k:null;}
@@ -1104,7 +1124,7 @@ const SETTXT={blade:['刃のダメージ+8%','刃+16%・出血+2','刃+25%・出
  magic:['魔法の必殺ゲージ+1','ゲージ+2・魔法10%速い','ゲージ+3・魔法20%速い'],poison:['毒+20%','毒+40%','毒+60%'],ice:['凍結+20%','凍結+40%','凍結+60%・凍結中の敵に+15%'],
  fire:['やけど+20%','やけど+40%・5秒ごとに熱+1','やけど+60%・5秒ごとに熱+2'],boom:['爆発+25%','爆発+50%','爆発+80%・爆発で脆弱+5'],guard:['盾+15%','盾+30%・開幕バリア+15','盾+45%・開幕バリア+15・受けると敵へ3'],care:['回復+15%','回復+30%・開幕に再生+1','回復+45%・開幕に再生+2']};
 let SETC={key:'',n:{}};
-function setCounts(){const locs=boardLocs().filter(l=>usable(l)&&getP(l)),key=locs.map(l=>lkey(l)+getP(l).type).join();if(SETC.key===key)return SETC.n;const n={};
+function setCounts(){if(!on70('sets'))return {};const locs=boardLocs().filter(l=>usable(l)&&getP(l)),key=locs.map(l=>lkey(l)+getP(l).type).join();if(SETC.key===key)return SETC.n;const n={};
  for(const l of locs){const p=getP(l),d=ITEMS[p.type];if(!d)continue;const k=neighbors(l).some(q=>getP(q)?.type==='prism')?2:1;for(const t of tagsOf(d))n[t]=(n[t]||0)+k;}
  SETC={key,n};return n;}
 // テスト用：window.__noSet66 で系統のボーナスを止める（遺物など、ほかの効果だけを数字で確かめるため）
@@ -1170,7 +1190,7 @@ function nearRecipes68(){if(!S.heroes?.length)return[];const own=allLocs().map(g
 function shortTrait68(t){t=String(t||'');const i=t.indexOf('。');return i>=0&&i<t.length-1?t.slice(0,i+1):t;}
 // r69：系統は効いているものだけ帯に出す（数の一覧は「詳しく」で）
 function setOnHTML68(){const n=setCounts(),ks=Object.keys(n).filter(k=>setTier(k)).sort((a,b)=>n[b]-n[a]);return ks.length?ks.map(k=>`<span class="setc on">${CLSN[k]}${n[k]}</span>`).join(' '):'';}
-function renderSetStrip(){const el=$('setStrip');if(!el)return;const on=S.phase==='plan'&&!S.inBattle&&S.heroes?.length&&!(S.relicPage==='relic');if(!on){el.hidden=true;return;}
+function renderSetStrip(){const el=$('setStrip');if(!el)return;const on=on70('sets')&&S.phase==='plan'&&!S.inBattle&&S.heroes?.length&&!(S.relicPage==='relic');if(!on){el.hidden=true;return;}
  const fs=findRecipes(),n=setCounts(),tot=Object.values(n).reduce((a,b)=>a+b,0);if(!fs.length&&(tot<2||S.run?.mode==='story'&&baseCh(S.run.ch)<2)){el.hidden=true;return;}el.hidden=false;
  const nr=fs.length?[]:nearRecipes68();el.innerHTML=fs.length?`<b class="recipeon">覚醒できる：${ITEMS[fs[0].r.out].name} ▶︎</b>`:nr.length?`<b class="recipenear">あと1品で覚醒：${ITEMS[nr[0].miss].name}を隣に → ${ITEMS[nr[0].r.out].name}</b><small>　▶︎</small>`:setOnHTML68()?`系統 ${setOnHTML68()}<small>　▶︎ 詳しく</small>`:`<small>系統・覚醒　▶︎ 詳しく</small>`;el.onclick=()=>{sfx('tick');showRecipes66();};}
 
@@ -1205,7 +1225,7 @@ const RX={
  bspd:{c:'y',sc:'party',base:4,cap:25,t:v=>`ベルトの装備が${v}%速く動く`}};
 const RX_SIZE=['','小','中','大'],RX_SELL=[0,2,4,7],RLX_MAX=60;
 // テスト用：?legacyRelic=1 や進行の noVessel65 では、以前の「持ち込み1個＋途中の三択」のまま（古い途中の出撃もこの仕組みで続く）
-function vesselOn(pg=loadProg()){try{if(/legacyRelic=1/.test(location.search))return false;}catch(e){}return !pg.noVessel65;}
+function vesselOn(pg=loadProg()){return false;try{if(/legacyRelic=1/.test(location.search))return false;}catch(e){}return !pg.noVessel65;}
 const vesselSlotsOpen=(h,lv)=>VESSEL_LV.filter(x=>lv>=x).length;
 function rlxAll(pg=loadProg()){const gone=pg.rlxGone||{};return Object.entries(pg.rlx||{}).filter(([id,r])=>!gone[id]&&r&&RCOL[r.c]&&Array.isArray(r.e)).map(([id,r])=>({id,...r}));}
 const rlxLocked=(id,pg=loadProg())=>((Number(pg.rlxLock?.[id])||0)%2)===1;
@@ -1257,12 +1277,15 @@ function rlxLock(id,on){const pg=loadProg(),prev=Number(pg.rlxLock?.[id])||0,t=M
 function rlxPendingHTML(){const pg=loadProg(),c=rlxPendingList(pg);if(!c.length)return '';const full=rlxAll(pg).length>=RLX_MAX;
  return `<div class="rlxdrop" id="rlxDrop"><b class="rlxttl">遺物を1つ選ぶ</b><small class="sub">勇者の同じ色の枠にはめると効きます</small>${full?`<p class="sub">持てる数（${RLX_MAX}）がいっぱい。遺物の画面で売ると受け取れます。</p>`:''}<div class="rlxcands">${c.map((r,i)=>`<button class="rlxcard rc-${r.c} rz-${r.z}" data-rlx="${i}" ${full?'disabled':''}><span class="rlxgem"><img src="${rlxIcon(r)}" alt=""></span><b>${rlxName(r)}</b><small class="rlxpips">${rlxPips(r.z)}　${({r:'攻め',b:'守り',y:'技'})[r.c]}</small>${rlxEffHTML(r)}</button>`).join('')}</div><button class="btn" data-rlx="-1">受け取らない</button></div>`;}
 function bindRlxDrop(after){document.querySelectorAll('#mcard [data-rlx]').forEach(b=>b.onclick=()=>{const i=+b.dataset.rlx;if(!rlxTake(i))return;sfx(i>=0?'buy':'tick');const el=$m('#rlxDrop');if(el)el.outerHTML=i>=0?'<p class="sub rlxgot">遺物を受け取った。作戦室の「遺物」で勇者にはめよう。</p>':'';if(after)after();});}
-function relicDrop65HTML(){if(!S.vessel)return '';rlxOfferMake();setTimeout(()=>bindRlxDrop(),0);return rlxPendingHTML();}
+function relicDrop65HTML(){return '';rlxOfferMake();setTimeout(()=>bindRlxDrop(),0);return rlxPendingHTML();}
 // 出撃中の「遺物」タブ
 function vesselRunPageHTML(){const u=activeRelics(),parts=(S.heroes||[]).map(h=>{const e=Object.entries(S.rlx?.[h]||{}).filter(([k,v])=>v>0&&RX[k]).map(([k])=>RX[k].t(RX[k].sc==='party'?rxParty(k):rxv(h,k)));return `<div class="relicrow"><div><b>${HEROES[h].name}</b><p>${e.length?e.join('<br>'):'ランダムの遺物なし'}</p></div></div>`;}).join('');
  return `<p class="sub">出撃した2人の遺物が効いています。付け替えは作戦室で。</p>${u.map(k=>`<div class="relicrow"><img src="${relicIcon(k)}" alt=""><div><b>${RELICS[k].nm}</b><p>${relicDescription(k)}</p>${relicRankHTML(k)}<small>${relicProgress63(k)}</small></div></div>`).join('')}${parts}`;}
 function vesselSummary65(pg,heroes){const v=vesselGet(pg),hs=(heroes&&heroes.length?heroes:Object.keys(VESSEL_COL));const n=hs.reduce((a,h)=>a+v[h].slice(0,vesselSlotsOpen(h,heroLv(h,pg))).filter(Boolean).length,0),cap=hs.reduce((a,h)=>a+vesselSlotsOpen(h,heroLv(h,pg)),0);return `遺物 ${n}/${cap}（${heroes&&heroes.length===2?'選んだ2人':'全員'}の枠）`;}
 // 作戦室の「遺物」：勇者ごとの枠と、持っている遺物
+// r70 遺物の図鑑：見つけた遺物と効果。遺物は持ち込まず、章の途中で拾って使う
+function showRelicBook70(back=showHome){const pg=loadProg(),seen=pg.relicBook70||{};const ks=KEEP70;const n=ks.filter(k=>seen[k]||pg.relics?.[k]).length;
+  modal(`<h2>遺物の図鑑</h2><p class="sub">遺物は、章の途中で拾うとその章のあいだずっと効く宝です。第${UNLOCK70.relic}章から、1戦目と真ん中の戦いに勝つと3つから1つ選べます。</p><p class="sub">見つけた遺物 ${n}/${ks.length}</p><div class="relicgrid">${ks.map(k=>{const got=seen[k]||pg.relics?.[k];return `<div class="relicrow${got?'':' undiscovered'}"><img src="${relicIcon(k)}" alt=""><div><b>${got?RELICS[k].nm:'？？？'}</b><p>${got?relicDescription(k):'まだ見つけていない'}</p></div></div>`;}).join('')}</div><div class="row2"><button class="btn go" id="rbBack">もどる</button></div>`);$m('#rbBack').onclick=()=>back();}
 function showVessel65(back=showHome,sel=null,filter='all'){reconcileChapterRelics();vesselMigrate();const pg=loadProg(),v=vesselGet(pg),first=!pg.help?.vessel65;if(first){pg.help={...pg.help,vessel65:1};saveProg(pg);}
  const pend=rlxPendingList(pg).length;
  const slotHTML=(h,i)=>{const lv=heroLv(h,pg),open=i<vesselSlotsOpen(h,lv),c=VESSEL_COL[h][i],id=v[h][i],on=sel&&sel.h===h&&sel.i===i;if(!open)return `<button class="vslot locked" disabled style="border-color:${RCOL[c].css}"><small>Lv${VESSEL_LV[i]}</small></button>`;const L=id?relicLabel65(id,pg):null;return `<button class="vslot${on?' on':''}" data-vh="${h}" data-vi="${i}" style="border-color:${RCOL[c].css}" aria-label="${HEROES[h].name}の${i+1}枠目（${RCOL[c].nm}）">${L?`<img src="${L.icon}" alt="">`:`<small>${RCOL[c].nm}</small>`}</button>`;};
@@ -1292,7 +1315,8 @@ function showRelicDetail65(id,back){const pg=loadProg(),L=relicLabel65(id,pg,tru
  if($m('#dOff'))$m('#dOff').onclick=()=>{const v2=vesselGet();for(const h of Object.keys(v2))v2[h]=v2[h].map(q=>q===id?null:q);vesselSave(v2);back();};
  if($m('#dLock'))$m('#dLock').onclick=()=>{rlxLock(rid,!lk);showRelicDetail65(id,back);};
  if($m('#dSell'))$m('#dSell').onclick=()=>{if(rlxSell(rid)){sfx('buy');toast('報奨金 +'+RX_SELL[pg.rlx[rid].z]);back();}};}
-function relicTick(k,v){if(!B)return;B.rec.relic=B.rec.relic||{};B.rec.relic[k]=(B.rec.relic[k]||0)+v;relicFx(k,v);}
+const RPULSE70={};
+function relicTick(k,v){if(!B)return;RPULSE70[k]=performance.now();B.rec.relic=B.rec.relic||{};B.rec.relic[k]=(B.rec.relic[k]||0)+v;relicFx(k,v);}
 // 遺物が効いたことを画面の端に短く出す（Slay the Spire・Balatro の発動表示）。結果へ飛ばしたときは出さない。
 // 同じ遺物は1.2秒以内ならまとめて数字を足す。同時に出すのは3つまで。
 const RFX={items:new Map(),queue:[],seen:new Map()};
@@ -1337,10 +1361,13 @@ const relicWinChapters63=(k,pg=loadProg())=>STORY_CHS.filter(ch=>pg.relicWins63?
 // 育成は固有の遺物だけ。ランダム遺物はこの表を参照しない。
 const RELIC_RANK_MULT=[1,1.1,1.25,1.4],RELIC_RANK_NAME=['','銅','銀','金'];
 const relicRankMult=r=>RELIC_RANK_MULT[Math.max(0,Math.min(3,r|0))];
-function relicRank(k,pg=loadProg()){const n=relicWinChapters63(k,pg).length;return n>=5?3:n>=3?2:n>=1?1:0;}
+function relicRank(k,pg=loadProg()){return 0;const n=relicWinChapters63(k,pg).length;return n>=5?3:n>=3?2:n>=1?1:0;}
 const relicGrows=k=>!!RELICS[k];
-function runRelicRank65(k){S.relicRank=S.relicRank||{};return S.relicRank[k]??(S.relicRank[k]=relicRank(k));}
-const rv=(k,base)=>base*relicRankMult(runRelicRank65(k));
+function runRelicRank65(k){return 0;S.relicRank=S.relicRank||{};return S.relicRank[k]??(S.relicRank[k]=relicRank(k));}
+const KEEP70=['bombkit','smith','map','hourglass','ember','venom','frost','rally'];
+const BOOST70={ember:2,venom:3,frost:2,hourglass:1.5};
+const DESC70={bombkit:'出撃のはじめに爆弾を1個もらう',smith:'合体するたびに+1G（1章で2回まで）',map:'店の更新の最初の2回が1G安い',hourglass:'戦闘の最初の8秒、全部の装備が30%速い',ember:'やけど中の敵に、会心（大きな一撃）が出やすい（+24%）',venom:'各戦闘の最初の命中で、敵に毒+9',frost:'各戦闘の最初の命中で、敵に凍結+50',rally:'守りの号令を使うと、敵に出血+35'};
+const rv=(k,base)=>base*relicRankMult(runRelicRank65(k))*(BOOST70[k]||1);
 function fixRelicRanks(){const pg=loadProg();S.relicRank=Object.fromEntries(activeRelics().map(k=>[k,relicRank(k,pg)]));}
 const fmt65=v=>String(Math.round(v*100)/100);
 const smithLimit65=()=>[2,3,3,4][runRelicRank65('smith')];
@@ -1389,7 +1416,7 @@ const levelPerk=(h,lv)=>{const m=levelStats(lv).m;return h==='knight'?`開幕バ
 const runLv=h=>Math.max(1,Math.min(HLV_MAX,S.hlvRun?.[h]||heroLv(h)));
 const REC_LEVELS=[1,3,5,6,8,10,11,13,15,16,18,20,21,23,25,26,28,29,31,32,34,35,36,38,39,41,42,44,45,47,48];
 const recLv=n=>isSide(n)?Math.min(HLV_MAX,(REC_LEVELS[baseCh(n)-1]||HLV_MAX)+1):REC_LEVELS[n-1]||HLV_MAX;
-function recommendationHTML(n,heroes=[],pg=loadProg()){const rec=recLv(n),levels=heroes.map(h=>heroLv(h,pg)),ready=levels.length?levels.every(l=>l>=rec):HORDER.filter(h=>heroLv(h,pg)>=rec).length>=2;return `<span class="lvguide ${ready?'lvready':'lvshort'}">推奨Lv${rec}${levels.length?` ／ ${levels.length===2?'選んだ2人':'選んだ勇者'} ${levels.join('・')}`:''}・${ready?'到達':'レベル不足'}</span>${levels.length&&!ready?'<small class="sub">苦戦したら、作戦室の訓練で強くできる。</small>':''}`;}
+function recommendationHTML(n,heroes=[],pg=loadProg()){const rec=recLv(n),levels=heroes.map(h=>heroLv(h,pg)),ready=levels.length?levels.every(l=>l>=rec):HORDER.filter(h=>heroLv(h,pg)>=rec).length>=2;return `<span class="lvguide ${ready?'lvready':'lvshort'}">推奨Lv${rec}${levels.length?` ／ ${levels.length===2?'選んだ2人':'選んだ勇者'} ${levels.join('・')}`:''}・${ready?'到達':'少し手ごわい'}</span>${levels.length&&!ready?'<small class="sub">苦戦したら、作戦室の訓練で強くできる。</small>':''}`;}
 function addCoins(n,why){if(!(n>0))return;const pg=loadProg();pg.coinE=coinE(pg)+n;saveProg(pg);S.coinGain=(S.coinGain||0)+n;recordPlay('coins',{n,why,total:rewardCoins(pg)});}
 // 遺物の枠：第4章・第8章のクリアで1つずつ増える
 const kingLevel=(pg=loadProg())=>1+(pg.story?.c4?1:0)+(pg.story?.c8?1:0);
@@ -1406,13 +1433,13 @@ const trainingCost=(h,lv,pg=loadProg())=>Math.ceil(trainCost(lv)*(lv<catchUpLeve
 function trainingQuote(h,pg=loadProg(),target=heroLv(h,pg)+1){const from=heroLv(h,pg),goal=Math.min(HLV_MAX,target);let to=from,cost=0;while(to<goal){const fee=trainingCost(h,to,pg);if(cost+fee>rewardCoins(pg))break;cost+=fee;to++;}return{from,to,cost};}
 function trainHero(h,from,to){if(!HORDER.includes(h))return null;const pg=loadProg();if(heroLv(h,pg)!==from||to<=from)return null;const q=trainingQuote(h,pg,to);if(q.to!==to)return null;pg.coinS=coinS(pg)+q.cost;pg.hlv={...pg.hlv,[h]:to};pg.train59={...pg.train59,spent:(Number(pg.train59?.spent)||0)+q.cost,[h]:(Number(pg.train59?.[h])||0)+to-from};saveProg(pg);sfx('rare');recordPlay('train',{hero:h,from,level:to,cost:q.cost,catchUpTo:catchUpLevel(pg)});return{hero:h,...q};}
 function awardXP(win){if(!newRelicRule()||!win||(S.xpRounds||[]).includes(S.round))return;S.xpRounds=[...(S.xpRounds||[]),S.round];addCoins(winReward(),'win');}
-const relicCapacity=()=>S.vessel?Math.max(1,S.relicCap||S.relics?.length||1):newRelicRule()?Math.max(1,Math.min(3,S.kingLevel||1)):3;
+const relicCapacity=()=>3||S.vessel?Math.max(1,S.relicCap||S.relics?.length||1):newRelicRule()?Math.max(1,Math.min(3,S.kingLevel||1)):3;
 function relicSetup51(pg=loadProg()){const s=pg.relicSetup51||{};return {ids:cleanRelics(s.ids).filter(k=>pg.relics?.[k]).slice(0,1),display:relicSetup({...pg,relicSetup:pg.relicSetup51||pg.relicSetup}).display};}
 function saveRelicSetup51(ids,display){const pg=loadProg();pg.relicSetup51={relicChoice:1,at:Math.max(Date.now(),(pg.relicSetup51?.at||0)+1),ids:cleanRelics(ids).filter(k=>pg.relics?.[k]).slice(0,1),display:typeof display==='string'&&Object.hasOwn(RELICS,display)&&pg.relics?.[display]?display:''};saveProg(pg);}
 function relicHelp51HTML(){return '<div class="ophelp"><p>遺物はバッグの外で働きます。</p><p>集めた中から1個持ち込めます。</p><p>効果は「遺物」で見られます。</p></div>';}
 function relicPickHelpHTML(){return '<div class="ophelp"><p>今の装備に合う遺物を選ぼう。</p><p>途中で最大2回。満杯なら入れ替え。</p><p>選んだ物は今回だけ使えます。</p></div>';}
 function relicBaseDescription65(k){return ({bombkit:'爆弾★1を1個もらう',smith:`合体で+1G／あと${Math.max(0,smithLimit65()-(S.relicUsed?.smith||0))}回`,thorn:'バリアで防ぐとHP6回復／各戦闘1回',mercy:'最初の回復の余りをバリアに／最大6',courier:'荷物を届けると+3G',purse:'戦利品を金にすると+1G',rally:'守りの号令で出血+35',ember:'やけど中の敵に会心率+12ポイント',venom:'最初の命中で毒+3／各戦闘1回',frost:'最初の命中で凍結+25／各戦闘1回',map:'最初の2回の更新が1G安い／各準備',hourglass:'最初の8秒、装備が20%速い',snowbell:'初めて凍結させるとバリア+8',campPot:RELICS.campPot.ds,hunterFang:RELICS.hunterFang.ds,sharedClasp:RELICS.sharedClasp.ds,traderToken:RELICS.traderToken.ds,oldWrap:RELICS.oldWrap.ds,tastingSpoon:RELICS.tastingSpoon.ds})[k]||RELICS[k]?.ds||'';}
-function relicDescription(k){const r=relicRank(k),m=relicRankMult(r),n=v=>fmt65(v*m),ceil=v=>Math.ceil(v*m-1e-9);let text=relicBaseDescription65(k);
+function relicDescription(k){if(DESC70[k])return DESC70[k];const r=relicRank(k),m=relicRankMult(r),n=v=>fmt65(v*m),ceil=v=>Math.ceil(v*m-1e-9);let text=relicBaseDescription65(k);
  if(r)text=({bombkit:'爆弾★1を1個もらう（威力'+Math.round(m*100)+'%）',courier:'荷物を届けると+'+ceil(3)+'G',smith:'合体で+1G／出撃中'+[2,3,3,4][r]+'回まで',map:'最初の'+(2+r)+'回の更新が1G安い／各準備',purse:'戦利品を金にすると+'+[1,1,2,2][r]+'G',hourglass:'最初の8秒、装備が'+n(20)+'%速い',traderToken:'更新後、最初の通常品が'+[1,1,2,2][r]+'G安い。各準備1回、最低1G',oldWrap:'合体で次戦の開幕バリア+'+Math.round(6*m)+'。合計'+Math.round(12*m)+'まで。戦うと使い切る',venom:'最初の命中で毒+'+ceil(3)+'／各戦闘1回',frost:'最初の命中で凍結+'+ceil(25)+'／各戦闘1回',mercy:'最初の回復の余りをバリアに／最大'+n(6),thorn:'バリアで防ぐとHP'+n(6)+'回復／各戦闘1回',rally:'守りの号令で出血+'+ceil(35),ember:'やけど中の敵に会心率+'+n(12)+'ポイント',snowbell:'初めて凍結させるとバリア+'+n(8),campPot:RELICS[k]?.ds.replace('+8','+'+n(8)),hunterFang:RELICS[k]?.ds.replace('15%',n(15)+'%'),sharedClasp:RELICS[k]?.ds.replace('15%',n(15)+'%'),tastingSpoon:RELICS[k]?.ds.replace('15%',n(15)+'%'),copperStopper:RELICS[k]?.ds.replace('65%',fmt65((.5+.15*m)*100)+'%'),travelCloak:RELICS[k]?.ds.replace('20%',n(20)+'%'),minerPlugs:RELICS[k]?.ds.replace('+8','+'+n(8)),spareFuse:RELICS[k]?.ds.replace('25%',n(25)+'%'),hearthEmber:RELICS[k]?.ds.replace('12%',n(12)+'%'),birchCharm:RELICS[k]?.ds.replace('10ポイント',n(10)+'ポイント')})[k]||text;
  return text+(k==='oldWrap'?'（今の蓄え'+wrapBarrier()+'）':'');}
 function showShelf51(back=showHome,filter='all'){reconcileChapterRelics();const pg=loadProg();if(!relicUnlocked(pg)){modal('<h2>遺物の棚</h2><p>第1章のクリアで使えるようになります。</p><div class="row2"><button class="btn go" id="relicBack">もどる</button></div>');$m('#relicBack').onclick=back;return;}
@@ -1432,7 +1459,7 @@ function showShelf51(back=showHome,filter='all'){reconcileChapterRelics();const 
  document.querySelectorAll('[data-rdisplay]').forEach(b=>b.onclick=()=>{saveRelicSetup51(setup.ids,setup.display===b.dataset.rdisplay?'':b.dataset.rdisplay);recordPlay('relic_display',{relic:relicSetup51().display});showShelf51(back,filter);});$m('#relicBack').onclick=back;
 }
 function relicTimes(n=runLimit()){if(S.vessel)return [];return [1,n===3?2:Math.ceil((n-1)/2)];}
-function initRelicRun(){const pg=loadProg();S.relicRule=51;S.relicEnabled=relicUnlocked(pg)||(S.run?.mode==='story'&&S.run.ch>=2);S.kingLevel=kingLevel(pg);S.hlvRun=Object.fromEntries((S.heroes||[]).map(h=>[h,heroLv(h,pg)]));S.coinGain=0;S.xpBase=kingXP(pg);S.xpRounds=[];S.vessel=vesselOn(pg);S.rlxOffered=0;S.relics=S.vessel?vesselRun(pg):(S.relicEnabled?relicSetup51(pg).ids:[]);S.relicStart=[...S.relics];S.relicUsed={};S.relicSources=Object.fromEntries(S.relics.map(k=>[k,'持ち込み']));S.relicSeen=[...S.relics];S.relicReceived=!!S.relics.length;S.relicOffers={};S.relicSeed=null;S.relicPage='bag';S.relicLast={};}
+function initRelicRun(){const pg=loadProg();S.relicRule=51;S.relicEnabled=on70('relic');S.kingLevel=kingLevel(pg);S.hlvRun=Object.fromEntries((S.heroes||[]).map(h=>[h,heroLv(h,pg)]));S.coinGain=0;S.xpBase=kingXP(pg);S.xpRounds=[];S.vessel=vesselOn(pg);S.rlxOffered=0;S.relics=[];S.relicStart=[...S.relics];S.relicUsed={};S.relicSources=Object.fromEntries(S.relics.map(k=>[k,'持ち込み']));S.relicSeen=[...S.relics];S.relicReceived=!!S.relics.length;S.relicOffers={};S.relicSeed=null;S.relicPage='bag';S.relicLast={};}
 function relicRandom(){let a=S.relicSeed=(S.relicSeed+0x6D2B79F5)>>>0,t=Math.imul(a^a>>>15,1|a);t^=t+Math.imul(t^t>>>7,61|t);return ((t^t>>>14)>>>0)/4294967296;}
 function initRelicSeed(){let h=2166136261;for(const c of JSON.stringify([51,S.run,S.heroes,S.enc,S.shop]))h=Math.imul(h^c.charCodeAt(0),16777619);S.relicSeed=h>>>0;}
 function bombSpot(){return [{a:'bench',i:0},{a:'bench',i:1},{a:'bench',i:2},...boardLocs()].find(l=>usable(l)&&!getP(l));}
@@ -1444,7 +1471,7 @@ function grantRunRelic(k,source,remove=''){
  if(spot){relicFx('bombkit',1,'爆弾★1を1個受け取った');setP(spot,relicBomb65());S.relicUsed={...S.relicUsed,bombkit:1};}
  if(k==='smith'&&S.relicUsed?.smith===undefined)S.relicUsed={...S.relicUsed,smith:0};UNDO=null;return true;
 }
-function deliveryAhead(){return !!(S.delivery||S.deliveryOffer||(S.run?.mode==='story'&&S.run.ch>=3&&!S.deliveryOffered&&S.round<=(isOperation()?1:2)));}
+function deliveryAhead(){return false&&!!(S.delivery||S.deliveryOffer||(S.run?.mode==='story'&&S.run.ch>=3&&!S.deliveryOffered&&S.round<=(isOperation()?1:2)));}
 function lootAhead(){for(let r=S.round+1;r<runLimit();r++)if(!chestRounds().includes(r))return true;return false;}
 function relicReadiness(k){const updated=relicReadiness63(k);if(updated)return updated;const placed=boardLocs().filter(usable).map(getP).filter(Boolean),all=[...placed,...S.bench.filter(Boolean)],ds=placed.map(p=>ITEMS[p.type]),kind=(...xs)=>ds.some(d=>xs.includes(d.kind));
  const hit=ds.some(d=>['dmg','once','burn','poison','bash','ignite','detonate'].includes(d.kind)),heal=kind('heal'),freeze=ds.some(d=>d.freeze||d.kind==='freeze'),burn=ds.some(d=>d.kind==='burn'||d.burnSelf)||boardLocs().filter(usable).some(l=>{const d=ITEMS[getP(l)?.type];return d&&['dmg','once'].includes(d.kind)&&itemUses(l).some(u=>fireOn(u,d));});
@@ -1452,7 +1479,7 @@ function relicReadiness(k){const updated=relicReadiness63(k);if(updated)return u
  const labels={bombkit:['爆弾を置く空きあり','爆弾の置き場なし'],map:['次の準備から使えます','次の準備なし'],hourglass:['発動する装備あり','発動する装備なし'],smith:['合体できる装備あり','同じ品を2個そろえると使えます'],mercy:['回復装備あり','回復装備なし'],thorn:['バリアを張る手段あり','バリアを張る手段なし'],ember:['やけどと攻撃の装備あり','やけどと攻撃が必要です'],venom:['命中する装備あり','命中する装備なし'],frost:['命中する装備あり','命中する装備なし'],snowbell:['氷の武器あり','氷の武器なし'],courier:['配達中・この先に依頼あり','今回は配達がありません'],purse:['この先に戦利品あり','この先に戦利品なし'],rally:['守りの号令で使えます',''],campPot:['回復装備あり','回復装備なし'],hunterFang:['武器が1個だけのバッグあり','バッグの武器を1個にすると使えます'],sharedClasp:['ベルトに盾・回復装備あり','ベルトに盾か回復装備を置こう'],traderToken:['更新してから買うと使えます','次の準備なし'],oldWrap:['合体できる装備あり','同じ品を2個そろえると使えます'],tastingSpoon:['毒と回復の手段あり','毒を5以上にして回復しよう']};return {ready:!!ready,text:labels[k][ready?0:1]};}
 function relicReadiness63(k){const locs=boardLocs().filter(l=>usable(l)&&getP(l)),ds=locs.map(l=>ITEMS[getP(l).type]),once=ds.some(d=>d.kind==='once');
  const checks={copperStopper:[ds.some(d=>d.kind==='detonate'),'毒爆発の武器あり','毒爆発の武器を買おう'],travelCloak:[locs.some(l=>['shield','heal','bash'].includes(ITEMS[getP(l).type].kind)&&sparseBag63(l)),'空き1マスのバッグに盾・回復あり','バッグを1マス空けて盾か回復を置こう'],minerPlugs:[once,'爆弾・火薬玉あり','爆弾か火薬玉を買おう'],spareFuse:[once,'爆弾・火薬玉あり／盾・回復は10%減','爆弾・火薬玉なし／盾・回復は10%減'],hearthEmber:[locs.some(l=>ITEMS[getP(l).type].cls==='weapon'&&flameNeighbor63(l)),'炎を付ける武器の隣に武器あり','炎を付ける武器の隣に武器を置こう'],birchCharm:[ds.some(d=>d.freeze)&&ds.some(d=>['dmg','once','ignite','detonate','bash'].includes(d.kind)),'凍結と攻撃の手段あり','氷の武器と攻撃する武器を用意しよう']}[k];return checks?{ready:!!checks[0],text:checks[checks[0]?1:2]}:null;}
-function relicCandidates(){const pg=loadProg();let highest=1;while(highest<13&&pg.story?.[storyKey(highest)])highest++;const stage=Math.min(13,Math.max(S.run?.mode==='story'?S.run.ch:1,highest)),base=['bombkit','smith','mercy','thorn','map','hourglass'];let pool=Object.keys(RELICS).filter(k=>!relicHistory([...(S.relicSeen||[]),...activeRelics()]).includes(k)&&(base.includes(k)||({courier:3,purse:3,rally:3,ember:4,venom:5,frost:6,snowbell:13}[k]||(RELICS[k].added?RELICS[k].ch:99))<=stage)&&(k!=='bombkit'||bombSpot())&&(k!=='courier'||deliveryAhead())&&(k!=='purse'||lootAhead()));const out=[],ready=pool.filter(k=>relicReadiness(k).ready);if(ready.length){const k=ready[Math.floor(relicRandom()*ready.length)];out.push(k);pool=pool.filter(x=>x!==k);}while(out.length<3&&pool.length)out.push(pool.splice(Math.floor(relicRandom()*pool.length),1)[0]);for(let i=out.length-1;i>0;i--){const j=Math.floor(relicRandom()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
+function relicCandidates(){const pg=loadProg();let highest=1;while(highest<13&&pg.story?.[storyKey(highest)])highest++;const stage=Math.min(13,Math.max(S.run?.mode==='story'?S.run.ch:1,highest)),base=['bombkit','smith','map','hourglass'];let pool=Object.keys(RELICS).filter(k=>KEEP70.includes(k)&&(k!=='rally'||on70('rally'))&&!relicHistory([...(S.relicSeen||[]),...activeRelics()]).includes(k)&&(base.includes(k)||({courier:3,purse:3,rally:3,ember:4,venom:5,frost:6,snowbell:13}[k]||(RELICS[k].added?RELICS[k].ch:99))<=stage)&&(k!=='bombkit'||bombSpot())&&(k!=='courier'||deliveryAhead())&&(k!=='purse'||lootAhead()));const out=[],ready=pool.filter(k=>relicReadiness(k).ready);if(ready.length){const k=ready[Math.floor(relicRandom()*ready.length)];out.push(k);pool=pool.filter(x=>x!==k);}while(out.length<3&&pool.length)out.push(pool.splice(Math.floor(relicRandom()*pool.length),1)[0]);for(let i=out.length-1;i>0;i--){const j=Math.floor(relicRandom()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
 function maybeOfferRelic(){if(!newRelicRule()||!S.relicEnabled||S.retry||S.round>=runLimit()||!relicTimes().includes(S.round))return false;S.relicOffers=S.relicOffers||{};let o=S.relicOffers[S.round];if(o&&o.status!=='pending')return false;if(!o){if(!S.loot?.claimed)return false;o=S.relicOffers[S.round]={status:'pending',round:S.round,candidates:relicCandidates()};recordPlay('relic_offer',{opportunity:S.round,candidates:o.candidates,capacity:relicCapacity()});}
   // 候補がないときだけ通過。満杯でも入れ替えられる。
   if(!cleanRelics(o.candidates).filter(k=>!relicHistory([...(S.relicSeen||[]),...activeRelics()]).includes(k)).length){o.status='skipped';o.reason='none';recordPlay('relic_pick',{opportunity:S.round,relic:null,skipped:true,auto:true,relics:activeRelics()});saveRaw();return false;}
@@ -1465,11 +1492,12 @@ function showRelicOffer(){
  S.phase='result';const pg=loadProg(),full=activeRelics().length>=relicCapacity(),first=!pg.help?.relicPick51,swapFirst=full&&!pg.help?.relicSwap61;
  if(first||swapFirst){pg.help={...pg.help,relicPick51:1,...(swapFirst?{relicSwap61:1}:{})};saveProg(pg);}
  const chosen=full&&o.candidates.includes(o.replaceCandidate)?o.replaceCandidate:'';
- modal(`<h2>${chosen?'外す遺物を選ぶ':'遺物を1つ選ぶ'}</h2>${swapFirst?relicSwapHelpHTML():first?relicPickHelpHTML():''}<p class="sub">遺物 ${activeRelics().length}/${relicCapacity()}・今回の出撃だけ${full?' ／ 満杯なので入れ替え':''}</p>${chosen?`<div class="relicrow"><img src="${relicIcon(chosen)}" alt=""><div><b>入れる：${RELICS[chosen].nm}</b><p>${relicDescription(chosen)}</p>${relicRankHTML(chosen,pg)}<small>組み方：${relicTip63(chosen)}</small></div></div><p class="sub">外すと、その遺物の効果はなくなります。使用済みの回数は戻りません。</p><div class="relicchoices">${activeRelics().map(k=>`<button class="relicchoice" data-rremove="${k}"><img src="${relicIcon(k)}" alt=""><span><b>外す：${RELICS[k].nm}</b><span>${relicDescription(k)}</span>${relicRankHTML(k,pg)}<small>${S.relicSources?.[k]||'今回入手'}${k==='oldWrap'?'・蓄えも失います':k==='bombkit'?'・もらった爆弾は残ります':''}</small></span></button>`).join('')}</div><div class="row2"><button class="btn" id="relicChoiceBack">三択に戻る</button></div>`:`<div class="relicchoices">${o.candidates.map(k=>`<button class="relicchoice" data-rpick="${k}"><img src="${relicIcon(k)}" alt=""><span><b>${RELICS[k].nm}</b><small>${pg.relics?.[k]?'今回だけ追加':'未所持・今回だけ'}</small><span>${relicDescription(k)}</span>${relicRankHTML(k,pg)}<small>組み方：${relicTip63(k)}</small><small>${relicReadiness(k).text}${full?'・次に外す遺物を選ぶ':''}</small></span></button>`).join('')}</div>${full?`<div class="facts"><b>今の遺物と効果</b>${activeRelics().map(k=>`<p><b>${RELICS[k].nm}</b>：${relicDescription(k)}</p>`).join('')}</div>`:''}`}<div class="row2"><button class="btn" id="relicInspect">バッグを見る</button><button class="btn go" id="relicSkip">選ばず進む</button></div>`);
+ modal(`<h2>${chosen?'外す遺物を選ぶ':'遺物を1つ選ぶ'}</h2><p class="sub">遺物は、この章のあいだずっと効く宝です。3個まで持てます（今 ${activeRelics().length}個）。${full?'満杯なので、入れ替えになります。':''}</p>${chosen?`<div class="relicrow"><img src="${relicIcon(chosen)}" alt=""><div><b>入れる：${RELICS[chosen].nm}</b><p>${relicDescription(chosen)}</p></div></div><p class="sub">外すと、その遺物の効果はなくなります。使用済みの回数は戻りません。</p><div class="relicchoices">${activeRelics().map(k=>`<button class="relicchoice" data-rremove="${k}"><img src="${relicIcon(k)}" alt=""><span><b>外す：${RELICS[k].nm}</b><span>${relicDescription(k)}</span>${k==='oldWrap'?'<small>蓄えも失います</small>':k==='bombkit'?'<small>もらった爆弾は残ります</small>':''}</span></button>`).join('')}</div><div class="row2"><button class="btn" id="relicChoiceBack">三択に戻る</button></div>`:`<div class="relicchoices">${o.candidates.map(k=>`<button class="relicchoice" data-rpick="${k}"><img src="${relicIcon(k)}" alt=""><span><b>${RELICS[k].nm}${relicReadiness(k).ready?'<em class="fit70">今の鞄に合う</em>':''}</b><span>${relicDescription(k)}</span>${full?'<small>選ぶと、外す遺物を選びます</small>':''}</span></button>`).join('')}</div>${full?`<div class="facts"><b>今の遺物と効果</b>${activeRelics().map(k=>`<p><b>${RELICS[k].nm}</b>：${relicDescription(k)}</p>`).join('')}</div>`:''}`}<div class="row2"><button class="btn" id="relicInspect">バッグを見る</button><button class="btn go" id="relicSkip">選ばず進む</button></div>`);
  $('mcard').scrollTop=0;document.querySelectorAll('[data-rpick]').forEach(b=>b.onclick=()=>pickRelic(b.dataset.rpick));document.querySelectorAll('[data-rremove]').forEach(b=>b.onclick=()=>pickRelic(chosen,b.dataset.rremove));
  if($m('#relicChoiceBack'))$m('#relicChoiceBack').onclick=()=>{delete o.replaceCandidate;saveRaw();showRelicOffer();};$m('#relicSkip').onclick=()=>pickRelic('');$m('#relicInspect').onclick=showRelicBag;
 }
 function pickRelic(k,remove=''){
+ if(k){try{const pg=loadProg();pg.relicBook70={...(pg.relicBook70||{}),[k]:1};saveProg(pg);}catch(e){}}
  const o=S.relicOffers?.[S.round];if(o?.status!=='pending'||k&&!o.candidates.includes(k))return false;
  if(k&&activeRelics().length>=relicCapacity()&&!remove){o.replaceCandidate=k;saveRaw();showRelicOffer();return true;}
  if(remove&&(!k||o.replaceCandidate!==k||!activeRelics().includes(remove)))return false;
@@ -1481,7 +1509,7 @@ function pickRelic(k,remove=''){
 function showRelicBag(){modal(`<h2>今のバッグ</h2><p class="sub">確認だけできます。装備は変更できません。</p>${['A','B','belt','bench'].map((a,u)=>`<h3>${u<2?HEROES[S.heroes[u]].name:u===2?'ベルト':'控え'}</h3><div class="inspectgear">${allLocs().filter(l=>l.a===a&&getP(l)).map(l=>{const p=getP(l);return `<div><b>${ITEMS[p.type].name} ★${p.star}</b><p>${itemLine(p.type,p.star)}</p></div>`;}).join('')||'<p>装備なし</p>'}</div>`).join('')}<button class="btn go" id="relicInspectBack">選択に戻る</button>`);$m('#relicInspectBack').onclick=showRelicOffer;}
 function relicEffectText(k,v){if(!(v>0))return '発動なし';return ({thorn:`HPを${Math.round(v)}回復`,mercy:`バリアを${Math.round(v)}張った`,snowbell:`バリアを${Math.round(v)}張った`,venom:`毒を${v}付与`,frost:`凍結を${v}付与`,rally:`出血を${v}付与`,ember:`やけど中の攻撃で会心${v}回`,hourglass:`効果時間${v.toFixed(1)}秒`,campPot:`回復量+${Math.round(v)}`,hunterFang:`直接ダメージ+${Math.round(v)}`,sharedClasp:`盾・回復の効果+${Math.round(v)}`,oldWrap:`開幕バリア+${v}`,tastingSpoon:`回復量+${Math.round(v)}`,copperStopper:`毒を${Math.round(v)}多く残した`,travelCloak:`盾・回復の効果+${Math.round(v)}`,minerPlugs:`バリア+${Math.round(v)}`,spareFuse:`直接ダメージ+${Math.round(v)}`,spareFuseCost:`盾・回復の減少${Math.round(v)}`,hearthEmber:`直接ダメージ+${Math.round(v)}`,birchCharm:`凍結中の会心${v}回`})[k]||'使用済み';}
 function renderRelicPage(){const on=newRelicRule()&&S.relicEnabled&&S.phase==='plan'&&S.relicPage==='relic';document.body.classList.toggle('relicpage',on);const page=$('relicPage');page.hidden=!on;if(!on)return;if(S.vessel){page.innerHTML=vesselRunPageHTML();return;}const next=relicTimes().find(r=>r>=S.round&&!S.relicOffers?.[r]);page.innerHTML=`<p class="sub">遺物 ${activeRelics().length}/${relicCapacity()}<br>途中の三択で入れ替えられます。</p>${Array.from({length:relicCapacity()},(_,i)=>{const k=activeRelics()[i];return k?`<div class="relicrow"><img src="${relicIcon(k)}" alt=""><div><b>${RELICS[k].nm}</b><small>${S.relicSources?.[k]||'今回入手'}</small><p>${relicDescription(k)}</p>${relicRankHTML(k)}<small>${relicReadiness(k).text}</small><p class="sub">組み方：${relicTip63(k)}</p>${k==='courier'&&!deliveryAhead()?'<p>今回は配達がありません</p>':''}${S.relicLast?.round?`<small>前の戦い：${relicEffectText(k,S.relicLast.values?.[k])}${k==='spareFuse'&&S.relicLast.values?.spareFuseCost>0?'／'+relicEffectText('spareFuseCost',S.relicLast.values.spareFuseCost):''}</small>`:''}</div></div>`:`<div class="relicrow"><p>空き枠<br>${next?`次は第${next}戦に勝つと選べます`:'今回はここまで'}</p></div>`;}).join('')}${relicCapacity()<3?`<p class="sub">第${relicCapacity()===1?4:8}章のクリアで枠が1個増えます。</p>`:''}`;}
-function renderRelicStrip51(){if(!newRelicRule()){legacyRenderRelicStrip();renderRelicPage();return;}const el=$('relicStrip');el.hidden=!S.relicEnabled||S.phase!=='plan';if(el.hidden){renderRelicPage();return;}el.innerHTML=`<button class="btn ${S.relicPage!=='relic'?'on':''}" id="tabBag" aria-pressed="${S.relicPage!=='relic'}">バッグ</button><button class="btn ${S.relicPage==='relic'?'on':''}" id="relicOpen" aria-pressed="${S.relicPage==='relic'}">遺物 ${activeRelics().length}/${relicCapacity()}</button><button class="btn" id="prepHelp">遊び方</button>`;$('tabBag').onclick=()=>switchRelicPage('bag');$('relicOpen').onclick=()=>switchRelicPage('relic');$('prepHelp').onclick=()=>showOperationHelp(closeModal);renderRelicPage();}
+function renderRelicStrip51(){if(!newRelicRule()){legacyRenderRelicStrip();renderRelicPage();return;}const el=$('relicStrip');S.relicPage='bag';el.hidden=true;if(el.hidden){renderRelicPage();return;}el.innerHTML=`<button class="btn ${S.relicPage!=='relic'?'on':''}" id="tabBag" aria-pressed="${S.relicPage!=='relic'}">バッグ</button><button class="btn ${S.relicPage==='relic'?'on':''}" id="relicOpen" aria-pressed="${S.relicPage==='relic'}">遺物 ${activeRelics().length}/${relicCapacity()}</button><button class="btn" id="prepHelp">遊び方</button>`;$('tabBag').onclick=()=>switchRelicPage('bag');$('relicOpen').onclick=()=>switchRelicPage('relic');$('prepHelp').onclick=()=>showOperationHelp(closeModal);renderRelicPage();}
 function switchRelicPage(page){if(drag?.moved||S.phase!=='plan')return;S.relicPage=page;renderRelicStrip51();guide();$('pop').style.display=page==='relic'?'none':$('pop').style.display;if(page==='bag')renderPop();}
 
 // 敵タイプごとの表。画像の色違い・章の別名も元のタイプに従う。
@@ -1489,10 +1517,10 @@ const DROPS={1:['herb','potion'],2:['fang','potion'],3:['dagger','bow'],4:['shie
 function dropRandom(){if(!Number.isFinite(S.dropSeed)){let h=2166136261;for(const c of JSON.stringify([S.enc,S.shop,S.heroes]))h=Math.imul(h^c.charCodeAt(0),16777619);S.dropSeed=h>>>0;}let a=S.dropSeed=(S.dropSeed+0x6D2B79F5)>>>0;let t=Math.imul(a^a>>>15,1|a);t^=t+Math.imul(t^t>>>7,61|t);return((t^t>>>14)>>>0)/4294967296;}
 function grantRelic(k,source){const pg=loadProg();if(!RELICS[k]||pg.relics?.[k])return false;pg.relics={...pg.relics,[k]:1};saveProg(pg);recordPlay('relic_acquire',{relic:k,source});return true;}
 function rollDrop(){const d=B.def,out={};if(S.noDrops)return out;
- const final=S.round===runLimit();if(final){const rest=Object.keys(RELICS).filter(k=>!RELICS[k].added&&RELICS[k].ch<=12&&!loadProg().relics?.[k]);const k=S.run?.mode==='story'?CHAPTERS[S.run.ch].relicReward||Object.keys(RELICS).find(k=>RELICS[k].ch===S.run.ch):rest.length?rest[Math.floor(dropRandom()*rest.length)]:null;if(k){out.relic=k;out.fresh=grantRelic(k,'boss');}if(S.run?.mode==='story'){out.chapterRelics=Object.keys(RELICS).filter(k=>RELICS[k].added&&RELICS[k].ch===S.run.ch&&grantRelic(k,'chapter_clear'));if(!out.chapterRelics.length)delete out.chapterRelics;}
+ const final=S.round===runLimit();if(final&&false){/* r70：遺物は章の途中の三択だけ */const rest=Object.keys(RELICS).filter(k=>!RELICS[k].added&&RELICS[k].ch<=12&&!loadProg().relics?.[k]);const k=S.run?.mode==='story'?CHAPTERS[S.run.ch].relicReward||Object.keys(RELICS).find(k=>RELICS[k].ch===S.run.ch):rest.length?rest[Math.floor(dropRandom()*rest.length)]:null;if(k){out.relic=k;out.fresh=grantRelic(k,'boss');}if(S.run?.mode==='story'){out.chapterRelics=Object.keys(RELICS).filter(k=>RELICS[k].added&&RELICS[k].ch===S.run.ch&&grantRelic(k,'chapter_clear'));if(!out.chapterRelics.length)delete out.chapterRelics;}
   if(isOperation()&&S.operation.challenge!=='normal'){const rest=Object.keys(RELICS).filter(k=>!loadProg().relics?.[k]);if(rest.length){out.extra=rest[Math.floor(dropRandom()*rest.length)];grantRelic(out.extra,'operation');}}}
- else{if(d.elite||dropRandom()<.25){if(d.type===13&&dropRandom()<.5){out.gold=3;S.gold+=3;}else{const pool=DROPS[d.type]||[];out.item=pool[Math.floor(dropRandom()*pool.length)];}}
-  if(d.elite&&dropRandom()<.2){const rest=Object.keys(RELICS).filter(k=>!RELICS[k].added&&RELICS[k].ch<=12&&!loadProg().relics?.[k]);if(rest.length){out.relic=rest[Math.floor(dropRandom()*rest.length)];out.fresh=grantRelic(out.relic,'elite');}}}
+ else{if(d.elite||dropRandom()<.25){if(d.type===13&&dropRandom()<.5){out.gold=3;S.gold+=3;}else{const pool=(DROPS[d.type]||[]).filter(shelfOpen70);if(pool.length)out.item=pool[Math.floor(dropRandom()*pool.length)];}}
+  if(false&&d.elite&&dropRandom()<.2){const rest=Object.keys(RELICS).filter(k=>!RELICS[k].added&&RELICS[k].ch<=12&&!loadProg().relics?.[k]);if(rest.length){out.relic=rest[Math.floor(dropRandom()*rest.length)];out.fresh=grantRelic(out.relic,'elite');}}}
  if(Object.keys(out).length)recordPlay('enemy_drop',{enemy:d.name,enemyType:d.type,...out});return out;}
 function lootSummaryHTML(){const d=S.loot?.drop;if(!d)return'';const rows=[];if(d.item)rows.push(`<img src="${ICO(d.item)}" alt="">${ITEMS[d.item].name}（戦利品の候補）`);if(d.gold)rows.push(`<img src="${ICO('coins')}" alt="">${d.gold}Gを受け取った`);if(d.relic)rows.push(`<img src="${relicIcon(d.relic)}" alt="">遺物：${RELICS[d.relic].nm}${d.fresh?'を入手':'（入手済み）'}${newRelicRule()&&S.run?.ch===1&&d.relic==='bombkit'?'。次の出撃から持ち込めます':''}`);for(const k of d.chapterRelics||[])rows.push(`<img src="${relicIcon(k)}" alt="">遺物：${RELICS[k].nm}を入手`);if(d.extra)rows.push(`追加の挑戦：${RELICS[d.extra].nm}を入手`);let help='';if(d.relic&&d.fresh){const pg=loadProg();if(!newRelicRule()&&!pg.help?.relic){pg.help={...pg.help,relic:1};saveProg(pg);help=relicHelpHTML();}}return rows.length?`${help}<div class="dropnotice"><b>敵が落とした品</b>${rows.map(t=>`<p>${t}</p>`).join('')}</div>`:'';}
 function rewardGold(){return 2+(hasRelic('purse')?purseBonus65():0);}
@@ -1518,9 +1546,9 @@ function operationHelpHTML(){return `<div class="ophelp"><p>三つの拠点か�
 function snowHelpHTML(){return `<div class="ophelp"><p>吹雪で6秒ごとに、装備が1秒止まります。</p><p>上の内側 → 下の内側 → ベルトの順。</p><p>例：上のバッグの上段は止まりません。</p></div>`;}
 // r69：遊び方の先の章の項目に「まだ先」の印（読むことはできる）
 function helpFar68(n){try{const st=storyProg().story||{};return st[storyKey(n-1)]?'':'<small class="far">　まだ先</small>';}catch(e){return'';}}
-function basicHelpHTML(){const st=[['sword','買う','お店の品を押して、空いたマスへ。控えの品も押してバッグへ'],['whet','並べる','隣に効く道具がある。同じ品・同じ★を重ねると合体して強くなる'],['skull','敵を見る','次の敵の札の◎の品はよく効く（1.4倍）、△は効きにくい（0.8倍）。この印は店の品にも付く'],['shield','戦う','戦いは自動。号令ボタンで守りと攻めを切り替える。戦いの画面を押すと一時停止']];return `<div class="ophelp steps68" id="basicHelp">${st.map(([ic,t,d],i)=>`<div class="st68"><img src="${ICO(ic)}" alt=""><span><b>${i+1}. ${t}</b><small>${d}</small></span></div>`).join('')}</div>`;}
+function basicHelpHTML(){const st=[['sword','買う','お店の品を押して、空いたマスへ。控えの品も押してバッグへ'],['whet','並べる','隣に効く道具がある。同じ品・同じ★を重ねると合体して強くなる'],['skull','敵を見る',on70('race')?'次の敵の札の◎の品はよく効く（1.4倍）、△は効きにくい（0.8倍）。この印は店の品にも付く':'次の敵の札で、HPと攻撃の強さを見よう'],['shield','戦う',on70('rally')?'戦いは自動。号令ボタンで守りを固める。戦いの画面を押すと一時停止':'戦いは自動。戦いの画面を押すと一時停止']];return `<div class="ophelp steps68" id="basicHelp">${st.map(([ic,t,d],i)=>`<div class="st68"><img src="${ICO(ic)}" alt=""><span><b>${i+1}. ${t}</b><small>${d}</small></span></div>`).join('')}</div>`;}
 function relicSpaceHTML(pg=loadProg()){if(vesselOn(pg))return '<p class="sub relicspace">出撃した2人の、枠にはめた遺物が効きます。</p>';return `<p class="sub relicspace">遺物は${kingLevel(pg)}枠。途中で最大2回選べます。満杯なら入れ替えられます。</p>`;}
-function showOperationHelp(back=closeModal){modal(`<h2>遊び方</h2><h3>まずはこれだけ</h3>${basicHelpHTML()}<h3 class="dict">困ったときに読む</h3><details><summary>敵の種族と相性・ボスの大技・精鋭と宝石<small class="when">どの品がよく効くか知りたいとき</small></summary><div class="ophelp"><p>敵には「骨」「飛ぶ」「獣」などの種族があります。次の敵の札に、効きやすい系統（◎）と効きにくい系統（△）が出ます。◎の装備は1.4倍、△の装備は0.8倍の威力です。バッグとお店の品にも、次の敵に対して◎か△の印が付きます。</p><p>${Object.values(RACE68).map(r=>`<b>${r.nm}</b> ◎${CLSN[r.weak]} △${CLSN[r.res]}`).join('　')}</p><p>ボスは大技を使います。敵の上のゲージが大技までの時間です。もうすぐになったら、号令「守りを固めよ」で受けよう。</p><p><b>連鎖</b>：「充填」は装備の待ち時間を進めて、早く使わせる。「加速」はしばらく2倍の速さで動かす。ぜんまい・伝令の角笛・火種・鳴子・歯車の盾・雷の鎖で、置く場所によって連鎖の形が変わる。</p><p><b>精鋭と宝石</b>：物語の章では1回だけ、ボス以外の戦いを「精鋭」にできます（次の敵の札のボタン）。HP+20%・攻撃+15%になりますが、勝つと宝石を1つ選べます。宝石は炎・氷・毒の3種類。準備のあいだ、攻撃する装備にはめたり外したりできて、はめた装備にその相性が付きます。宝石はその出撃のあいだだけ使えます。</p></div></details><details><summary>系統・重ねがけ・覚醒<small class="when">同じなかまの品をそろえると強くなる</small></summary><div class="ophelp"><p>装備には「刃」「毒」「守り」などの系統があります。2人のバッグとベルトに同じ系統が2・4・6個あると、その系統の装備が強くなります。</p><p>力（武器のダメージ+1/重ね）・熱（装備が2%速い/重ね）・再生（2秒ごとに回復）は味方に、脆弱（受けるダメージ+3%/重ね）・弱体（攻撃-3%/重ね）は敵に重なります。</p><p>決まった品を隣り合わせると、伝説の品を作れます（準備画面の「系統」の帯から）。</p></div></details><details><summary>ベルト・必殺技・号令<small class="when">2人で使う枠と、戦いの中のボタン</small></summary><div class="ophelp"><p>ベルトの装備は2人が同時に使います。</p><p>必殺技はゲージがたまると自動で発動。</p><p>号令は戦闘中に押して使います。効き目が切れてから15秒たつと、もう一度使えます。</p></div>${specialHelpHTML()}</details><details><summary>錬成<small class="when">武器2つを1つにまとめる</small></summary><div class="ophelp"><p>金床を選び、「錬成」を押します。</p><p>違う武器2つを、同じ★でそろえよう。</p><p>武器が1つになり、金床はなくなります。</p></div></details><details><summary>店と探す品<small class="when">ほしい品を探したいとき</small></summary>${shopHelpHTML()}<p class="sub">「目印」は探す品を覚えておく機能です。品ぞろえは変わりません。</p>${S.phase==='plan'?'<div class="row2"><button class="btn" id="bShopSearch">探す品の目印を設定</button></div>':''}</details><details><summary>報酬・勇者の訓練<small class="when">勇者のレベルの上げ方</small></summary>${samePairHelpHTML()}${rewardSpaceHelpHTML()}${dropHelpHTML()}${levelHelpHTML()}${talentHelp65()}<p class="sub">ゴールドは今回の出撃の買い物に使います。報奨金は出撃後も残り、訓練に使えます。勝利と章クリアで報奨金を獲得します。残ったゴールドは報奨金にはなりません。遅れた勇者は、主力2人の低い方より3Lv下まで訓練費用が半額です。</p></details><details><summary>遺物・遺物の棚<small class="when">ずっと効く特別な品</small></summary>${relicShelfHelpHTML()}${relicHelp51HTML()}${relicPickHelpHTML()}${relicSwapHelpHTML()}${relicCollectionHelp63()}${relicGrowthHelp65()}<p>「組み方」は、合う装備や置き方のヒントです。代償のある遺物は、効果が下がる所も確認しましょう。金の勝利印までの記録は、使ってクリアした章ごとに残ります。</p><p>第1章クリア後に使えます。枠ははじめ1個、第4章と第8章のクリアで1個ずつ増えます。途中の選択は第1戦と中間の戦いの勝利後。満杯なら、持ち込み・途中で得た遺物のどちらとも入れ替えられます。</p></details><details><summary>第13章からの作戦・吹雪${helpFar68(13)}</summary>${operationHelpHTML()}${snowHelpHTML()}<p class="sub">止まる順は上のバッグの下段 → 下のバッグの上段 → ベルト。1秒前に段を囲みます。</p></details><details><summary>第14章からの構え崩し・防衛${helpFar68(14)}</summary>${northernHelpHTML('stance')}${northernHelpHTML('defend')}</details><details><summary>戦功・追加の挑戦</summary>${honorHelpHTML()}<p class="sub">第13章の初クリアで開放。以後、第1戦後に「通常」「少ない援助」「強い支援」から一つ選べます。拠点を決めると、その出撃では固定です。</p></details><div class="row2"><button class="btn go" id="opHelpBack">もどる</button></div>`);$m('#opHelpBack').onclick=back;if($m('#bShopSearch'))$m('#bShopSearch').onclick=()=>showShopSearch(()=>showOperationHelp(back));}
+function showOperationHelp(back=closeModal){modal(`<h2>遊び方</h2><h3>まずはこれだけ</h3>${basicHelpHTML()}<h3 class="dict">困ったときに読む</h3><details data-f70="race"><summary>敵の種族と相性・ボスの大技・精鋭と宝石<small class="when">どの品がよく効くか知りたいとき</small></summary><div class="ophelp"><p>敵には「骨」「飛ぶ」「獣」などの種族があります。次の敵の札に、効きやすい系統（◎）と効きにくい系統（△）が出ます。◎の装備は1.4倍、△の装備は0.8倍の威力です。バッグとお店の品にも、次の敵に対して◎か△の印が付きます。</p><p>${Object.values(RACE68).map(r=>`<b>${r.nm}</b> ◎${CLSN[r.weak]} △${CLSN[r.res]}`).join('　')}</p><p>ボスは大技を使います。敵の上のゲージが大技までの時間です。もうすぐになったら、号令「守りを固めよ」で受けよう。</p><p><b>連鎖</b>：「充填」は装備の待ち時間を進めて、早く使わせる。「加速」はしばらく2倍の速さで動かす。ぜんまい・伝令の角笛・火種・鳴子・歯車の盾・雷の鎖で、置く場所によって連鎖の形が変わる。</p><p><b>精鋭と宝石</b>：物語の章では1回だけ、ボス以外の戦いを「精鋭」にできます（次の敵の札のボタン）。HP+20%・攻撃+15%になりますが、勝つと宝石を1つ選べます。宝石は炎・氷・毒の3種類。準備のあいだ、攻撃する装備にはめたり外したりできて、はめた装備にその相性が付きます。宝石はその出撃のあいだだけ使えます。</p></div></details><details data-f70="sets"><summary>系統・重ねがけ・覚醒<small class="when">同じなかまの品をそろえると強くなる</small></summary><div class="ophelp"><p>装備には「刃」「毒」「守り」などの系統があります。2人のバッグとベルトに同じ系統が2・4・6個あると、その系統の装備が強くなります。</p><p>力（武器のダメージ+1/重ね）・熱（装備が2%速い/重ね）・再生（2秒ごとに回復）は味方に、脆弱（受けるダメージ+3%/重ね）・弱体（攻撃-3%/重ね）は敵に重なります。</p><p>決まった品を隣り合わせると、伝説の品を作れます（準備画面の「系統」の帯から）。</p></div></details><details data-f70="belt"><summary>ベルト・必殺技・号令<small class="when">2人で使う枠と、戦いの中のボタン</small></summary><div class="ophelp"><p>ベルトの装備は2人が同時に使います。</p><p>必殺技はゲージがたまると自動で発動。</p><p>号令は戦闘中に押して使います。効き目が切れてから15秒たつと、もう一度使えます。</p></div>${specialHelpHTML()}</details><details data-f70="none"><summary>錬成<small class="when">武器2つを1つにまとめる</small></summary><div class="ophelp"><p>金床を選び、「錬成」を押します。</p><p>違う武器2つを、同じ★でそろえよう。</p><p>武器が1つになり、金床はなくなります。</p></div></details><details><summary>店<small class="when">ほしい品を探したいとき</small></summary>${shopHelpHTML()}</details><details><summary>報酬・勇者の訓練<small class="when">勇者のレベルの上げ方</small></summary>${samePairHelpHTML()}${rewardSpaceHelpHTML()}${dropHelpHTML()}${levelHelpHTML()}${talentHelp65()}<p class="sub">ゴールドは今回の出撃の買い物に使います。報奨金は出撃後も残り、訓練に使えます。勝利と章クリアで報奨金を獲得します。残ったゴールドは報奨金にはなりません。遅れた勇者は、主力2人の低い方より3Lv下まで訓練費用が半額です。</p></details><details data-f70="relic"><summary>遺物・遺物の棚<small class="when">ずっと効く特別な品</small></summary>${relicShelfHelpHTML()}${relicHelp51HTML()}${relicPickHelpHTML()}${relicSwapHelpHTML()}${relicCollectionHelp63()}${relicGrowthHelp65()}<p>「組み方」は、合う装備や置き方のヒントです。代償のある遺物は、効果が下がる所も確認しましょう。金の勝利印までの記録は、使ってクリアした章ごとに残ります。</p><p>第1章クリア後に使えます。枠ははじめ1個、第4章と第8章のクリアで1個ずつ増えます。途中の選択は第1戦と中間の戦いの勝利後。満杯なら、持ち込み・途中で得た遺物のどちらとも入れ替えられます。</p></details><details data-f70="op"><summary>第13章からの作戦・吹雪${helpFar68(13)}</summary>${operationHelpHTML()}${snowHelpHTML()}<p class="sub">止まる順は上のバッグの下段 → 下のバッグの上段 → ベルト。1秒前に段を囲みます。</p></details><details data-f70="stance"><summary>第14章からの構え崩し・防衛${helpFar68(14)}</summary>${northernHelpHTML('stance')}${northernHelpHTML('defend')}</details><details data-f70="op"><summary>戦功・追加の挑戦</summary>${honorHelpHTML()}<p class="sub">第13章の初クリアで開放。以後、第1戦後に「通常」「少ない援助」「強い支援」から一つ選べます。拠点を決めると、その出撃では固定です。</p></details><div class="row2"><button class="btn go" id="opHelpBack">もどる</button></div>`);$m('#opHelpBack').onclick=back;document.querySelectorAll('#mcard [data-f70]').forEach(e=>{const k=e.dataset.f70;if(k==='none'||!on70(k))e.remove();});if($m('#bShopSearch'))$m('#bShopSearch').onclick=()=>showShopSearch(()=>showOperationHelp(back));}
 function honorHelpHTML(){return `<div class="ophelp"><p>違う支援を残して勝つと、旗が増えます。</p><p>例：強い支援に挑んで勝つと勲章も獲得。</p><p>勲章は飾る記念品。能力は増えません。</p></div>`;}
 // 新章の説明は、該当する敵・任務の準備で初めて一度だけ出す。
 function northernHelpHTML(k){return k==='stance'?'<div class="ophelp"><p>構え中、別の武器二本を当てると中断。</p><p>同じ一本の連続攻撃は一回分です。</p><p>凍結で止めるか、盾で受けても大丈夫。</p></div>':'<div class="ophelp"><p>HPを残して20秒耐えれば勝利。</p><p>敵を先に倒しても勝利です。</p><p>盾と薬を使い、次の討伐にも備えよう。</p></div>';}
@@ -1685,6 +1713,7 @@ function logInventory(){return{bags:S.bags.map(b=>b?{mask:[...b.mask],cells:b.ce
 function logShop(){return S.shop.map((o,i)=>o?{slot:i,type:o.type,name:oname(o),price:price(o),special:!!o.special,locked:!!S.locked[i],counter:!!o.counter}:null);}
 function beginPreparation(resume=false){
   if(!S.playRunId)S.playRunId=playId('run');
+  if(!resume&&S.round===1)setTimeout(newFeature70,600);
   const continuing=resume&&S.prepTime&&S.prepTime.round===S.round&&!S.prepTime.closed;
   if(!continuing)S.prepTime={id:playId('prep'),round:S.round,seconds:0,elapsedSeconds:0,closed:false};
   prepClock=performance.now();prepVisible=!document.hidden;
@@ -1858,7 +1887,7 @@ function itemLine(k,star=1){const d=ITEMS[k],s=STAR[star];
   if(d.poison&&d.kind==='dmg')t+=`・<span class="kw poison">毒</span>+${Math.round(d.poison*s)}／回`;
   if(d.freeze)t+=`・<span class="kw freeze">凍結</span>+${Math.round(d.freeze*s)}／回`;
   if(d.two)t+=`・両手持ち（上下左右に空きがあれば+40%）`;
-  if(d.txt)t+=`。${d.txt}`;if(d.tags?.length)t+=`（${d.tags.map(x=>CLSN[x]).join('・')}）`;
+  if(d.txt)t+=`。${d.txt}`;if(d.tags?.length&&on70('sets'))t+=`（${d.tags.map(x=>CLSN[x]).join('・')}）`;
   return t;}
 
 // ===================== 音 =====================
@@ -2242,7 +2271,7 @@ function fireOne(x){
   if(keepLog)B.log=keepLog;
   play(B.actors[x.u],'attack');
   afterFire66(x,crit);
-  B.gauge[x.u]+=10+(tagsOf(d).includes('magic')?setVal('magic','gauge'):0)+(x.hero==='archer'?levelStats(runLv('archer')).m:0)+(x.hero==='mage'&&tal('m40a')?2:0)+(x.hero==='archer'&&tal('a40a')?2:0)+rxv(x.hero,'gauge');if(B.gauge[x.u]>=100){B.gauge[x.u]=0;special(x.u);}
+  if(on70('special'))B.gauge[x.u]+=10+(tagsOf(d).includes('magic')?setVal('magic','gauge'):0)+(x.hero==='archer'?levelStats(runLv('archer')).m:0)+(x.hero==='mage'&&tal('m40a')?2:0)+(x.hero==='archer'&&tal('a40a')?2:0)+rxv(x.hero,'gauge');if(B.gauge[x.u]>=100){B.gauge[x.u]=0;special(x.u);}
 }
 function addText(txt,where,color,big){const same=B.texts.find(t=>t.txt===txt&&t.t<0.8&&!/^\d/.test(txt));if(same)return;if(where==='enemy'){const en=B.texts.filter(t=>t.where==='enemy');if(en.length>=4)en.sort((a,b)=>b.t-a.t)[0].t=0.9;}B.lane=((B.lane||0)+1)%4;B.texts.push({txt,where,color,t:0,big,dx:(fxRandom()-.5)*36,dy:B.lane*15});}
 function drawVictory(W,H){const t=reducedMotion()?1:(performance.now()-B.vicT0)/1000,w=B.vic.win;const txt=w?'勝利！':'敗北…';
@@ -2306,7 +2335,7 @@ function lightActivation(el,col){if(!el||!el.animate)return;
     {boxShadow:`inset 0 0 0 1px ${col}`,offset:.3},{boxShadow:'inset 0 0 0 0 transparent'}],
     {duration:reducedMotion()?200:260,easing:'ease-out'});
 }
-function specialHelpHTML(){return '<div class="ophelp" id="specialHelp"><p>装備が動くと、マスが光ります。</p><p>必殺ゲージが満タンで、自動発動。</p><p>「もうすぐ」が出たら、あと少し。</p></div>';}
+function specialHelpHTML(){return on70('special')?'<div class="ophelp" id="specialHelp"><p>装備が動くと、マスが光ります。</p><p>必殺ゲージが満タンで、自動発動。</p><p>「もうすぐ」が出たら、あと少し。</p></div>':'<div class="ophelp" id="specialHelp"><p>選んだ2人が、それぞれのバッグの装備を使って戦います。</p><p>装備が動くと、マスが光ります。</p></div>';}
 function specialGauge(u,W){const h=HEROES[S.heroes[u]],w=(W/2-22)/2,x=8+u*(w+8),v=Math.min(100,B.gauge[u]),soon=v>=80,y=26;
   sx.save();sx.fillStyle='rgba(15,12,10,.85)';sx.fillRect(x-2,y-2,w+4,15);
   sx.textAlign='left';sx.font='9px DotGothic16, monospace';sx.fillStyle=soon?'#ffe199':'#eee3d1';sx.fillText(h.name,x,y+8,w*0.42);
@@ -2473,7 +2502,7 @@ function battleFacts(){if(!B||!B.rec)return[];const r=B.rec,d=B.def,out=[];if(d.
   out.push((df.length?df.join('・')+'。':'')+`受けたダメージ <b>${N0(r.taken)}</b>`);
   return out.filter(Boolean).slice(0,4);}
 let FACT_SKIP=0;
-function factsHTML(){const f=battleFacts().slice(FACT_SKIP);if(newRelicRule())Object.entries(B?.rec?.relic||{}).filter(([k,v])=>v>0).sort((a,b)=>(['thorn','mercy','snowbell'].includes(b[0])?1:0)-(['thorn','mercy','snowbell'].includes(a[0])?1:0)).slice(0,2).forEach(([k,v])=>f.push((k==='spareFuseCost'?'予備の火縄（代償）':RELICS[k]?.nm||'遺物')+'：'+relicEffectText(k,v)));return f.length?`<div class="facts"><span class="sub">この戦いの記録</span>${f.map(x=>`<p>${x}</p>`).join('')}</div>`:'';}
+function factsHTML(){const f=battleFacts().slice(FACT_SKIP);if(newRelicRule())Object.entries(B?.rec?.relic||{}).filter(([k,v])=>v>0).sort((a,b)=>(['thorn','mercy','snowbell'].includes(b[0])?1:0)-(['thorn','mercy','snowbell'].includes(a[0])?1:0)).slice(0,2).forEach(([k,v])=>f.push((k==='spareFuseCost'?'予備の火縄（代償）':RELICS[k]?.nm||'遺物')+'：'+relicEffectText(k,v)));return f.length?`<details class="facts"><summary class="sub">この戦いのくわしい数字</summary>${f.map(x=>`<p>${x}</p>`).join('')}</details>`:'';}
 function mvpHTML(){const loot=lootSummaryHTML();if(!B||!B.contrib)return loot;const top=Object.entries(B.contrib).filter(e=>e[1]>=1).sort((a,b)=>b[1]-a[1]).slice(0,3);if(!top.length)return loot+factsHTML();
   return loot+factsHTML()+`<div class="mvp"><span class="sub">活躍した装備<small style="display:block;font-size:12px">数字は目安（やけど・毒など、あとから効く分もその装備に入れて数える）</small></span>${top.map(([k,v])=>{const l=parseLoc(k),p=getP(l);if(!p)return'';const us=itemUses(l);const note=l.a==='belt'?'ベルト・2人で使用':us[0]&&us[0].buffs.length?us[0].buffs.join('・')+'で強化':'';
     return `<div class="mv"><img src="${ICO(p.type)}" alt=""><span>${ITEMS[p.type].name}${p.star>1?'★'+p.star:''}</span><span class="dot">${Math.round(v)}<small style="font-size:12px;margin-left:2px">${{shield:'守り',bash:'ダメージ',heal:'回復'}[ITEMS[p.type].kind]||'ダメージ'}</small></span><small>${note}</small></div>`;}).join('')}</div>`;}
@@ -2489,7 +2518,7 @@ function loseHint(){if(!B||!B.def)return'';const d=B.def,r=B.rec||{},rr=RACE68[r
   else if(r.shell>=20)t=`殻で${N0(r.shell)}減らされた。殻は1発ごとに減らすので、一撃の大きい武器・毒・やけどが効く`;
   return t?`<p class="hint2">次の手：${t}</p>`:'';}
 // r69：中断して報酬の画面から再開しても、直前の戦いの記録を見られるように写しを残す
-function rewardReportHTML(){if(!B||!B.rec){return S.loot?.report||'';}const f=battleFacts().slice(0,2);FACT_SKIP=f.length;const inner=`${reportHTML(true)}${mvpHTML()}`;FACT_SKIP=0;const h=`${f.length?`<div class="facts quick">${f.map(x=>`<p>${x}</p>`).join('')}</div>`:''}<details class="rewardreport"><summary>戦闘の記録・勇者の報告</summary>${inner}</details>`;if(S.loot&&S.loot.report!==h){S.loot.report=h;saveRaw();}return h;}
+function rewardReportHTML(){if(!B||!B.rec){return S.loot?.report||'';}const f=[];FACT_SKIP=0;/* r70：数字は記録の中だけ。先頭に今回の主役だけ出す */const top70=B.contrib?Object.entries(B.contrib).filter(e=>e[1]>=1).sort((a,b)=>b[1]-a[1])[0]:null,tp70=top70&&getP(parseLoc(top70[0]));if(tp70)f.push(`今回の主役：<b>${ITEMS[tp70.type].name}</b>（約${Math.round(top70[1])}）`);const inner=`${reportHTML(true)}${mvpHTML()}`;FACT_SKIP=0;const h=`${f.length?`<div class="facts quick">${f.map(x=>`<p>${x}</p>`).join('')}</div>`:''}<details class="rewardreport"><summary>戦闘の記録・勇者の報告</summary>${inner}</details>`;if(S.loot&&S.loot.report!==h){S.loot.report=h;saveRaw();}return h;}
 function showChest(){
   S.loot=S.loot||{round:S.round,drop:{},claimed:false,seconds:B?.t||0};if(S.loot.claimed)return;if(S.loot.receive){showLootReceive();return;}if(S.loot.chestUpgrade){showLootUpgrade();return;}
   const boons=[{k:'star',nm:'鍛冶屋',ic:'whet',ds:'★1の装備を1つ★2に'},{k:'hp',nm:'お守り',ic:'heart',ds:'この冒険の間、最大HP+20'},{k:'gold',nm:'金貨6G',ic:'coins',ds:'すぐに6Gもらう'},{k:'heal',nm:'鉄の護符',ic:'shield',ds:'以後ずっと、戦闘開始時のバリア+12'}];
@@ -2546,6 +2575,7 @@ function showRewardMove(i,id){
 }
 // 荷物は装備に混ぜず、バッグの1マスだけを予約する。古い保存にはこれらの状態が無くてもよい。
 function offerDelivery(){
+  return;/* r70：配達はやめた */
   if(S.run?.mode!=='story'||S.run.ch<3||S.round!==(isOperation()?1:2)||S.deliveryOffered)return;
   S.deliveryOffered=1;S.deliveryOffer={battles:2,reward:8};
   recordPlay('delivery_offer',{battles:2,reward:8,immediateGold:3,fromRound:S.round+1,deliveryAfterRound:S.round+2});
@@ -2614,10 +2644,10 @@ function showRoute(){const r=S.round;const cs=S.routeCands&&S.routeCands.r===r?S
 function nextRound(){if(S.gemOffer){showGemOffer68();return;}if(maybeOfferRelic())return;if(isOperation()&&S.round<3&&!S.operation.choices[S.round]){showOperation(true);return;}if(S.lives>0&&segMap()[S.round]&&!(S.routeDone||{})[S.round]){closeModal();setTimeout(showRoute,120);return;}advanceRound();}
 function advanceRound(){
   S.relicPage='bag';closeModal();S.pending=null;S.pendingGold=null;S.loot=null;if(S.retry){S.retry=0;}else S.round++;const inc=roundIncome(),it=interest();S.gold+=inc;S.rerollN=0;if(S.relicUsed)delete S.relicUsed.traderTokenRound;setTimeout(()=>{const g=$('hGold').getBoundingClientRect();popText(g.left+g.width/2,g.bottom,`+${inc}G${it?`（利子${it}）`:''}`,'#ffd25a');sfx('coin');},350);S.phase='plan';B=null;document.body.classList.remove('battle');fit();
-  if(S.round===3){S.belt.open[1]=1;setTimeout(()=>{flash('ベルトが開いた！');sfx('open');},250);}
+  if(S.round===3&&on70('belt')){S.belt.open[1]=1;setTimeout(()=>{flash('ベルトが開いた！');sfx('open');},250);}
   rollShop();beginPreparation();recordPlay('round_income',{income:inc,interest:it});render();save();setMusic('shop');setTimeout(shopReveal,60);
   if(S.deliveryOffer)showDelivery();else if(!enemy(S.round).boss||S.told?.[S.round])firstNorthernHelp();
-  if(S.run&&S.run.mode==='story'){const e=enemy(S.round);S.told=S.told||{};if(e.boss&&!S.told[S.round]){S.told[S.round]=1;save();setTimeout(()=>showScene(storyScene(e.mid?'mid':'boss',S.round),firstNorthernHelp,'偵察兵の報告'),500);}}
+  if(S.run&&S.run.mode==='story'){const e=enemy(S.round);S.told=S.told||{};if(e.boss&&!S.told[S.round]){S.told[S.round]=1;save();const go=()=>{if(S.phase!=='plan')return;if($('modal').style.display==='flex'){setTimeout(go,400);return;}showScene(storyScene(e.mid?'mid':'boss',S.round),firstNorthernHelp,'偵察兵の報告');};setTimeout(go,500);}}
 }
 
 // ===================== 戦闘の舞台（canvas） =====================
@@ -2761,6 +2791,14 @@ function drawGroundScroll(W,H,base,off){if(reducedMotion())off=0;const gh=H-base
   for(let i=0;i<9;i++){const x=Math.round(wrapX(i*113+37-off*0.55,W+60))-30,h=3+(i*5)%6;sx.fillStyle='rgba(0,0,0,.28)';sx.fillRect(x,base-h+1,6+(i%3)*4,h);sx.fillRect(x+2,base-h-1,3,2);}
   for(let i=0;i<26;i++){const x=Math.round(wrapX(i*67+11-off,W+40))-20,y=base+3+((i*13)%Math.max(2,gh-5));sx.fillStyle=i%3?'rgba(0,0,0,.28)':'rgba(255,240,210,.10)';sx.fillRect(x,y,i%4?3:5,2);}}
 // 章の道のり（右下）。済んだ戦いは金、今の戦いは白い枠、ボスは赤い四角
+// 持っている遺物を帯の左下に並べる。効いた瞬間は光る。準備中に押すと説明
+const RIMG70={};let RHIT70=null;
+function drawRelics70(W,H){const ks=activeRelics();RHIT70=null;if(!ks.length)return;const z=Math.max(18,Math.min(26,Math.round(H*0.17))),y=H-z-4,now=performance.now();
+  sx.save();sx.fillStyle='rgba(12,9,7,.72)';sx.fillRect(4,y-2,ks.length*(z+4)+4,z+4);
+  ks.forEach((k,i)=>{const x=6+i*(z+4);let im=RIMG70[k];if(!im){im=RIMG70[k]=new Image();im.src=relicIcon(k);}const pl=Math.max(0,1-(now-(RPULSE70[k]||-1e9))/600);
+    if(pl>0){sx.fillStyle=`rgba(255,225,140,${0.55*pl})`;sx.fillRect(x-2,y-2,z+4,z+4);}if(im.complete&&im.naturalWidth){sx.imageSmoothingEnabled=false;sx.drawImage(im,x,y,z,z);}});
+  sx.restore();RHIT70={x:4,y:y-2,w:ks.length*(z+4)+4,h:z+4};}
+function showActiveRelics70(){const ks=activeRelics();if(!ks.length)return;modal(`<h2>持っている遺物</h2><p class="sub">この章のあいだずっと効きます。</p>${ks.map(k=>`<div class="relicrow"><img src="${relicIcon(k)}" alt=""><div><b>${RELICS[k].nm}</b><p>${relicDescription(k)}</p></div></div>`).join('')}<div class="row2"><button class="btn go" id="raBack">もどる</button></div>`);$m('#raBack').onclick=()=>{closeModal();render();};}
 function drawTrack(W,H){const n=runLimit();if(!n)return;const r0=Math.min(S.round||1,n),y=H-8,x1=W-12,gap=Math.min(18,(W*0.42)/Math.max(1,n-1)),x0=x1-gap*(n-1);
   sx.save();sx.fillStyle='rgba(12,9,7,.72)';sx.fillRect(x0-40,y-8,x1-x0+50,16);
   sx.font='10px DotGothic16, monospace';sx.textAlign='left';sx.fillStyle='#ecdcb8';sx.fillText(`${r0}/${n}戦`,x0-37,y+4);
@@ -2775,7 +2813,7 @@ function drawWalk(dt){if(!$('stage').offsetWidth||!S.heroes?.length)return;const
   SCROLL+=dt*36;
   sx.clearRect(0,0,W,H);sx.save();drawBg(W,H);const base=GROUND(),hb=HERO_BODY();drawGroundScroll(W,H,base,SCROLL);
   WALK.actors.forEach((ac,u)=>{ac.t+=dt;const m=META[ac.name];if(m&&ac.anim!=='idle')ac.t%=(m.anims[ac.anim]/14);const x=heroX(u,W);sx.fillStyle='rgba(0,0,0,.45)';sx.fillRect(x-14,base-2,28,4);sx.fillRect(x-18,base-1,36,2);drawChar(ac,x,base+2,hb,false);});
-  drawTrack(W,H);sx.restore();}
+  drawTrack(W,H);drawRelics70(W,H);sx.restore();}
 function drawStage(){
   if(!B)return;const W=stageW,H=stageH;sx.clearRect(0,0,W,H);
   sx.save();const rm=reducedMotion(); // 全体の揺れ・白フラッシュ・ズームは使わない。
@@ -2805,9 +2843,9 @@ function drawStage(){
   const P=B.party,E=B.enemy;
   bar(8,6,W/2-14,P.hp/P.max,'#79b85a',`パーティ ${Math.max(0,Math.round(P.hp))}`+(P.shield>0.5?`  盾${Math.round(P.shield)}`:'')+partyBuffTxt(),P.shield/P.max,'p');
   bar(W/2+6,6,W/2-14,E.hp/E.max,'#cf4b3f',`${B.def.name} ${Math.max(0,Math.round(E.hp))}${E.shield>0.5?' 盾'+Math.round(E.shield):''}`,(E.shield||0)/E.max,'e');
-  if(!B.done){const r=Math.max(0,Math.min(1,E.timer/B.def.int)),gy=base-ENEMY_BODY()-18,soon=r>0.8;
+  if(!B.done){const r=Math.max(0,Math.min(1,E.timer/B.def.int)),gy=Math.max(isRun()?54:0,base-ENEMY_BODY()-18),soon=r>0.8;
     sx.fillStyle='rgba(0,0,0,.6)';sx.fillRect(ENEMY_X-22,gy,44,6);sx.fillStyle=E.frz>0?'#9fd8ff':soon?'#ffc29e':'#e0603a';sx.fillRect(ENEMY_X-22,gy,Math.round(44*r),6);
-    sx.font='10px DotGothic16, monospace';sx.textAlign='center';sx.fillStyle='#16110d';const lb=B.def.boss==='breaker'&&((B.atkN||0)+1)%3===0?'次：盾くずし':`攻撃${Math.round(B.def.atk)}`;sx.fillText(lb,ENEMY_X+1,gy-2);sx.fillStyle=soon||lb!==`攻撃${Math.round(B.def.atk)}`?'#ffd0c0':'#ecdcb8';sx.fillText(lb,ENEMY_X,gy-3);const bc=bossClock68();if(bc){const r2=Math.max(0,Math.min(1,1-bc.left/bc.total)),gy2=gy-24,wB=72,near=bc.count?bc.left<=1:bc.left<=1.6;
+    sx.font='10px DotGothic16, monospace';sx.textAlign='center';sx.fillStyle='#16110d';const lb=B.def.boss==='breaker'&&((B.atkN||0)+1)%3===0?'次：盾くずし':`攻撃${Math.round(B.def.atk)}`;sx.fillText(lb,ENEMY_X+1,gy-2);sx.fillStyle=soon||lb!==`攻撃${Math.round(B.def.atk)}`?'#ffd0c0':'#ecdcb8';sx.fillText(lb,ENEMY_X,gy-3);const bc=bossClock68();if(bc){const r2=Math.max(0,Math.min(1,1-bc.left/bc.total)),gy2=gy-(isRun()?14:24),wB=72,near=bc.count?bc.left<=1:bc.left<=1.6;
       sx.fillStyle='rgba(0,0,0,.65)';sx.fillRect(ENEMY_X-wB/2,gy2,wB,6);sx.fillStyle=near?'#ffe07a':'#a77ad8';sx.fillRect(ENEMY_X-wB/2,gy2,Math.round(wB*r2),6);
       const t2=`${bc.nm}${bc.count?`まで${bc.left}回`:near?' もうすぐ！':`まで${Math.max(0,bc.left).toFixed(0)}秒`}`;sx.fillStyle='#16110d';sx.fillText(t2,ENEMY_X+1,gy2-2);sx.fillStyle=near?'#ffe07a':'#e6d8ff';sx.fillText(t2,ENEMY_X,gy2-3);}}
   // 敵の状態
@@ -2829,7 +2867,7 @@ function drawStage(){
   // 暗い坑道：はじめの2秒は暗く、明けると見える
   if(envOf()==='dark'&&B.t<2.3){sx.fillStyle=`rgba(5,3,2,${0.6*Math.min(1,(2.3-B.t)/0.3)})`;sx.fillRect(0,0,W,H);}
   if(!rm&&B.guardT){const g=(performance.now()-B.guardT)/160;if(g<1){const gx=heroX(0,W)+26,gy=base-hb*0.55;sx.strokeStyle=`rgba(156,200,245,${1-g})`;sx.lineWidth=3;sx.beginPath();sx.arc(gx-10,gy,hb*0.55+g*6,-1.1,1.1);sx.stroke();sx.fillStyle=`rgba(255,255,255,${1-g})`;sx.fillRect(Math.round(gx+hb*0.55-14),Math.round(gy-2),4,4);}}
-  drawSpecialFx(W,H);[0,1].forEach(u=>specialGauge(u,W));drawTrack(W,H);
+  drawSpecialFx(W,H);if(on70('special'))[0,1].forEach(u=>specialGauge(u,W));drawTrack(W,H);drawRelics70(W,H);
   if(B.vic)drawVictory(W,H);
   if(B.banner){const active=B.specialFx?.length,x=active?W*.57:0,y=Math.round(H*(active?0.3:0.36)),w=W-x;
     sx.font=`${active?12:16}px DotGothic16, monospace`;const title=wrapText(B.banner.txt,w-12).slice(0,active?2:3);sx.font='11px "Zen Kaku Gothic New", sans-serif';const sub=B.banner.sub?wrapText(B.banner.sub,w-12):[];
@@ -2840,9 +2878,9 @@ function drawStage(){
 // 状態の表示。やけど・毒は量、出血・凍結は100まで溜まるバー
 const STV=[{k:'burn',ic:'fire',nm:'やけど',col:'#ff9a3c',get:E=>E.burn},{k:'poison',ic:'skull',nm:'毒',col:'#9fd35a',get:E=>E.poison},
   {k:'bleed',ic:'blood',nm:'出血',col:'#ff4d5a',get:E=>E.bleed||0,gauge:1},{k:'freeze',ic:'snow',nm:'凍結',col:'#9fd8ff',get:E=>E.frzB||0,gauge:1},{k:'vuln',ic:'skull',nm:'脆弱',col:'#e07ae0',get:E=>E.vuln||0},{k:'weak',ic:'drop',nm:'弱体',col:'#b8a6ff',get:E=>E.weak||0}];
-function drawStatus(x0,y0,w){const E=B.enemy,cw=Math.floor((w-4)/2),ch=14;B.stPrev=B.stPrev||{};B.stPulse=B.stPulse||{};
+function drawStatus(x0,y0,w){const E=B.enemy,per=isRun()?3:2,cw=Math.floor((w-4*(per-1))/per),ch=isRun()?12:14;let shown=0;B.stPrev=B.stPrev||{};B.stPulse=B.stPulse||{};
   STV.forEach((d,i)=>{const v=d.get(E),pv=B.stPrev[d.k]||0;if(v>pv+0.3)B.stPulse[d.k]=B.t;B.stPrev[d.k]=v;
-    const on=v>=0.5||(d.k==='freeze'&&E.frz>0);if(!on)return;const x=x0+(i%2)*(cw+4),y=y0+Math.floor(i/2)*(ch+3);
+    const on=v>=0.5||(d.k==='freeze'&&E.frz>0);if(!on)return;const j=isRun()?shown++:i,x=x0+(j%per)*(cw+4),y=y0+Math.floor(j/per)*(ch+3);
     const pl=Math.max(0,1-(B.t-(B.stPulse[d.k]??-9))/0.25);
     sx.fillStyle='rgba(10,8,6,.78)';sx.fillRect(x,y,cw,ch);
     if(d.gauge){sx.fillStyle=d.col;sx.globalAlpha=.55;sx.fillRect(x+14,y+2,Math.round((cw-16)*Math.min(1,v/100)),ch-4);sx.globalAlpha=1;
@@ -2850,7 +2888,7 @@ function drawStatus(x0,y0,w){const E=B.enemy,cw=Math.floor((w-4)/2),ch=14;B.stPr
     sx.strokeStyle=pl>0?`rgba(255,255,255,${pl})`:d.col;sx.lineWidth=pl>0?2:1;if(pl>0||!d.gauge)sx.strokeRect(x+0.5,y+0.5,cw-1,ch-1);
     const im=IMG[`assets2/icons/${d.ic}.png`];if(im){sx.imageSmoothingEnabled=false;sx.drawImage(im,x+1,y+1,12,12);}
     sx.font='10px DotGothic16, monospace';sx.textAlign='left';sx.fillStyle='#fff';
-    sx.fillText(d.k==='freeze'&&E.frz>0?'凍結中！':d.gauge?`${d.nm} ${Math.round(v)}%`:`${d.nm} ${Math.round(v)}`,x+15,y+11);});
+    sx.fillText(isRun()&&cw<70?(d.k==='freeze'&&E.frz>0?'凍結中':`${Math.round(v)}${d.gauge?'%':''}`):d.k==='freeze'&&E.frz>0?'凍結中！':d.gauge?`${d.nm} ${Math.round(v)}%`:`${d.nm} ${Math.round(v)}`,x+15,y+11);});
   // 初めて見る状態は一言だけ説明（その状態のすぐ下に2秒）
   if(B.cap&&!B.banner&&!B.boom){const a=Math.min(1,B.cap.t/0.3);sx.globalAlpha=a;sx.font='10px "Zen Kaku Gothic New", sans-serif';const tw=sx.measureText(B.cap.txt).width+10;
     const cx=Math.min(x0+w-tw,Math.max(x0-20,x0));sx.fillStyle='rgba(236,220,184,.95)';sx.fillRect(cx,y0+34,tw,15);sx.fillStyle='#2a1d12';sx.fillText(B.cap.txt,cx+5,y0+45);sx.globalAlpha=1;}
@@ -2925,7 +2963,9 @@ function fit(){
   document.documentElement.style.setProperty('--cell',c+'px');document.body.classList.toggle('tinycell',c<48);
   // r69：中身が枠からはみ出したら、収まるまでマスを小さくする（下の帯に重なってマスが押せなくなるため）
   {const bd=$('board'),lo=btL?24:40;for(let i=0;i<12&&bd&&!document.body.classList.contains('scrollfit')&&bd.scrollHeight>bd.clientHeight+(btL?0:2)&&c>lo;i++){c-=1;document.documentElement.style.setProperty('--cell',c+'px');document.body.classList.toggle('tinycell',c<48);}}
-  $('stage').style.height=(RUN?STH:topH)+'px';
+  // 帯の試作：鞄が収まって空きが余る画面（iPad縦など）では、その分だけ帯を高くして戦闘を大きく見せる
+  let STX=0;if(RUN&&!document.body.classList.contains('scrollfit')){const beltRow=on70('belt')||S.belt?.open?.some(Boolean)?1:0,need=c*(4+beltRow)+24*2+4*2+(beltRow?18:10)+4,spare=boardH-need;if(spare>40)STX=Math.min(spare-24,Math.round(H*0.12));}
+  $('stage').style.height=(RUN?STH+STX:topH)+'px';
   sizeFx();if(B||RUN){sizeStage();bgCache=null;}stripBottom(Z);
 }
 function stripBottom(Z){const st=$('stage');if(!isRun()||!st.offsetHeight)return;document.documentElement.style.setProperty('--stripB',Math.round(st.getBoundingClientRect().bottom/(Z||1))+'px');}
@@ -2978,7 +3018,7 @@ function renderBoard(){
     return `<div class="bag" data-u="${u}">${buddyHTML(h,bh)}<i class="rv a"></i><i class="rv b"></i><i class="rv c"></i><div class="tag">${H.name}<span class="el" style="background:${t.color}">${t.name}</span></div>
       <div class="grid">${[0,1,2,3,4,5,6,7].map(i=>cellHTML({a,i},getP({a,i}))).join('')}</div></div>`;};
   const beltOpen=S.belt.open.some(Boolean);
-  $('board').innerHTML=bag(0)+`<div class="belt"><div class="strap"></div><span class="label">${beltOpen?'ベルト：ここの装備は<b>2人で使う（各7割の力）</b>':'ベルト（3戦目に真ん中が開く）'}</span><div class="grid">${[0,1,2,3].map(i=>cellHTML({a:'belt',i},getP({a:'belt',i}))).join('')}</div></div>`+bag(1);
+  $('board').innerHTML=bag(0)+(!on70('belt')&&!S.belt.open.some(Boolean)?'<div class="belt70"></div>':`<div class="belt"><div class="strap"></div><span class="label">${beltOpen?'ベルト：ここの装備は<b>2人で使う（各7割の力）</b>':'ベルト（3戦目に真ん中が開く）'}</span><div class="grid">${[0,1,2,3].map(i=>cellHTML({a:'belt',i},getP({a:'belt',i}))).join('')}</div></div>`)+bag(1);
   $('bench').innerHTML=`<span class="cap">控え</span>`+[0,1,2].map(i=>cellHTML({a:'bench',i},S.bench[i])).join('');
 }
 function mergePartner(type,star,except){if(star>=3)return null;const ls=[...[0,1,2].map(i=>({a:'bench',i})),...boardLocs()];
@@ -2994,7 +3034,7 @@ function showItemDetails(k,star=1,l=null){
     `<div class="facts"><span class="sub">今の置き場所での効果</span>${us.map(u=>`<p>${HEROES[u.hero].name}：${power(u)}／${u.cd.toFixed(1)}秒${u.buffs.length?`<br>強化：${u.buffs.join('・')}`:''}</p>`).join('')}</div>`:'';
   const merge=star<3?`<p>同じ装備・同じ★を2つ合わせると★${star+1}になります。<b>1マス空きます</b>。武器などの基本威力は1個の${(STAR[star+1]/STAR[star]).toFixed(2).replace(/0$/,'')}倍で、2個並べたときの合計より約${Math.round((1-STAR[star+1]/(2*STAR[star]))*100)}%下がります。補助効果や置き場所によっても変わります。</p>`:'<p>★3は最大です。同じ装備を重ねても合体せず、入れ替わります。</p>';
   modal(`<div class="itemdetail"><div class="heading"><img src="${ICO(k)}" alt=""><h2>${d.name} ★${star}</h2></div><p class="sub">${d.kind==='passive'&&star>1?'基本の効果（★1）':'装備の効果'}</p><p>${itemLine(k,star)}</p>
-    ${d.apt?`<p>${HORDER.map(h=>`<span class="apt" style="background:${TAG[HEROES[h].tag].color}">${HEROES[h].name} ${aptOf(d,h)}</span>`).join('')}</p><p class="sub">適性は S → A → B → C の順に強くなります（効果は1.4倍・1.2倍・1倍・0.8倍）。</p>`:''}${current}
+    ${d.apt?`<p>${HORDER.map(h=>`<span class="apt" style="background:${TAG[HEROES[h].tag].color}">${HEROES[h].name} ${aptOf(d,h)}</span>`).join('')}</p>`:''}${current}
     <details><summary>合体について</summary>${merge}</details><details><summary>置く場所と数字について</summary><p>バッグの装備は持ち主が使います。ベルトの装備は2人で使います（それぞれ通常の7割の力）。控えでは使われません。</p><p>マスの「攻」「守」は、置いたときに増える1秒あたりの強さの目安です。敵の特性や戦いの長さで変わります。緑の枠は序盤のおすすめです。</p><p>空きマスはタップで移動。入れ替えはドラッグ。同じ装備は「合体」ボタンか、重ねるドラッグで合体できます。</p></details><div class="row2"><button class="btn" id="bDetailBack">準備に戻る</button></div></div>`);
   $m('#bDetailBack').onclick=()=>{closeModal();render();};
 }
@@ -3035,7 +3075,7 @@ function render(){
   $('mute').innerHTML=`<img src="${S.muted?spkOff:spkOn}" alt="${S.muted?'音なし':'音あり'}">`;
   if(S.info&&!getP(S.info))S.info=null;renderTop();
   const fx65=document.getElementById('relicFx');renderBoard();if(fx65&&S.phase!=='battle')$('board').appendChild(fx65);
-  $('shop').innerHTML=S.shop.map((o,s)=>!o?`<div class="ware sold"></div>`:`<button class="ware${o.special?' special':' r'+ITEMS[o.type].rar}${S.gold<price(o)?' cant':''}${S.pick===s?' pick':''}${S.locked[s]?' locked':''}" data-s="${s}">${S.locked[s]?`<img class="lk" src="${srcOf('assets/lock.png')}" alt="キープ">`:''}<img src="${oicon(o)}" alt="">${o.counter?'<span class="ctr">対策</span>':!o.special&&nearRecipes68().some(x=>x.miss===o.type)?'<span class="ctr rcp">覚醒</span>':''}${!o.special&&!o.counter?stBadge(o.type):''}${!o.special?raceBadge(o.type):''}<span class="nm">${oname(o)}</span><span class="pr">${o.type==='focus'?'選ぶ':price(o)+'G'}${!o.special&&canMergeBuy(o.type)?'<b class="mrg">合体</b>':''}</span></button>`).join('');
+  $('shop').innerHTML=S.shop.map((o,s)=>!o?`<div class="ware sold"></div>`:`<button class="ware${o.special?' special':' r'+ITEMS[o.type].rar}${S.gold<price(o)?' cant':''}${S.pick===s?' pick':''}${S.locked[s]?' locked':''}" data-s="${s}">${S.locked[s]?`<img class="lk" src="${srcOf('assets/lock.png')}" alt="キープ">`:''}<img src="${oicon(o)}" alt="">${o.counter?'<span class="ctr">対策</span>':!o.special&&on70('sets')&&nearRecipes68().some(x=>x.miss===o.type)?'<span class="ctr rcp">覚醒</span>':''}${!o.special&&!o.counter?stBadge(o.type):''}${!o.special?raceBadge(o.type):''}<span class="nm">${oname(o)}</span><span class="pr">${o.type==='focus'?'選ぶ':price(o)+'G'}${!o.special&&canMergeBuy(o.type)?'<b class="mrg">合体</b>':''}</span></button>`).join('');
   const sp=S.sel&&getP(S.sel);
   $('bSell').disabled=!sp;$('bSell').innerHTML=sp?`売る<br><span class="dot">+${sellPrice(sp)}G</span>`:'売る';
   $('bReroll').disabled=S.gold<rerollCost();$('bFight').title=interest()?'':'';$('bReroll').innerHTML=`更新<br><span class="dot">${rerollCost()}G</span>`;$('bFight').classList.toggle('ready',!S.bench.some(Boolean)&&S.pick==null&&!S.sel);$('bUndo').disabled=!undoTop68()||!S.round||JSON.parse(undoTop68()).round!==S.round;
@@ -3062,7 +3102,7 @@ function guide(){
     else if(S.sel.a==='bench'){txt=`緑の枠がいちばん強くなる場所。タップで置こう`;const e=boardLocs().find(l=>usable(l)&&!getP(l)&&l.a!=='belt');target=e?cellEl(e):null;}
     else txt=`空きマスをタップで移動。同じ物は「合体」`;
   }
-  else if(S.round===1&&!S.bought&&S.shop[0]){txt=`ショップの<b>${ITEMS[S.shop[0].type].name}</b>をタップして中身を見よう`;target=document.querySelector(`.ware[data-s="0"]`);}
+  else if(S.round===1&&!S.bought&&S.shop[0]&&chNow70()<=1){txt=`ショップの<b>${ITEMS[S.shop[0].type].name}</b>をタップして中身を見よう`;target=document.querySelector(`.ware[data-s="0"]`);}
   else if(S.round===2&&shopIdx('whet')>=0&&!allLocs().some(l=>getP(l)&&getP(l).type==='whet')){txt=`<b>砥石</b>は上下左右の武器を強くする。タップして見てみよう`;target=document.querySelector(`.ware[data-s="${shopIdx('whet')}"]`);}
   else if(S.bench.some(Boolean)){const i=S.bench.findIndex(Boolean);txt=`控えの<b>${ITEMS[S.bench[i].type].name}</b>は戦わない。タップしてバッグへ`;target=cellEl({a:'bench',i});}
   else if(S.round>=3&&beltEmpty&&weaponLocs.length){const w=weaponLocs.find(l=>l.a!=='belt');txt=`武器を<b>ベルトの枠</b>へ動かそう`;target=w?cellEl(w):null;}
@@ -3161,13 +3201,13 @@ $('bFight').onclick=()=>{
   $m('#bPlanBack').onclick=()=>{recordPlay('bench_return');closeModal();S.pick=null;S.sel={a:'bench',i:S.bench.findIndex(Boolean)};S.info=S.sel;render();};
   $m('#bFightAnyway').onclick=()=>{recordPlay('bench_depart');closeModal();startBattle();};
 };
-/* r69：戦闘の画面を押すと一時停止・もう一度押すと再開 */$('stage').addEventListener('click',()=>{if(S.phase==='plan'&&!B&&isRun()){const E=enemy(S.round);if(E){sfx('tick');showEnemyInfo68(E);}return;}if(S.phase!=='battle'||!B||B.done)return;B.hold68=!B.hold68;let m=$('pause68');if(!m){m=document.createElement('div');m.id='pause68';m.textContent='一時停止中　画面を押すと再開';$('stage').appendChild(m);}m.hidden=!B.hold68;sfx('tick');});
+/* r69：戦闘の画面を押すと一時停止・もう一度押すと再開 */$('stage').addEventListener('click',ev=>{if(S.phase==='plan'&&!B&&isRun()&&RHIT70){const r=$('stage').getBoundingClientRect(),x=ev.clientX-r.left,y=ev.clientY-r.top;if(x>=RHIT70.x&&x<=RHIT70.x+RHIT70.w&&y>=RHIT70.y-6){sfx('tick');showActiveRelics70();return;}}if(S.phase==='plan'&&!B&&isRun()){const E=enemy(S.round);if(E){sfx('tick');showEnemyInfo68(E);}return;}if(S.phase!=='battle'||!B||B.done)return;B.hold68=!B.hold68;let m=$('pause68');if(!m){m=document.createElement('div');m.id='pause68';m.textContent='一時停止中　画面を押すと再開';$('stage').appendChild(m);}m.hidden=!B.hold68;sfx('tick');});
 $('bSpeed').onclick=()=>{S.speed=S.speed===1?2:S.speed===2?4:1;recordPlay('battle_speed',{speed:S.speed});$('bSpeed').textContent=`速さ ×${S.speed}`;};
 const assaultUnlocked=()=>S.run?.mode==='story'&&S.run.ch>=6;
 const RALLY_CD68=15;
 function updateRallyButtons(){
   const active=B&&B.assaultT>0?'攻め あと'+Math.ceil(B.assaultT)+'秒':B&&B.rallyT>0?'守り あと'+Math.ceil(B.rallyT)+'秒':B&&B.rallyCD>0?'次の号令まで '+Math.ceil(B.rallyCD)+'秒':'号令済み';
-  for(const [id,type] of [['bRally','guard'],['bAssault','assault']]){const el=$(id);el.hidden=type==='assault'&&!assaultUnlocked();el.disabled=!B||B.done||!B.rallyLeft;
+  for(const [id,type] of [['bRally','guard'],['bAssault','assault']]){const el=$(id);el.hidden=type==='assault'||!on70('rally');el.disabled=!B||B.done||!B.rallyLeft;
     const txt=B&&!B.rallyLeft?(B.rallyKind===type||B.rallyCD>0&&B.rallyT<=0&&B.assaultT<=0?active:'号令済み'):type==='guard'?'守りを固めよ<small>3秒 被害-60%<br>攻撃停止</small>':'攻めきれ<small>4秒 武器2倍速<br>盾・回復停止</small>';if(el.innerHTML!==txt)el.innerHTML=txt;}
 }
 function useRally(type){
@@ -3217,7 +3257,7 @@ function bindRlxRow68(){const b=$m('#rlxOpen');if(!b)return;b.onclick=()=>{sfx('
   card.innerHTML=`${rlxPendingHTML()}<div class="row2"><button class="btn" id="rlxBack">もどる</button></div>`;card.scrollTop=0;
   card.querySelectorAll('[data-rlx]').forEach(x=>x.onclick=()=>{const i=+x.dataset.rlx;if(!rlxTake(i))return;sfx(i>=0?'buy':'tick');back(i>=0);});
   $m('#rlxBack').onclick=()=>{sfx('tick');back(null);};};}
-function chapterActionsHTML(firstClear=false){const pg=loadProg(),first=!pg.help?.samePair63;if(first){pg.help={...pg.help,samePair63:1};saveProg(pg);}const ch=S.run.ch,next=firstClear&&STORY_CHS.includes(ch+1)&&!isCastle(ch);const climb=isCastle(ch)&&isCastle(ch+1)&&S.phase==='result'&&B?.win;return relicDropRow68()+(first?samePairHelpHTML():'')+'<div class="row2 resultactions">'+(climb?'<button class="btn go" id="climbNext" onclick="climbNext68()">'+(CHAPTERS[ch+1].castle)+'階へ登る（装備を持ち越す）</button>':'')+(next?'<button class="btn go" id="nextChapter" onclick="nextChapter68()">'+chName(ch+1)+'へ進む（同じ2人）'+(()=>{const rl=recLv(ch+1),lv=S.heroes.map(h=>heroLv(h,pg));return '<small style="display:block;font-size:12px">推奨Lv'+rl+'・今 '+lv.join('・')+(lv.some(x=>x<rl)?'（進む前に訓練できる）':'')+'</small>';})()+'</button>':'')+'<button class="btn'+(next||climb?'':' go')+'" id="samePair" onclick="repeatChapter()">'+chName(ch)+'をもう一度（同じ2人）</button><button class="btn" onclick="resetRun()">作戦室へ（訓練・編成）</button></div>';}
+function chapterActionsHTML(firstClear=false){const pg=loadProg(),first=!pg.help?.samePair63;if(first){pg.help={...pg.help,samePair63:1};saveProg(pg);}const ch=S.run.ch,next=firstClear&&STORY_CHS.includes(ch+1)&&!isCastle(ch);const climb=isCastle(ch)&&isCastle(ch+1)&&S.phase==='result'&&B?.win;return relicDropRow68()+(first?samePairHelpHTML():'')+'<div class="row2 resultactions">'+(climb?'<button class="btn go" id="climbNext" onclick="climbNext68()">'+(CHAPTERS[ch+1].castle)+'階へ登る（装備を持ち越す）</button>':'')+(next?'<button class="btn go" id="nextChapter" onclick="nextChapter68()">'+chName(ch+1)+'へ進む（同じ2人）'+(()=>{const rl=recLv(ch+1),lv=S.heroes.map(h=>heroLv(h,pg));return '<small style="display:block;font-size:12px">推奨Lv'+rl+'・今 '+lv.join('・')+(lv.some(x=>x<rl)?'（進む前に訓練できる）':'')+'<br>鞄の装備は新しく作り直し・勇者のLvはそのまま</small>';})()+'</button>':'')+'<button class="btn'+(next||climb?'':' go')+'" id="samePair" onclick="repeatChapter()">'+chName(ch)+'をもう一度（同じ2人）</button><button class="btn" onclick="resetRun()">作戦室へ（訓練・編成）</button></div>';}
 // r68：魔王城の次の階へ。バッグ・ベルト・控え・お金・宝石はそのまま。敵と店は新しくする
 function climbNext68(){const from=S.run?.ch;if(S.run?.mode!=='story'||S.phase!=='result'||!isCastle(from)||!isCastle(from+1)||!B?.win)return;
   recordPlay('castle_climb',{from,to:from+1,equipment:logInventory(),gold:S.gold});
@@ -3249,7 +3289,7 @@ function startWith(ch,settings=null){fxClear();TALVER++;S.relicRank={};
   S.bossTold=0;S.said=[];S.told={};S.retry=0;S.bossRetry68=0;S.climbReady68=0;
   Object.assign(S,{round:1,lives:3,gold:8,belt:{open:[0,0,0,0],cells:[null,null,null,null]},bench:[null,null,null],shop:[],locked:[0,0,0,0,0],bought:0,pending:null,inBattle:0,sel:null,info:null,pick:null});
   S.runGoals=[];S.intentDone=0;S.routeLog=[];
-  initRelicRun();if(settings&&!S.vessel){S.relics=cleanRelics(settings.relics).slice(0,1);S.relicStart=[...S.relics];S.relicSeen=[...S.relics];S.relicReceived=!!S.relics.length;S.relicSources=Object.fromEntries(S.relics.map(k=>[k,'持ち込み']));}S.dropSeed=null;S.loot=null;
+  initRelicRun();if(false&&settings&&!S.vessel){S.relics=cleanRelics(settings.relics).slice(0,1);S.relicStart=[...S.relics];S.relicSeen=[...S.relics];S.relicReceived=!!S.relics.length;S.relicSources=Object.fromEntries(S.relics.map(k=>[k,'持ち込み']));}S.dropSeed=null;S.loot=null;
   if(!S.encReady)genEnc();S.encReady=0;S.route=null;S.routeDone={};
   S.bonusHp=0;S.camp=0;S.startShield=0;S.heroes=[...ch];S.bags=ch.map(makeBag);
   {const pg=loadProg();S.hlvRun=Object.fromEntries(ch.map(h=>[h,heroLv(h,pg)]));}if(S.vessel){S.relics=vesselRun();S.relicStart=[...S.relics];S.relicSeen=[...S.relics];S.relicReceived=!!S.relics.length;S.relicSources=Object.fromEntries(S.relics.map(k=>[k,'持ち込み']));}
@@ -3446,7 +3486,7 @@ function storyProg(){const pg=loadProg();pg.story=pg.story||{};return pg;}
 // 引き継ぎコード：進行と途中保存を文字列にして、別の端末や保存が消えたときに戻す
 function transferCode(){const o={v:1,p:loadProg(),s:localStorage.getItem(SAVE_KEY)};return 'BB1:'+btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
 function showMore(){const pg=loadProg(),hasHonor=Object.keys(pg.honors||{}).length||Object.keys(pg.warFlags||{}).length||pg.story?.[storyKey(12)];
-  modal(`<h2>その他</h2><div class="row2"><button class="btn" id="mNote">記録帳</button><button class="btn" id="mHelp">遊び方</button></div>${hasHonor?'<div class="row2"><button class="btn" id="mHonor">戦功・勲章</button></div>':''}<div class="volrow"><label for="volR">音の大きさ</label><input type="range" id="volR" min="0" max="100" step="10" value="${volPref()}"><span id="volV">${volPref()}</span></div><div class="volrow"><label for="bgmR">そのうち音楽</label><input type="range" id="bgmR" min="0" max="100" step="10" value="${bgmPref()}"><span id="bgmV">${bgmPref()}</span></div><div class="row2"><button class="btn" id="hXfer">データの引き継ぎ</button></div><div class="row2"><button class="btn go" id="mBack">もどる</button></div><div class="dangerzone"><button class="btn small danger" id="mReset">最初からやり直す</button></div>`);
+  modal(`<h2>その他</h2><div class="row2"><button class="btn" id="mNote">記録帳</button><button class="btn" id="mHelp">遊び方</button></div>${hasHonor?'<div class="row2"><button class="btn" id="mHonor">戦功・勲章</button></div>':''}<div class="volrow"><label for="volR">音の大きさ</label><input type="range" id="volR" min="0" max="100" step="10" value="${volPref()}"><span id="volV">${volPref()}</span></div><div class="volrow"><label for="bgmR">音楽の大きさ</label><input type="range" id="bgmR" min="0" max="100" step="10" value="${bgmPref()}"><span id="bgmV">${bgmPref()}</span></div><div class="row2"><button class="btn" id="hXfer">データの引き継ぎ</button></div><div class="row2"><button class="btn go" id="mBack">もどる</button></div><div class="dangerzone"><button class="btn small danger" id="mReset">最初からやり直す</button></div>`);
   $m('#mNote').onclick=()=>{sfx('tick');showNotebook('goals',showHome);};{const r=$m('#volR');if(r)r.oninput=()=>{safeSet('buddybagS.vol',r.value);$m('#volV').textContent=r.value;if(MASTER&&AC&&!S.muted)MASTER.gain.setTargetAtTime(masterVol(),AC.currentTime,0.02);};r&&(r.onchange=()=>sfx('coin'));}{const r=$m('#bgmR');if(r)r.oninput=()=>{safeSet('buddybagS.bgm',r.value);$m('#bgmV').textContent=r.value;if(BGM.bus&&AC){const g=BGM.bus.gain;g.cancelScheduledValues(AC.currentTime);g.setTargetAtTime(Math.max(0.0001,bgmBase68()),AC.currentTime,0.05);}};}$m('#mHelp').onclick=()=>showOperationHelp(showHome);if($m('#mHonor'))$m('#mHonor').onclick=()=>showHonors();
   $m('#hXfer').onclick=()=>{sfx('tick');showTransfer();};$m('#mBack').onclick=()=>showHome();
   $m('#mReset').onclick=()=>{modal(`<h2>最初からやり直す</h2><p>章のクリア、勇者のレベル、報奨金、遺物、勲章がすべて消えます。元には戻せません。</p><p class="sub">消す前に「データの引き継ぎ」でコードを残しておくと安心です。</p><div class="row2"><button class="btn go" id="rsNo">やめる</button><button class="btn" id="rsYes">消して最初から</button></div>`);
@@ -3516,7 +3556,7 @@ function showHome(){S.run=null;const pg=storyProg(),st=pg.story,c1=st.ch1||0;
       return `<button class="ch${open?'':' lock'}${open&&!done?' now':''}" data-c="${n}" ${open?'':'disabled'}><span class="cn">${c.castle?`魔王城 ${c.castle}階${(loadProg().pact68||{})[n]?`・契約${loadProg().pact68[n]}`:''}`:`第${n}章${(loadProg().pact68||{})[n]?`・契約${loadProg().pact68[n]}`:''}`}</span><b>${c.nm}</b><small>${!open?`${chName(n-1)}のあとに開く`:done?`クリア ✓（${done}回）`:`${c.ds}・${c.limit}戦`}</small>${open?recommendationHTML(n,[],pg):''}</button>`;}).join('')+SIDE66.filter(x=>CHAPTERS[x.id]&&CHAPTERS[x.id].region===rg).map(x=>{const open=!!st[storyKey(x.p)],done=st[storyKey(x.id)]||0;return `<button class="ch side${open?'':' lock'}" data-c="${x.id}" ${open?'':'disabled'}><span class="cn">寄り道</span><b>${x.nm}</b><small>${!open?`第${x.p}章のクリアで開く`:done?`クリア ✓（${done}回）・3戦・報奨金多め`:`${x.ds}・3戦・報奨金多め`}</small>${open?recommendationHTML(x.id,[],pg):''}</button>`;}).join('')+'</div>').join('')+`<div class="rgpage"><p class="rgn">この先<small>${N}/${N}</small></p><button class="ch lock" disabled><span class="cn">魔王城の先</span><b>？？？</b><small>準備中</small></button></div>`;})()}</div></div>
     ${(()=>{// はじめは最小限。使えるようになった物から出す
       const b=(id,t,go)=>`<button class="btn${go?' go':''}" id="${id}">${t}</button>`,hasHonor=Object.keys(pg.honors||{}).length||Object.keys(pg.warFlags||{}).length||st[storyKey(12)];
-      const nRel=Object.keys(pg.relics||{}).filter(k=>RELICS[k]).length;const list=c1?[b('hTrain',`勇者の訓練${Object.keys(HEROES).some(h=>talentsUnset(h,pg))?'<span class="newdot" title="選べる特技があります" aria-label="選べる特技があります">●</span>':''}<br><small style="font-size:11px">報奨金 ${rewardCoins(pg)}</small>`,0),b('hRelics',vesselOn(pg)?`遺物の枠<br><small>持ち物 ${rlxAll(pg).length+Object.keys(pg.relics||{}).filter(k=>RELICS[k]).length}</small>`:`遺物 ${nRel}/${Object.keys(RELICS).length}`),b('hFree','フリー出撃'),b('hMore','その他')]:[b('hOpHelp','遊び方'),b('hMore','その他'),...(nRel?[b('hRelics',vesselOn(pg)?`遺物の枠<br><small>持ち物 ${rlxAll(pg).length+Object.keys(pg.relics||{}).filter(k=>RELICS[k]).length}</small>`:`遺物 ${nRel}/${Object.keys(RELICS).length}`)]:[])];
+      const nRel=Object.keys(pg.relics||{}).filter(k=>RELICS[k]).length;const list=c1?[b('hTrain',`勇者の訓練${Object.keys(HEROES).some(h=>talentsUnset(h,pg))?'<span class="newdot" title="選べる特技があります" aria-label="選べる特技があります">●</span>':''}<br><small style="font-size:11px">報奨金 ${rewardCoins(pg)}</small>`,0),b('hRelics',vesselOn(pg)?`遺物の枠<br><small>持ち物 ${rlxAll(pg).length+Object.keys(pg.relics||{}).filter(k=>RELICS[k]).length}</small>`:'遺物の図鑑'),...(on70('belt')?[b('hFree','フリー出撃')]:[]),b('hMore','その他')].filter(x=>on70('relic')||!x.includes('id="hRelics"')):[b('hOpHelp','遊び方'),b('hMore','その他'),...(nRel?[b('hRelics',vesselOn(pg)?`遺物の枠<br><small>持ち物 ${rlxAll(pg).length+Object.keys(pg.relics||{}).filter(k=>RELICS[k]).length}</small>`:'遺物の図鑑')]:[])];
       let h=homeNextHTML68(st);for(let i=0;i<list.length;i+=2)h+=`<div class="row2">${list[i]}${list[i+1]||''}</div>`;return h;})()}${CREDIT}</div>`);
   if($m('#hNext'))$m('#hNext').onclick=()=>{const t=$m(`.ch[data-c="${$m('#hNext').dataset.c}"]`);if(t)t.click();};
   if($m('#hXfer'))$m('#hXfer').onclick=()=>{sfx('tick');showTransfer();};if($m('#hTrain'))$m('#hTrain').onclick=()=>{sfx('tick');showTraining();};
