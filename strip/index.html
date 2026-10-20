@@ -1148,7 +1148,7 @@ function tick66(){if(!B||B.done)return;const P=B.party;const ev=envOf();
  if(ev==='lava'){B.lavaNext=B.lavaNext||8;if(B.t>=B.lavaNext-1&&!B.lavaWarn){B.lavaWarn=1;B.banner={txt:'1秒後に溶岩が噴き出す！ バリアで防ごう',t:1};}if(B.t>=B.lavaNext){B.lavaNext+=8;B.lavaWarn=0;const d=P.max*.06;partyHit(d);addText('溶岩','party','#ff8a3c',true);B.rec.lava=(B.rec.lava||0)+d;}}
  if(ev==='curse'||hasMod('curse')){const iv=hasMod('curse')?5:10;B.curseNext=B.curseNext||iv;if(B.t>=B.curseNext&&(B.curseN||0)<5){B.curseNext+=iv;B.curseN=(B.curseN||0)+1;B.banner={txt:`呪いが強まった！ 敵の攻撃+${B.curseN*10}%`,t:1};}}
 
- if(B.regen>0&&B.t>=B.regenNext){B.regenNext+=2;const h=Math.min(B.regen,P.max-P.hp);if(h>0){P.hp+=h;B.rec.healed+=h;addText('再生 +'+Math.round(h),'party','#9be38a');}}
+ if(B.regen>0&&B.t>=B.regenNext){B.regenNext+=2;const h=B.hu?healU72(-1,B.regen):Math.min(B.regen,P.max-P.hp);if(h>0){if(!B.hu)P.hp+=h;B.rec.healed+=h;addText('再生 +'+Math.round(h),'party','#9be38a');}}
  const ht=setVal('fire','heat');if(ht&&B.t>=B.heatNext){B.heatNext+=5;addStack('heat',ht);}}
 // 置き場所の条件（Backpack Hero型）
 function locCond(l,at){if(l.a==='belt'||l.a==='bench')return false;const r=Math.floor(l.i/4),c=l.i%4;
@@ -1546,7 +1546,7 @@ function operationHelpHTML(){return `<div class="ophelp"><p>三つの拠点か�
 function snowHelpHTML(){return `<div class="ophelp"><p>吹雪で6秒ごとに、装備が1秒止まります。</p><p>上の内側 → 下の内側 → ベルトの順。</p><p>例：上のバッグの上段は止まりません。</p></div>`;}
 // r69：遊び方の先の章の項目に「まだ先」の印（読むことはできる）
 function helpFar68(n){try{const st=storyProg().story||{};return st[storyKey(n-1)]?'':'<small class="far">　まだ先</small>';}catch(e){return'';}}
-function basicHelpHTML(){const st=[['sword','買う','お店の品を押して、空いたマスへ。控えの品も押してバッグへ'],['whet','並べる','隣に効く道具がある。同じ品・同じ★を重ねると合体して強くなる'],['skull','敵を見る',on70('race')?'次の敵の札の◎の品はよく効く（1.4倍）、△は効きにくい（0.8倍）。この印は店の品にも付く':'次の敵の札で、HPと攻撃の強さを見よう'],['shield','戦う',on70('rally')?'戦いは自動。号令ボタンで守りを固める。戦いの画面を押すと一時停止':'戦いは自動。戦いの画面を押すと一時停止']];return `<div class="ophelp steps68" id="basicHelp">${st.map(([ic,t,d],i)=>`<div class="st68"><img src="${ICO(ic)}" alt=""><span><b>${i+1}. ${t}</b><small>${d}</small></span></div>`).join('')}</div>`;}
+function basicHelpHTML(){const st=[['sword','買う','お店の品を押して、空いたマスへ。控えの品も押してバッグへ'],['whet','並べる','隣に効く道具がある。同じ品・同じ★を重ねると合体して強くなる'],['skull','敵を見る',on70('race')?'次の敵の札の◎の品はよく効く（1.4倍）、△は効きにくい（0.8倍）。この印は店の品にも付く':'次の敵の札で、HPと攻撃の強さを見よう'],['shield','戦う',(/hp1=1/.test(location.search)?'':'2人はそれぞれHPを持つ。前の勇者ほど狙われ、倒れた勇者の装備は止まる。')+(on70('rally')?'戦いは自動。号令ボタンで守りを固める。戦いの画面を押すと一時停止':'戦いは自動。戦いの画面を押すと一時停止')]];return `<div class="ophelp steps68" id="basicHelp">${st.map(([ic,t,d],i)=>`<div class="st68"><img src="${ICO(ic)}" alt=""><span><b>${i+1}. ${t}</b><small>${d}</small></span></div>`).join('')}</div>`;}
 function relicSpaceHTML(pg=loadProg()){if(vesselOn(pg))return '<p class="sub relicspace">出撃した2人の、枠にはめた遺物が効きます。</p>';return `<p class="sub relicspace">遺物は${kingLevel(pg)}枠。途中で最大2回選べます。満杯なら入れ替えられます。</p>`;}
 function showOperationHelp(back=closeModal){modal(`<h2>遊び方</h2><h3>まずはこれだけ</h3>${basicHelpHTML()}<h3 class="dict">困ったときに読む</h3><details data-f70="race"><summary>敵の種族と相性・ボスの大技・精鋭と宝石<small class="when">どの品がよく効くか知りたいとき</small></summary><div class="ophelp"><p>敵には「骨」「飛ぶ」「獣」などの種族があります。次の敵の札に、効きやすい系統（◎）と効きにくい系統（△）が出ます。◎の装備は1.4倍、△の装備は0.8倍の威力です。バッグとお店の品にも、次の敵に対して◎か△の印が付きます。</p><p>${Object.values(RACE68).map(r=>`<b>${r.nm}</b> ◎${CLSN[r.weak]} △${CLSN[r.res]}`).join('　')}</p><p>ボスは大技を使います。敵の上のゲージが大技までの時間です。もうすぐになったら、号令「守りを固めよ」で受けよう。</p><p><b>連鎖</b>：「充填」は装備の待ち時間を進めて、早く使わせる。「加速」はしばらく2倍の速さで動かす。ぜんまい・伝令の角笛・火種・鳴子・歯車の盾・雷の鎖で、置く場所によって連鎖の形が変わる。</p><p><b>精鋭と宝石</b>：物語の章では1回だけ、ボス以外の戦いを「精鋭」にできます（次の敵の札のボタン）。HP+20%・攻撃+15%になりますが、勝つと宝石を1つ選べます。宝石は炎・氷・毒の3種類。準備のあいだ、攻撃する装備にはめたり外したりできて、はめた装備にその相性が付きます。宝石はその出撃のあいだだけ使えます。</p></div></details><details data-f70="sets"><summary>系統・重ねがけ・覚醒<small class="when">同じなかまの品をそろえると強くなる</small></summary><div class="ophelp"><p>装備には「刃」「毒」「守り」などの系統があります。2人のバッグとベルトに同じ系統が2・4・6個あると、その系統の装備が強くなります。</p><p>力（武器のダメージ+1/重ね）・熱（装備が2%速い/重ね）・再生（2秒ごとに回復）は味方に、脆弱（受けるダメージ+3%/重ね）・弱体（攻撃-3%/重ね）は敵に重なります。</p><p>決まった品を隣り合わせると、伝説の品を作れます（準備画面の「系統」の帯から）。</p></div></details><details data-f70="belt"><summary>ベルト・必殺技・号令<small class="when">2人で使う枠と、戦いの中のボタン</small></summary><div class="ophelp"><p>ベルトの装備は2人が同時に使います。</p><p>必殺技はゲージがたまると自動で発動。</p><p>号令は戦闘中に押して使います。効き目が切れてから15秒たつと、もう一度使えます。</p></div>${specialHelpHTML()}</details><details data-f70="none"><summary>錬成<small class="when">武器2つを1つにまとめる</small></summary><div class="ophelp"><p>金床を選び、「錬成」を押します。</p><p>違う武器2つを、同じ★でそろえよう。</p><p>武器が1つになり、金床はなくなります。</p></div></details><details><summary>店<small class="when">ほしい品を探したいとき</small></summary>${shopHelpHTML()}</details><details><summary>報酬・勇者の訓練<small class="when">勇者のレベルの上げ方</small></summary>${samePairHelpHTML()}${rewardSpaceHelpHTML()}${dropHelpHTML()}${levelHelpHTML()}${talentHelp65()}<p class="sub">ゴールドは今回の出撃の買い物に使います。報奨金は出撃後も残り、訓練に使えます。勝利と章クリアで報奨金を獲得します。残ったゴールドは報奨金にはなりません。遅れた勇者は、主力2人の低い方より3Lv下まで訓練費用が半額です。</p></details><details data-f70="relic"><summary>遺物・遺物の棚<small class="when">ずっと効く特別な品</small></summary>${relicShelfHelpHTML()}${relicHelp51HTML()}${relicPickHelpHTML()}${relicSwapHelpHTML()}${relicCollectionHelp63()}${relicGrowthHelp65()}<p>「組み方」は、合う装備や置き方のヒントです。代償のある遺物は、効果が下がる所も確認しましょう。金の勝利印までの記録は、使ってクリアした章ごとに残ります。</p><p>第1章クリア後に使えます。枠ははじめ1個、第4章と第8章のクリアで1個ずつ増えます。途中の選択は第1戦と中間の戦いの勝利後。満杯なら、持ち込み・途中で得た遺物のどちらとも入れ替えられます。</p></details><details data-f70="op"><summary>第13章からの作戦・吹雪${helpFar68(13)}</summary>${operationHelpHTML()}${snowHelpHTML()}<p class="sub">止まる順は上のバッグの下段 → 下のバッグの上段 → ベルト。1秒前に段を囲みます。</p></details><details data-f70="stance"><summary>第14章からの構え崩し・防衛${helpFar68(14)}</summary>${northernHelpHTML('stance')}${northernHelpHTML('defend')}</details><details data-f70="op"><summary>戦功・追加の挑戦</summary>${honorHelpHTML()}<p class="sub">第13章の初クリアで開放。以後、第1戦後に「通常」「少ない援助」「強い支援」から一つ選べます。拠点を決めると、その出撃では固定です。</p></details><div class="row2"><button class="btn go" id="opHelpBack">もどる</button></div>`);$m('#opHelpBack').onclick=back;document.querySelectorAll('#mcard [data-f70]').forEach(e=>{const k=e.dataset.f70;if(k==='none'||!on70(k))e.remove();});if($m('#bShopSearch'))$m('#bShopSearch').onclick=()=>showShopSearch(()=>showOperationHelp(back));}
 function honorHelpHTML(){return `<div class="ophelp"><p>違う支援を残して勝つと、旗が増えます。</p><p>例：強い支援に挑んで勝つと勲章も獲得。</p><p>勲章は飾る記念品。能力は増えません。</p></div>`;}
@@ -2194,7 +2194,7 @@ function startBattle(){
   B={t:0,def,enemy:{hp:def.hp,max:def.hp,timer:0,burn:0,poison:0,frz:0,flash:0},party:{hp:maxHp(),max:maxHp(),shield:openingWrap+(S.heroes.includes('knight')?10*levelStats(runLv('knight')).m:0)+(tal('k10a')?15:0)+(tal('k50a')?Math.round(maxHp()*.1):0)+rxParty('bar')+(S.camp||0)+(S.startShield||0)+(pairKey()==='fire+speed'?Math.round(def.atk/def.int*PAIR_FS_SEC):0),flash:0,revive:(()=>{const f=boardLocs().map(getP).filter(q=>q&&q.type==='feather');return f.length?[0,.4,.5,.6][Math.max(...f.map(q=>q.star))]:0;})()},
      inst:[],gauge:(S.heroes||[]).map(h=>h==='knight'&&tal('k50b')?50:0),specialSeen:{},specialFx:[],frozenRow:null,frozenT:0,bossT:0,sealed:{},texts:[],shots:[],beams:[],combos:[],shake:0,stop:0,done:false,burnAcc:0,poisonAcc:0,banner:null,contrib:{},log:'',
      actors:S.heroes.map(actor),foe:actor(def.spr),slowBurn,stats:{ign:0,det:0,bleed:0,frz:0,ring:0,refire:0}};
-  boardLocs().forEach(l=>{const us=itemUses(l);if(!us.length)return;const p=getP(l),d=ITEMS[p.type];
+  initHU72();boardLocs().forEach(l=>{const us=itemUses(l);if(!us.length)return;const p=getP(l),d=ITEMS[p.type];
     if(l.a==='belt'&&us.length===2)B.inst.push({l,p,d,dark:darkOf(l,d),combo:us,u:-1,tag:'combo',pw:us[0].pw+us[1].pw,cd:(us[0].cd+us[1].cd)/2,cd0:(us[0].cd+us[1].cd)/2,timer:d.opening?(us[0].cd+us[1].cd)/2:d.kind==='once'?0:Math.random()*0.5});
     else us.forEach(u=>B.inst.push({l,p,d,dark:darkOf(l,d),...u,cd0:u.cd,timer:d.opening?u.cd:d.kind==='once'?0:Math.random()*0.5}));});
   B.thorns=0;boardLocs().forEach(l=>{const p=getP(l);if(p&&p.type==='spiked'){B.thorns+=6*STAR[p.star];B.thornSrc=lkey(l);}});
@@ -2258,11 +2258,11 @@ function fireOne(x){
   if(d.kind==='ignite'){const dk=envOf()==='damp'?0.7:1;if(x.burnAdd&&B.def.mech!=='fireproof')E.burn+=x.burnAdd*dk;else if(x.burnAdd)E.burn+=x.burnAdd*0.4*dk;const v=E.burn*x.pw*(crit?2:1);if(v>=1){B.shots.push({x0:c0[0],y0:c0[1],t:0,col:'#ffb02e',dmg:v,big:v>=30,src,ic:'fire',stat:'ign',hero:x.hero});if(v>=40)B.pend=`大炎上！ ${Math.round(v)}`;B.log=`${who} → やけどを燃やして${Math.round(v)}`;}else B.log=`${who}：やけどが無いので空振り`;}
   if(d.kind==='shield'&&x.hero==='knight'&&pairKey()==='fire+guard'&&!B.kmBoost){B.kmBoost=1;}
   if(d.kind==='shield'){P.shield+=p;addText(`盾+${Math.round(p)}`,'party','#9cc8f5');sfx('shield');B.log=`${who} → バリア${Math.round(p)}`;}
-  if(d.kind==='heal'){const h=Math.min(p,P.max-P.hp);P.hp+=h;B.rec.healed+=h;B.contrib[src]=(B.contrib[src]||0)+h;sfx('heal');addText(`+${Math.round(h)}`,'party','#9be38a');
+  if(d.kind==='heal'){const h=B.hu?healU72(x.u,p):(()=>{const v=Math.min(p,P.max-P.hp);P.hp+=v;return v;})();B.rec.healed+=h;B.contrib[src]=(B.contrib[src]||0)+h;sfx('heal');addText(`+${Math.round(h)}`,'party','#9be38a');
     if(hasRelic('mercy')&&!B.relicOnce?.mercy){B.relicOnce={...B.relicOnce,mercy:1};const v=Math.min(rv('mercy',6),Math.max(0,p-h));P.shield+=v;relicTick('mercy',v);}
     if(x.mercy&&p-h>0.5){const sv=Math.min((p-h)*x.mercy.r,x.mercy.cap);P.shield+=sv;addText(`盾+${Math.round(sv)}`,'party','#9cc8f5');B.contrib[src]=(B.contrib[src]||0)+sv;}
     if(x.scale&&h>=1){B.scaleCD=B.scaleCD||{};const ck=src+'-'+x.u;if(!(B.scaleCD[ck]>B.t)){B.scaleCD[ck]=B.t+1;const v=Math.min(h*x.scale.r,x.scale.cap);B.shots.push({x0:c0[0],y0:c0[1],t:0,col:'#ffe08a',dmg:v,src,vis:'orb',spd:6,big:v>=25,stat:'ring'});addText(`祈り→${Math.round(v)}`,'party','#ffe08a');}}B.log=`${who} → 回復${Math.round(h)}`;}
-  if(x.bell&&(d.kind==='shield'||d.kind==='bash')){const h=Math.min(x.bell,Math.max(0,P.max-P.hp));P.hp+=h;B.rec.healed+=h;B.contrib[src]=(B.contrib[src]||0)+h;if(h){addText(`鈴 +${Math.round(h)}`,'party','#9be38a');sfx('heal');}}
+  if(x.bell&&(d.kind==='shield'||d.kind==='bash')){const h=B.hu?healU72(-1,x.bell):(()=>{const v=Math.min(x.bell,Math.max(0,P.max-P.hp));P.hp+=v;return v;})();B.rec.healed+=h;B.contrib[src]=(B.contrib[src]||0)+h;if(h){addText(`鈴 +${Math.round(h)}`,'party','#9be38a');sfx('heal');}}
   if(d.kind==='shield')B.contrib[src]=(B.contrib[src]||0)+p;
   if(x.tag==='guard'&&d.kind!=='shield'&&d.kind!=='heal'&&!(B.assaultT>0))P.shield+=p*0.1;
   if(x.l.a==='belt'){const fe=document.querySelector(`.bag[data-u="${x.u}"] .buddy`);if(fe){const r=fe.getBoundingClientRect();B.beams.push({x0:r.left+r.width/2,y0:r.top+r.height/2,x1:c0[0],y1:c0[1],t:0,col});}}
@@ -2300,7 +2300,7 @@ function hitEnemy(s){
     if(s.big||s.crit){B.stop=0.06;if(s.crit)B.shake=Math.max(B.shake,0.1);if(s.crit&&(!B.whiteT||performance.now()-B.whiteT>250))B.whiteT=performance.now();sfx(s.crit?'crit':'big');}else sfx('hit');
     {const[ecx2,ecy2]=enemyStage();(B.sparks=B.sparks||[]).push({x:ecx2-8+fxRandom()*10,y:ecy2-6+fxRandom()*14,t0:performance.now(),big:!!(s.crit||s.big),col:s.crit?'#ffe07a':'#ffffff'});burst(s.crit||s.big?10:4,ecx2-6,ecy2,s.crit?['#ffd25a','#ffffff']:['#ffffff',s.col||'#fff'],s.crit?120:70,0.3,10);}
     play(B.foe,'hit');
-    if(s.leech&&!(B.assaultT>0)){const h=Math.min(dm*s.leech,B.party.max-B.party.hp);if(h>0){B.party.hp+=h;}}}
+    if(s.leech&&!(B.assaultT>0)){if(B.hu)healU72(-1,dm*s.leech);else{const h=Math.min(dm*s.leech,B.party.max-B.party.hp);if(h>0){B.party.hp+=h;}}}}
   const [ecx,ecy]=enemyStage();
   if(s.burn){E.burn+=s.burn*(mech==='fireproof'?0.4:1)*(envOf()==='damp'?0.7:1);firstSeen('burn');burst(4,ecx,ecy,['#ffb02e','#ea6b3c'],40,0.45,30);}
   if(s.poison){E.poison+=s.poison;firstSeen('poison');burst(3,ecx,ecy+6,'#9fd35a',22,0.6,18);}
@@ -2335,7 +2335,7 @@ function lightActivation(el,col){if(!el||!el.animate)return;
     {boxShadow:`inset 0 0 0 1px ${col}`,offset:.3},{boxShadow:'inset 0 0 0 0 transparent'}],
     {duration:reducedMotion()?200:260,easing:'ease-out'});
 }
-function specialHelpHTML(){return on70('special')?'<div class="ophelp" id="specialHelp"><p>装備が動くと、マスが光ります。</p><p>必殺ゲージが満タンで、自動発動。</p><p>「もうすぐ」が出たら、あと少し。</p></div>':'<div class="ophelp" id="specialHelp"><p>選んだ2人が、それぞれのバッグの装備を使って戦います。</p><p>装備が動くと、マスが光ります。</p></div>';}
+function specialHelpHTML(){return on70('special')?'<div class="ophelp" id="specialHelp"><p>装備が動くと、マスが光ります。</p><p>必殺ゲージが満タンで、自動発動。</p><p>「もうすぐ」が出たら、あと少し。</p></div>':'<div class="ophelp" id="specialHelp"><p>選んだ2人が、それぞれのバッグの装備を使って戦います。</p><p>2人はそれぞれHPを持ちます。前（上のバッグ）の勇者ほど狙われます。</p><p>回復の品は、持ち主を治します。倒れた勇者の装備は止まります。</p></div>';}
 function specialGauge(u,W){const h=HEROES[S.heroes[u]],w=(W/2-22)/2,x=8+u*(w+8),v=Math.min(100,B.gauge[u]),soon=v>=80,y=26;
   sx.save();sx.fillStyle='rgba(15,12,10,.85)';sx.fillRect(x-2,y-2,w+4,15);
   sx.textAlign='left';sx.font='9px DotGothic16, monospace';sx.fillStyle=soon?'#ffe199':'#eee3d1';sx.fillText(h.name,x,y+8,w*0.42);
@@ -2382,12 +2382,21 @@ function drawSpecialFx(W,H){if(!B.specialFx?.length)return;const now=performance
     sx.fillStyle='#fff1ca';sx.font=`${rows>1?11:13}px DotGothic16, monospace`;sx.fillText(HEROES[q.h].sp,bandW*.47,y+hh*.72,bandW*.52-4);sx.restore();
   });
 }
+// r72 勇者ごとのHP（タスクバーヒーロー型）。バリアは2人で共有。敵は3回に2回は前、1回は後ろを狙う
+const HPW72={knight:1.3,mage:0.8,archer:0.95};
+function initHU72(){if(/hp1=1/.test(location.search))return;const tot=B.party.max,ws=(S.heroes||[]).map(h=>HPW72[h]||1),sum=ws.reduce((a,b)=>a+b,0)||1;B.hu=S.heroes.map((h,u)=>{const m=Math.round(tot*ws[u]/sum);return{hp:m,max:m};});B.atkN72=0;syncP72();}
+function syncP72(){if(!B||!B.hu)return;B.party.hp=B.hu.reduce((a,x)=>a+Math.max(0,x.hp),0);B.party.max=B.hu.reduce((a,x)=>a+x.max,0);}
+const aliveU72=u=>!!(B&&B.hu&&B.hu[u]&&B.hu[u].hp>0);
+function lowestU72(){let best=-1,r=9;(B.hu||[]).forEach((x,u)=>{if(x.hp>0&&x.hp/x.max<r){r=x.hp/x.max;best=u;}});return best;}
+function healU72(u,amt){const t=(u>=0&&aliveU72(u))?u:lowestU72();if(t<0||!(amt>0))return 0;const x=B.hu[t],h=Math.max(0,Math.min(amt,x.max-x.hp));x.hp+=h;syncP72();return h;}
+function nextTargetU72(){const front=aliveU72(0)?0:1,back=1-front;if(!aliveU72(back))return front;return ((B.atkN72||0)+1)%3===0?back:front;}
+function hurtU72(u,d){const x=B.hu[u];if(!x||x.hp<=0)return;x.hp-=d;if(x.hp<=0){x.hp=0;if(B.party.revive){x.hp=Math.round(x.max*B.party.revive);B.party.revive=0;B.banner={txt:`不死鳥の羽で${HEROES[S.heroes[u]].name}が起き上がった！`,t:1.2};sfx('open');}else{play(B.actors[u],'death');B.banner={txt:`${HEROES[S.heroes[u]].name}が倒れた。鞄の装備が止まる`,t:1.4};}}syncP72();}
 function partyHit(dmg){const P=B.party;dmg*=1-0.03*Math.min(20,B.enemy.weak||0);let d=dmg*(B.rallyT>0?0.4:1);if(dmg>0){const back=(B.thornmail||0)+(B.setThorns||0);if(back){B.enemy.hp-=back;B.rec.thorns+=back;}if(B.frostarmor)hitEnemy({freeze:B.frostarmor});}B.rec.rally+=dmg-d;if(B.rallyT>0)(B.ripples=B.ripples||[]).push({t0:performance.now(),a:-0.3+fxRandom()*0.6});
   if(d>0&&P.shield>0&&!(B.assaultT>0)){const mail=boardLocs().map(getP).filter(q=>q?.type==='chainmail').reduce((v,q)=>Math.max(v,[0,2,3,4][q.star]),0),v=Math.min(d,mail);d-=v;B.rec.blocked+=v;}
   const thornBlock=d>0&&P.shield>0;if(!newRelicRule()&&d>0&&P.shield>0&&hasRelic('thorn')&&!B.relicOnce?.thorn&&!(B.assaultT>0)){B.relicOnce={...B.relicOnce,thorn:1};const h=Math.min(rv('thorn',6),P.max-P.hp);P.hp+=h;B.rec.healed+=h;relicTick('thorn',h);}
   if(P.shield>0){const a=Math.min(P.shield,d);P.shield-=a;d-=a;B.rec.blocked+=a;if(a>0&&tal('k10b')&&B.t-(B.counterT??-9)>=1){B.counterT=B.t;B.enemy.hp-=4;B.rec.hit+=4;addText('反撃 4','enemy','#9cc8f5');talentFx('k10b','反撃 4');}if(a>0&&pairKey()==='guard+speed'&&S.heroes.includes('knight')){if(!(B.haste>0))addText('迅盾！','party','#7ad07a');B.haste=1;}if(B.thorns){B.enemy.hp-=B.thorns;B.rec.thorns+=B.thorns;B.contrib[B.thornSrc]=(B.contrib[B.thornSrc]||0)+B.thorns;addText(`反撃${Math.round(B.thorns)}`,'enemy','#c9c2b4');}}
-  P.hp-=d;armCampPot();if(newRelicRule()&&thornBlock&&P.hp>0&&P.hp<P.max&&hasRelic('thorn')&&!B.relicOnce?.thorn&&!(B.assaultT>0)){const h=Math.min(rv('thorn',6),P.max-P.hp);if(h>0){P.hp+=h;B.rec.healed+=h;B.relicOnce={...B.relicOnce,thorn:1};relicTick('thorn',h);}}B.rec.taken+=Math.max(0,d);P.flash=0.18;addText(d>0?`-${Math.round(d)}`:'防いだ','party','#ff8a7a');if(d>25)B.shake=Math.max(B.shake,0.08);
-  if(d>0){play(B.actors[Math.floor(fxRandom()*B.actors.length)],'hit');sfx('hurt');}else{sfx('block');B.guardT=performance.now();}
+  {const tu=B.hu?nextTargetU72():-1;if(B.hu){B.atkN72=(B.atkN72||0)+1;B.lastHitU72=tu;hurtU72(tu,Math.max(0,d));}else P.hp-=d;}armCampPot();if(newRelicRule()&&thornBlock&&P.hp>0&&P.hp<P.max&&hasRelic('thorn')&&!B.relicOnce?.thorn&&!(B.assaultT>0)){const h=Math.min(rv('thorn',6),P.max-P.hp);if(h>0){P.hp+=h;B.rec.healed+=h;B.relicOnce={...B.relicOnce,thorn:1};relicTick('thorn',h);}}B.rec.taken+=Math.max(0,d);P.flash=0.18;addText(d>0?`-${Math.round(d)}`:'防いだ','party','#ff8a7a');if(d>25)B.shake=Math.max(B.shake,0.08);
+  if(d>0){play(B.actors[B.hu&&B.lastHitU72>=0?B.lastHitU72:Math.floor(fxRandom()*B.actors.length)],'hit');sfx('hurt');}else{sfx('block');B.guardT=performance.now();}
   if(B.def.mech==='leech'&&d>0){const h=Math.min(d*0.6,B.enemy.max-B.enemy.hp);B.enemy.hp+=h;B.rec.eheal+=h;if(h>=1)addText(`吸血+${Math.round(h)}`,'enemy','#9be38a');}}
 function rowOf(l){if(l.a==='belt')return 2;const r=Math.floor(l.i/4);return l.a==='A'?r:3+r;}
 function breakStance(reason){if(!B.stance)return;B.stance=null;B.rec.stanceBreaks=(B.rec.stanceBreaks||0)+1;B.rec[reason==='freeze'?'stanceFreezes':'stancePairs']=(B.rec[reason==='freeze'?'stanceFreezes':'stancePairs']||0)+1;B.banner={txt:'構えを崩した！',t:1};recordPlay('stance_break',{reason,battleSeconds:playSeconds(B.t)});renderOperationStrip();}
@@ -2406,7 +2415,7 @@ function step(dt){
   /* r69：号令は効き目が切れてから15秒で、もう一度使える（長い戦いほど、いつ守りいつ攻めるかを選べる） */if(!B.rallyLeft&&B.rallyT<=0&&B.assaultT<=0&&B.rallyCD>0){B.rallyCD-=dt;if(B.rallyCD<=0){B.rallyCD=0;B.rallyLeft=1;B.rallyKind=null;if(!SILENT){B.banner={txt:'号令をもう一度使える',sub:'',t:1.4};}}}updateRallyButtons();
   stepOperation(dt);
   stepStance();
-  if(def.mech==='poison'){const pd=def.atk/def.int*0.15*dt*(B.rallyT>0?0.4:1);P.hp-=pd;armCampPot();B.rec.taken+=pd;}
+  if(def.mech==='poison'){const pd=def.atk/def.int*0.15*dt*(B.rallyT>0?0.4:1);if(B.hu){const al=[0,1].filter(aliveU72);al.forEach(u=>hurtU72(u,pd/al.length));}else P.hp-=pd;armCampPot();B.rec.taken+=pd;}
   if(E.burn>0){if(tal('m10a'))talentFx('m10a','やけどが長く残る');const d=E.burn*0.3*dt;E.hp-=d;B.rec.burn+=d;B.burnAcc+=d;E.burn-=E.burn*(B.slowBurn?0.2:0.25)*(tal('m10a')?.8:1)*dt;if(E.burn<0.2)E.burn=0;if(B.burnAcc>=6){addText(`炎${Math.round(B.burnAcc)}`,'enemy','#ffa36b');B.burnAcc=0;}}
   if(E.poison>0){const d=E.poison*0.4*dt;E.hp-=d;B.rec.poison+=d;E.poison-=E.poison*0.1*dt;if(E.poison<0.2)E.poison=0;B.poisonAcc+=d;if(B.poisonAcc>=6){addText(`毒${Math.round(B.poisonAcc)}`,'enemy','#a6d36a');B.poisonAcc=0;}}
   if(B.fuses&&B.fuses.length){B.fuses.filter(f=>f.at<=B.t).forEach(f=>{addText('追爆！','enemy','#ffb02e',true);B.stats.refire++;fire(f.x);});B.fuses=B.fuses.filter(f=>f.at>B.t);}
@@ -2440,7 +2449,7 @@ function step(dt){
     if(B.bossT>=6){B.bossT=0;const c=B.inst.some(x=>x.l.a==='belt'&&!x.done);
       if(c){B.slowBelt=4;B.banner={txt:'ベルトが鈍った！',t:0.9};play(B.foe,'attack');}}}
   if(B.slowBelt>0)B.slowBelt-=dt;
-  for(const x of B.inst){if(B.rallyT>0&&!['shield','heal'].includes(x.d.kind))continue;if(B.assaultT>0&&['shield','heal','bash'].includes(x.d.kind))continue;if(x.done||(x.dark&&B.t<2)||B.frozenRow===rowOf(x.l)||B.sealed[lkey(x.l)]||(B.bagSeal&&B.bagSeal.t>0&&B.bagSeal.a===x.l.a))continue;if(x.d.delay&&B.t<x.d.delay)continue;if(x.d.lowOnce&&B.party.hp>B.party.max/2)continue;x.timer+=dt*(1+0.02*Math.min(25,B.heat||0))*(x.d.lowFast&&B.party.hp<=B.party.max/2?2:1)*(hasRelic('hourglass')&&B.t<=hourglassDuration()?hourglassSpeed():1)*(B.slowBelt>0&&x.l.a==='belt'?0.25:1)*(x.l.a==='belt'&&envOf()==='fog'?0.83:1)*(B.haste>0&&x.hero==='archer'?1.5:1)*(B.assaultT>0&&x.d.cls==='weapon'?2:1)*(B.t<3&&x.d.cls==='weapon'&&tal('a40b')?1.3:1)*(B.t<5&&x.d.cls==='weapon'?1+rxv(x.hero,'first')/100:1)*(x.hasteT>B.t?2:1);if(x.timer>=x.cd){x.timer-=x.cd;fire(x);chain68(x);}}
+  for(const x of B.inst){if(B.hu&&(x.u>=0?!aliveU72(x.u):!B.hu.some(h=>h.hp>0)))continue;if(B.rallyT>0&&!['shield','heal'].includes(x.d.kind))continue;if(B.assaultT>0&&['shield','heal','bash'].includes(x.d.kind))continue;if(x.done||(x.dark&&B.t<2)||B.frozenRow===rowOf(x.l)||B.sealed[lkey(x.l)]||(B.bagSeal&&B.bagSeal.t>0&&B.bagSeal.a===x.l.a))continue;if(x.d.delay&&B.t<x.d.delay)continue;if(x.d.lowOnce&&B.party.hp>B.party.max/2)continue;x.timer+=dt*(1+0.02*Math.min(25,B.heat||0))*(x.d.lowFast&&B.party.hp<=B.party.max/2?2:1)*(hasRelic('hourglass')&&B.t<=hourglassDuration()?hourglassSpeed():1)*(B.slowBelt>0&&x.l.a==='belt'?0.25:1)*(x.l.a==='belt'&&envOf()==='fog'?0.83:1)*(B.haste>0&&x.hero==='archer'?1.5:1)*(B.assaultT>0&&x.d.cls==='weapon'?2:1)*(B.t<3&&x.d.cls==='weapon'&&tal('a40b')?1.3:1)*(B.t<5&&x.d.cls==='weapon'?1+rxv(x.hero,'first')/100:1)*(x.hasteT>B.t?2:1);if(x.timer>=x.cd){x.timer-=x.cd;fire(x);chain68(x);}}
   talentTick();tick66();for(const s of B.shots){s.t+=dt*(s.spd||3.0);if(s.t>=1&&!s.hit){s.hit=1;hitEnemy(s);}}
   B.shots=B.shots.filter(s=>!s.hit);
   if(def.mission==='20秒防衛'&&P.hp<=0){endBattle(false);return;}
@@ -2448,7 +2457,7 @@ function step(dt){
   if(E.hp<=0&&!(def.mission==='20秒防衛'&&B.t+1e-7>=20)){if(def.boss==='demon'&&!B.phase2)enterDemonPhase();else{endBattle(true);return;}}
   const tt=B.t-(B.phaseT||0),enr=tt>25?1+0.5*Math.floor((tt-25)/8+1):1;
   E.timer+=dt*(def.beh68==='beast'&&E.hp<E.max/2?1.5:1);if(E.timer>=def.int){E.timer-=def.int;clapper68();play(B.foe,'attack');sfx('foe');if(def.boss==='breaker'||def.support==='breaker'){B.atkN=(B.atkN||0)+1;if(B.atkN%3===0&&P.shield>0){P.shield*=1-0.4*(def.support==='breaker'?supportScale():1);addText('盾くずし！','party','#ff8a7a',true);B.shake=.25;}}partyHit(def.atk*enr*(1+0.1*(B.curseN||0)));if(enr>1&&!B.enr){B.enr=1;B.banner={txt:'敵が怒った！',t:1};}}
-  if(P.hp<=0&&P.revive){P.hp=P.max*P.revive;P.revive=0;B.banner={txt:'不死鳥の羽で復活！',t:1.2};sfx('open');}
+  if(!B.hu&&P.hp<=0&&P.revive){P.hp=P.max*P.revive;P.revive=0;B.banner={txt:'不死鳥の羽で復活！',t:1.2};sfx('open');}
   E.flash=Math.max(0,E.flash-dt);P.flash=Math.max(0,P.flash-dt);B.shake=Math.max(0,B.shake-dt);
   B.texts.forEach(t=>t.t+=dt);B.texts=B.texts.filter(t=>t.t<0.9);
   B.beams.forEach(b=>b.t+=dt);B.beams=B.beams.filter(b=>b.t<0.25);
@@ -2488,7 +2497,7 @@ function endBattle(win){
 }
 const N0=v=>Math.round(v);
 function battleFacts(){if(!B||!B.rec)return[];const r=B.rec,d=B.def,out=[];if(d.support)out.push(`残った支援：${SUPPORTS[d.support].nm}。${d.support==='wall'?`バリアで ${N0(r.ebar)} 防がれた`:d.support==='supply'?`回復を${r.healFail}回止め、${r.healOK}回許した`:d.support==='breaker'?'通常攻撃の3回目にバリアを崩す':`追加射撃${r.supportShots||0}回`}`);
-  if(d.mission==='20秒防衛')out.push(B.win?(B.enemy.hp>0?'20秒守り切った':'敵を倒して防衛成功'):'防衛中に共有HPが尽きた');
+  if(d.mission==='20秒防衛')out.push(B.win?(B.enemy.hp>0?'20秒守り切った':'敵を倒して防衛成功'):'防衛中に2人とも倒れた');
   {const bf=[];if(r.dodge)bf.push(`<b>${r.dodge}回</b>よけられた（刃・鈍器。弓や魔法は当たる）`);if(r.boneUp)bf.push('骨が一度起き上がった（HP20%）');if(r.darkSh>=1)bf.push(`魔法の盾で <b>${N0(r.darkSh)}</b> 防がれた`);if(r.softCut>=1)bf.push(`やわらかい体で大きな一撃が <b>${N0(r.softCut)}</b> 減った`);if(r.armorCut>=1)bf.push(`鎧で <b>${N0(r.armorCut)}</b> 減らされた`);if(r.rcUpN||r.rcDnN){const rr=RACE68[raceOf(d)];if(rr)bf.push(`相性：◎${CLSN[rr.weak]}の攻撃 ${r.rcUpN||0}回・△${CLSN[rr.res]}の攻撃 ${r.rcDnN||0}回`);}out.push(...bf.slice(0,2));}
   if(r.charge||r.haste)out.push(`連鎖：充填 ${(r.charge||0).toFixed(1)}秒・加速 ${(r.haste||0).toFixed(1)}秒`);
   if(d.boss==='stance')out.push(`構えを二本で${r.stancePairs||0}回、凍結で${r.stanceFreezes||0}回止めた。重い一撃は${r.stanceHits||0}回`);
@@ -2813,7 +2822,12 @@ function drawWalk(dt){if(!$('stage').offsetWidth||!S.heroes?.length)return;const
   SCROLL+=dt*36;
   sx.clearRect(0,0,W,H);sx.save();drawBg(W,H);const base=GROUND(),hb=HERO_BODY();drawGroundScroll(W,H,base,SCROLL);
   WALK.actors.forEach((ac,u)=>{ac.t+=dt;const m=META[ac.name];if(m&&ac.anim!=='idle')ac.t%=(m.anims[ac.anim]/14);const x=heroX(u,W);sx.fillStyle='rgba(0,0,0,.45)';sx.fillRect(x-14,base-2,28,4);sx.fillRect(x-18,base-1,36,2);drawChar(ac,x,base+2,hb,false);});
-  drawTrack(W,H);drawRelics70(W,H);sx.restore();}
+  drawTrack(W,H);drawRelics70(W,H);drawSwap72(W,H);sx.restore();}
+let SWHIT72=null;
+function drawSwap72(W,H){SWHIT72=null;if(/hp1=1/.test(location.search)||(S.heroes||[]).length<2||S.phase!=='plan')return;const t=`前：${HEROES[S.heroes[0]].name}　入れ替え`;sx.font='11px DotGothic16, monospace';const w=sx.measureText(t).width+14,h=20,x=6,y=6;
+  sx.fillStyle='rgba(12,9,7,.78)';sx.fillRect(x,y,w,h);sx.strokeStyle='#8c7957';sx.lineWidth=1;sx.strokeRect(x+.5,y+.5,w-1,h-1);sx.fillStyle='#ecdcb8';sx.textAlign='left';sx.fillText(t,x+7,y+14);SWHIT72={x,y,w,h};}
+// 前と後ろの勇者を入れ替える（鞄ごと）。前の勇者ほど狙われる
+function swapHeroes72(){if(S.phase!=='plan'||S.inBattle||(S.heroes||[]).length<2)return;S.heroes.reverse();S.bags.reverse();WALK=null;S.sel=null;S.info=null;UNDO=null;sfx('tick');toast(`前は${HEROES[S.heroes[0]].name}。前の勇者ほど狙われる`);render();save();}
 function drawStage(){
   if(!B)return;const W=stageW,H=stageH;sx.clearRect(0,0,W,H);
   sx.save();const rm=reducedMotion(); // 全体の揺れ・白フラッシュ・ズームは使わない。
@@ -2826,6 +2840,9 @@ function drawStage(){
     sx.fillStyle='rgba(0,0,0,.45)';sx.fillRect(x-14,base-2,28,4);sx.fillRect(x-18,base-1,36,2);
     if(walkOn){drawChar({name:ac.name,anim:'run',t:(vt-1.3)%(META[ac.name].anims.run/14)},x,base+2,hb,false);}else if(intro<1&&META[ac.name].anims.run){drawChar({name:ac.name,anim:'run',t:B.intro},x,base+2+dy,hb,false);}else drawChar(ac,x,base+2+dy,hb,false);
     });
+  if(B.hu){const tgt=!B.done?nextTargetU72():-1,soon=B.enemy.timer/B.def.int>0.55;B.hu.forEach((x,u)=>{const cx=heroX(u,W)+actorOff(B.actors[u],true)[0],y=Math.max(40,Math.round(base-hb*1.3)),w=30;
+      sx.fillStyle='rgba(10,8,6,.8)';sx.fillRect(cx-w/2-1,y-1,w+2,6);sx.fillStyle=x.hp>0?(x.hp/x.max<0.3?'#d9a03a':'#79b85a'):'#5a4a3a';sx.fillRect(cx-w/2,y,Math.round(w*Math.max(0,x.hp)/x.max),4);
+      if(u===tgt&&x.hp>0&&soon){sx.fillStyle='#ff6a5a';sx.beginPath();sx.moveTo(cx-5,y-9);sx.lineTo(cx+5,y-9);sx.lineTo(cx,y-3);sx.closePath();sx.fill();}});}
   // 敵
   const eb=ENEMY_BODY();sx.fillStyle='rgba(0,0,0,.45)';sx.fillRect(ENEMY_X-20,base-2,40,4);sx.fillRect(ENEMY_X-26,base-1,52,2);
   {const E0=B.enemy;sx.save();let f='';
@@ -2841,7 +2858,9 @@ function drawStage(){
   {const E=B.enemy,ey=base-eb;if(E.burn>1){for(let i=0;i<Math.min(6,1+E.burn/12);i++){const ph=(B.t*2+i*0.37)%1;sx.fillStyle=ph<.5?'#ffb02e':'#ea6b3c';sx.fillRect(Math.round(ENEMY_X-12+((i*11)%24)),Math.round(ey+eb*0.4-ph*eb*0.6),3,3);}}
     if(E.poison>1){for(let i=0;i<Math.min(6,1+E.poison/4);i++){const ph=(B.t*1.3+i*0.29)%1;sx.fillStyle='#9fd35a';sx.fillRect(Math.round(ENEMY_X-14+((i*13)%28)),Math.round(ey+eb*0.9-ph*eb*0.9),2,2);}}}
   const P=B.party,E=B.enemy;
-  bar(8,6,W/2-14,P.hp/P.max,'#79b85a',`パーティ ${Math.max(0,Math.round(P.hp))}`+(P.shield>0.5?`  盾${Math.round(P.shield)}`:'')+partyBuffTxt(),P.shield/P.max,'p');
+  if(B.hu){const bw=(W/2-14-6)/2;B.hu.forEach((x,u)=>{const nm=HEROES[S.heroes[u]].name;bar(8+u*(bw+6),6,bw,x.hp/x.max,x.hp>0?(x.hp/x.max<0.3?'#d9a03a':'#79b85a'):'#5a4a3a',x.hp>0?`${nm} ${Math.round(x.hp)}`:`${nm} 倒れた`,u===0?P.shield/P.max:0,'p'+u);});
+    if(P.shield>0.5){sx.font='10px DotGothic16, monospace';sx.textAlign='left';const t=`盾${Math.round(P.shield)}`;sx.fillStyle='rgba(12,9,7,.75)';sx.fillRect(8,24,sx.measureText(t).width+8,12);sx.fillStyle='#9cc8f5';sx.fillText(t,12,34);}}
+  else bar(8,6,W/2-14,P.hp/P.max,'#79b85a',`パーティ ${Math.max(0,Math.round(P.hp))}`+(P.shield>0.5?`  盾${Math.round(P.shield)}`:'')+partyBuffTxt(),P.shield/P.max,'p');
   bar(W/2+6,6,W/2-14,E.hp/E.max,'#cf4b3f',`${B.def.name} ${Math.max(0,Math.round(E.hp))}${E.shield>0.5?' 盾'+Math.round(E.shield):''}`,(E.shield||0)/E.max,'e');
   if(!B.done){const r=Math.max(0,Math.min(1,E.timer/B.def.int)),gy=Math.max(isRun()?54:0,base-ENEMY_BODY()-18),soon=r>0.8;
     sx.fillStyle='rgba(0,0,0,.6)';sx.fillRect(ENEMY_X-22,gy,44,6);sx.fillStyle=E.frz>0?'#9fd8ff':soon?'#ffc29e':'#e0603a';sx.fillRect(ENEMY_X-22,gy,Math.round(44*r),6);
@@ -3201,7 +3220,7 @@ $('bFight').onclick=()=>{
   $m('#bPlanBack').onclick=()=>{recordPlay('bench_return');closeModal();S.pick=null;S.sel={a:'bench',i:S.bench.findIndex(Boolean)};S.info=S.sel;render();};
   $m('#bFightAnyway').onclick=()=>{recordPlay('bench_depart');closeModal();startBattle();};
 };
-/* r69：戦闘の画面を押すと一時停止・もう一度押すと再開 */$('stage').addEventListener('click',ev=>{if(S.phase==='plan'&&!B&&isRun()&&RHIT70){const r=$('stage').getBoundingClientRect(),x=ev.clientX-r.left,y=ev.clientY-r.top;if(x>=RHIT70.x&&x<=RHIT70.x+RHIT70.w&&y>=RHIT70.y-6){sfx('tick');showActiveRelics70();return;}}if(S.phase==='plan'&&!B&&isRun()){const E=enemy(S.round);if(E){sfx('tick');showEnemyInfo68(E);}return;}if(S.phase!=='battle'||!B||B.done)return;B.hold68=!B.hold68;let m=$('pause68');if(!m){m=document.createElement('div');m.id='pause68';m.textContent='一時停止中　画面を押すと再開';$('stage').appendChild(m);}m.hidden=!B.hold68;sfx('tick');});
+/* r69：戦闘の画面を押すと一時停止・もう一度押すと再開 */$('stage').addEventListener('click',ev=>{if(S.phase==='plan'&&!B&&isRun()&&SWHIT72){const r=$('stage').getBoundingClientRect(),x=ev.clientX-r.left,y=ev.clientY-r.top;if(x>=SWHIT72.x&&x<=SWHIT72.x+SWHIT72.w&&y>=SWHIT72.y&&y<=SWHIT72.y+SWHIT72.h+6){swapHeroes72();return;}}if(S.phase==='plan'&&!B&&isRun()&&RHIT70){const r=$('stage').getBoundingClientRect(),x=ev.clientX-r.left,y=ev.clientY-r.top;if(x>=RHIT70.x&&x<=RHIT70.x+RHIT70.w&&y>=RHIT70.y-6){sfx('tick');showActiveRelics70();return;}}if(S.phase==='plan'&&!B&&isRun()){const E=enemy(S.round);if(E){sfx('tick');showEnemyInfo68(E);}return;}if(S.phase!=='battle'||!B||B.done)return;B.hold68=!B.hold68;let m=$('pause68');if(!m){m=document.createElement('div');m.id='pause68';m.textContent='一時停止中　画面を押すと再開';$('stage').appendChild(m);}m.hidden=!B.hold68;sfx('tick');});
 $('bSpeed').onclick=()=>{S.speed=S.speed===1?2:S.speed===2?4:1;recordPlay('battle_speed',{speed:S.speed});$('bSpeed').textContent=`速さ ×${S.speed}`;};
 const assaultUnlocked=()=>S.run?.mode==='story'&&S.run.ch>=6;
 const RALLY_CD68=15;
